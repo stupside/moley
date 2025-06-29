@@ -1,0 +1,15 @@
+# moley Configuration
+# This file contains the configuration for moley tunnel management
+
+# Cloudflare configuration
+cloudflare:
+
+# Zone configuration
+zone: xonery.dev
+
+# Applications to expose
+apps:
+  - port: 3000
+    subdomain: local-api
+  - port: 8080
+    subdomain: local-web

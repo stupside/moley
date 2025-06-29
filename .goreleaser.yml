@@ -1,0 +1,35 @@
+version: 2
+project_name: moley
+
+builds:
+  - main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X 'moley/internal/version.Commit={{.Commit}}'
+      - -X 'moley/internal/version.BuildTime={{.Date}}'
+      - -X 'moley/internal/version.Version={{.Version}}'
+    binary: moley
+
+changelog:
+  sort: asc
+  use: git
+  format: "{{ .SHA }}: {{ .Message }}{{ with .AuthorUsername }} (@{{ . }}){{ end }}"
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  name_template: "v{{ .Version }}"
+  footer: |
+    **Full Changelog**: https://github.com/stupside/moley/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}

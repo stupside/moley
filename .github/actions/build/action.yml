@@ -1,0 +1,16 @@
+name: Build Binary
+
+description: Build the Go binary
+
+inputs:
+  output:
+    description: Output binary name
+    required: false
+    default: moley
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build
+      run: go build -v -o ${{ inputs.output }} .
+      shell: bash 

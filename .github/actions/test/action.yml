@@ -1,0 +1,23 @@
+name: Test, Vet, Fmt
+
+description: Run Go tests, vet, and formatting checks
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      run: go mod download
+      shell: bash
+    - name: Run tests
+      run: go test -v ./...
+      shell: bash
+    - name: Run go vet
+      run: go vet ./...
+      shell: bash
+    - name: Run go fmt check
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not formatted. Run 'go fmt ./...'"
+          exit 1
+        fi
+      shell: bash 
