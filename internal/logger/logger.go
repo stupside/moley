@@ -7,7 +7,7 @@ import (
 )
 
 // Logger is the global logger instance
-var Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+var Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger().Level(zerolog.TraceLevel)
 
 // Info logs an info message
 func Info(msg string) {
@@ -65,41 +65,30 @@ func Debugf(msg string, fields map[string]interface{}) {
 	event.Msg(msg)
 }
 
-// With returns a logger with additional context
-func With(fields map[string]interface{}) zerolog.Logger {
+// Fatal logs a fatal message and exits
+func Fatal(msg string) {
+	Logger.Fatal().Msg(msg)
+}
+
+// Fatalf logs a fatal message with fields and exits
+func Fatalf(msg string, fields map[string]interface{}) {
+	event := Logger.Fatal()
+	for k, v := range fields {
+		event = event.Interface(k, v)
+	}
+	event.Msg(msg)
+}
+
+// SetLevel sets the log level
+func SetLevel(level zerolog.Level) {
+	Logger = Logger.Level(level)
+}
+
+// WithContext returns a logger with additional context
+func WithContext(fields map[string]interface{}) zerolog.Logger {
 	logger := Logger
 	for k, v := range fields {
 		logger = logger.With().Interface(k, v).Logger()
 	}
 	return logger
-}
-
-// WithContext creates a logger with context fields
-func WithContext(ctx map[string]interface{}) zerolog.Logger {
-	return With(ctx)
-}
-
-// SetLevel sets the logging level
-func SetLevel(level zerolog.Level) {
-	Logger = Logger.Level(level)
-}
-
-// SetDebug enables debug logging
-func SetDebug() {
-	SetLevel(zerolog.DebugLevel)
-}
-
-// SetInfo sets logging to info level
-func SetInfo() {
-	SetLevel(zerolog.InfoLevel)
-}
-
-// SetWarn sets logging to warn level
-func SetWarn() {
-	SetLevel(zerolog.WarnLevel)
-}
-
-// SetError sets logging to error level
-func SetError() {
-	SetLevel(zerolog.ErrorLevel)
 }

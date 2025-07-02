@@ -3,19 +3,13 @@
 ## API Token Security
 
 ### Never commit API tokens to version control
-- Always use environment variables for sensitive configuration
-- Set your Cloudflare API token via the `MOLEY_CLOUDFLARE_API_TOKEN` environment variable
+- Always use the `moley config --cloudflare.token` command for sensitive configuration
 - Never hardcode tokens in configuration files
 
 ### Example usage:
 ```bash
-export MOLEY_CLOUDFLARE_API_TOKEN="your-api-token-here"
-moley run
-```
-
-### Or inline:
-```bash
-MOLEY_CLOUDFLARE_API_TOKEN="your-api-token-here" moley run
+cloudflared tunnel login
+moley config --cloudflare.token="your-api-token-here"
 ```
 
 ## Configuration Security

@@ -2,208 +2,189 @@
   <img src=".github/images/moley.png" alt="Moley Logo" width="200"/>
 </p>
 
-# Moley - Cloudflare Tunnel Manager
+# Moley
 
-A simple CLI tool for exposing local services through Cloudflare Tunnel with your own domain names.
+**Expose your local apps to the world—securely, instantly, and with zero hassle.**
 
-## Why Moley?
+Moley is the easiest way to share your local development services using Cloudflare Tunnels and your own custom domains. Forget about reverse proxies, manual DNS, or complex infrastructure—Moley automates everything for you, so you can focus on building, not configuring.
 
-I wanted to expose my localhost services with custom domain names without paying for services like ngrok. Cloudflare Tunnel is free and powerful, but setting it up manually can be complex. Moley simplifies this process into a few simple commands.
+## Why use Moley?
 
-## What it solves
+- **No extra infrastructure:** No need for Nginx, load balancers, or public servers.
+- **Automatic DNS:** Instantly get public URLs for your local apps, with DNS records managed for you.
+- **Professional presentation:** Use your own domain names for demos, APIs, or webhooks.
+- **One config, one command:** Centralized YAML config and a single command to go live.
+- **Secure by default:** Built on Cloudflare Tunnels, with best practices for token and config security.
 
-Moley is a wrapper around Cloudflare Tunnel that:
-- **Creates tunnels automatically** - No manual setup required
-- **Manages DNS records** - Automatically creates subdomains for your services
-- **Handles cleanup** - Removes all resources when you're done
-- **Works with multiple services** - Expose multiple local apps at once
-- **Uses your own domain** - No more random URLs or subdomains
+Unlike traditional approaches that require setting up reverse proxies like Nginx Proxy Manager, Moley automatically creates and manages DNS records via the Cloudflare API. This means no additional infrastructure setup—just configure your local services and let Moley handle the rest.
 
-## Features
+| Approach                | Infrastructure Required | DNS Management      | Setup Complexity    |
+|-------------------------|------------------------|---------------------|---------------------|
+| **Moley**               | None                   | Automatic via API   | Single command      |
+| cloudflared + Nginx     | Nginx Proxy Manager    | Manual dashboard    | Multiple services   |
+| Manual Cloudflare       | None                   | Manual dashboard    | Complex configuration |
 
-- 🚀 **Easy Setup**: Simple YAML configuration
-- 🔒 **Secure**: End-to-end encrypted tunnels
-- 🎯 **Domain Control**: Use your own domain names
-- 🧹 **Auto Cleanup**: Automatic resource cleanup on exit
-- 📝 **Structured Logging**: Comprehensive logging with structured fields
-- ✅ **Validation**: Robust configuration validation
-- 🔧 **Flexible**: Support for multiple applications
+Moley eliminates the need for reverse proxies while providing automated DNS management - the best of both worlds.
 
-## Installation
+## Key Benefits
 
-### Prerequisites
+Moley offers automated setup, streamlined tunnel creation and configuration, and automatic subdomain management. It handles resource cleanup on tunnel termination and supports exposing multiple local applications at once. You can use your own domain names for a professional presentation, and there is no need for reverse proxies, load balancers, or additional services. All configuration is centralized and validated, and operational logging is structured for clarity.
 
-1. **Cloudflare Account**: You need a Cloudflare account with a domain
-2. **Cloudflare API Token**: Create an API token with Zone:Read and DNS:Edit permissions
-3. **cloudflared**: Install and authenticate cloudflared
+---
 
-### Install cloudflared
+## Getting Started
 
-```bash
+Get your local app online in minutes:
+
+```sh
+# 1. Install cloudflared (choose your OS)
 # macOS
 brew install cloudflare/cloudflare/cloudflared
-
 # Linux
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 sudo dpkg -i cloudflared-linux-amd64.deb
+# Windows: Download from https://github.com/cloudflare/cloudflared/releases
 
-# Windows
-# Download from https://github.com/cloudflare/cloudflared/releases
-```
-
-### Authenticate cloudflared
-
-```bash
+# 2. Authenticate cloudflared with your Cloudflare account
 cloudflared tunnel login
-```
 
-### Build Moley
-
-```bash
+# 3. Clone and build Moley
 git clone <repository-url>
 cd mole
 make build
+
+# 4. Set your Cloudflare API token
+./moley config --cloudflare.token="your-api-token"
+
+# 5. Initialize Moley configuration
+./moley tunnel init
+
+# 6. Edit the generated moley.yml file to match your requirements
+# (open moley.yml in your editor)
+
+# 7. Start the tunnel
+./moley tunnel run
 ```
 
-## Configuration
+For a full list of available commands and options, run `./moley --help` or `./moley <command> --help`.
 
-Create a `moley.yml` configuration file:
+---
 
-```yaml
-# Cloudflare configuration
-cloudflare:
-  api_token: ""  # Set via MOLEY_CLOUDFLARE_API_TOKEN environment variable
+## Configuration Reference
 
-# Zone configuration
-zone: yourdomain.com
+### Configuration Schema
 
-# Applications to expose
-apps:
-  - port: 3000
-    subdomain: api
-  - port: 8080
-    subdomain: web
-```
+| Field | Type | Description | Required |
+|-------|------|-------------|----------|
+| `zone` | string | The DNS zone (your domain) to use for the tunnel | Yes |
+| `apps` | array | Array of application configurations | Yes |
+| `apps[].target.port` | integer | Local service port (1-65535) | Yes |
+| `apps[].target.hostname` | string | Local hostname (typically `localhost`) | Yes |
+| `apps[].expose.subdomain` | string | Public subdomain (e.g., `api` becomes `api.yourdomain.com`) | Yes |
 
-### Environment Variables
+---
 
-- `MOLEY_CLOUDFLARE_API_TOKEN`: Your Cloudflare API token (recommended)
+## Security Considerations
 
-## Usage
+**Important**: Never commit API tokens to version control. Use the `moley config --cloudflare.token` command for sensitive data.
 
-### Basic Usage
+Refer to [SECURITY.md](SECURITY.md) for comprehensive security guidelines.
 
-```bash
-# Set your API token
-export MOLEY_CLOUDFLARE_API_TOKEN="your-api-token-here"
-
-# Run the tunnel
-./moley run
-```
-
-### Advanced Usage
-
-```bash
-# Run with inline environment variable
-MOLEY_CLOUDFLARE_API_TOKEN="your-token" ./moley run
-```
-
-## Command-line Flags
-
-Moley supports command-line flags for customizing its behavior and overriding configuration values directly from the CLI.
-
-To discover all available flags and options for any command, use the built-in help system:
-
-```bash
-./moley --help
-./moley <command> --help
-```
-
-This will display detailed information about available flags, their usage, and examples for each command.
-
-## Security
-
-**Important**: Never commit API tokens to version control. Always use environment variables for sensitive configuration.
-
-See [SECURITY.md](SECURITY.md) for detailed security best practices.
-
-## Configuration Validation
-
-Moley performs comprehensive validation of your configuration:
-
-- **Zone Validation**: Ensures zone is specified
-- **Port Validation**: Validates port numbers (1-65535)
-- **Subdomain Validation**: Ensures subdomain names are provided
-- **API Token Validation**: Validates Cloudflare API token presence
-- **App Configuration**: Validates all app configurations
-
-## Logging
-
-Moley uses structured logging with the following levels:
-
-- **Info**: General operational information
-- **Warn**: Warning messages for non-critical issues
-- **Error**: Error messages for critical issues
-
-## Architecture
-
-### Components
-
-- **Manager**: Handles tunnel deployment and cleanup
-- **Runner**: Manages tunnel execution and lifecycle
-- **Generator**: Creates Cloudflare tunnel configurations
-- **Client**: Cloudflare API client wrapper
-
-### Flow
-
-1. **Configuration Loading**: Load and validate configuration
-2. **Tunnel Creation**: Create or reuse existing tunnel
-3. **DNS Setup**: Configure DNS records for applications
-4. **Configuration Generation**: Generate cloudflared configuration
-5. **Tunnel Execution**: Start and manage tunnel process
-6. **Cleanup**: Clean up resources on exit
-
-## Development
-
-### Building
-
-```bash
-make build
-```
-
-### Testing
-
-```bash
-make test
-```
+---
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Authentication Errors**
-   - Ensure cloudflared is authenticated: `cloudflared tunnel login`
-   - Verify API token has correct permissions
-   - Check API token is set in environment
+**Authentication Errors**
+- Verify cloudflared authentication: `cloudflared tunnel login`
+- Confirm API token permissions (Zone:Read, DNS:Edit)
+- Set API token: `moley config --cloudflare.token="your-token"`
 
-2. **Configuration Errors**
-   - Validate your `moley.yml` file
-   - Check zone name format
-   - Ensure ports are valid (1-65535)
+**Configuration Errors**
+- Validate `moley.yml` file structure
+- Verify zone name format and ownership
+- Ensure port numbers are within valid range (1-65535)
+- Confirm subdomain specifications
 
-3. **Network Issues**
-   - Verify local services are running
-   - Check firewall settings
-   - Ensure ports are accessible
+**Network Issues**
+- Verify local service availability
+- Check firewall configurations
+- Ensure port accessibility
+
+**File System Errors**
+- Run `moley tunnel init` to create configuration file
+- Verify working directory contains `moley.yml`
+
+---
+
+## Architecture
+
+### Core Components
+
+- **Tunnel Manager**: Handles tunnel lifecycle and deployment
+- **Runner Service**: Manages tunnel execution and monitoring
+- **Configuration Generator**: Creates Cloudflare tunnel configurations
+- **API Client**: Cloudflare API integration wrapper
+- **Configuration Manager**: Configuration loading and validation
+
+### Operational Flow
+
+1. Configuration loading and validation from `moley.yml`
+2. Tunnel creation or reuse of existing tunnel
+3. DNS record configuration for specified applications
+4. Cloudflare tunnel configuration generation
+5. Tunnel service execution and monitoring
+6. Resource cleanup on termination
+
+---
+
+## Development
+
+### Build Commands
+
+```bash
+# Development build
+make build
+
+# Global installation
+make install
+
+# Clean build artifacts
+make clean
+```
+
+### Testing
+
+```bash
+# Run test suite
+make test
+
+# Generate coverage report
+make test-coverage
+```
+
+### Code Quality
+
+```bash
+# Format code
+make fmt
+
+# Static analysis
+make vet
+```
+
+---
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+3. Implement changes with appropriate tests
+4. Ensure all tests pass
+5. Submit a pull request
+
+---
 
 ## License
 
@@ -213,6 +194,6 @@ MIT License - see LICENSE file for details.
 
 For issues and questions:
 
-1. Check the troubleshooting section
-2. Review the security documentation
+1. Review the troubleshooting section
+2. Consult the security documentation
 3. Open an issue on GitHub
