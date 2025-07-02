@@ -1,7 +1,7 @@
 package validation
 
 import (
-	"moley/internal/errors"
+	"github.com/stupside/moley/internal/errors"
 
 	"github.com/go-playground/validator/v10"
 )

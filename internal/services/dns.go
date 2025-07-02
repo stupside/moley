@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"moley/internal/domain"
+
+	"github.com/stupside/moley/internal/domain"
 
 	"github.com/cloudflare/cloudflare-go/v3/dns"
 )

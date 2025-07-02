@@ -3,10 +3,11 @@ package cf
 import (
 	"context"
 	"fmt"
-	"moley/internal/domain"
-	"moley/internal/errors"
-	"moley/internal/logger"
-	"moley/internal/services"
+
+	"github.com/stupside/moley/internal/domain"
+	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/services"
 
 	"github.com/cloudflare/cloudflare-go/v3"
 	"github.com/cloudflare/cloudflare-go/v3/dns"

@@ -1,9 +1,10 @@
 package config
 
 import (
-	"moley/internal/errors"
-	"moley/internal/logger"
 	"sync"
+
+	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/logger"
 )
 
 // Manager provides a simple way to manage global configuration

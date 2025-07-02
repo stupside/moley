@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"moley/internal/domain"
+
+	"github.com/stupside/moley/internal/domain"
 )
 
 // IngressService defines the interface for managing ingress configurations for Cloudflare tunnels

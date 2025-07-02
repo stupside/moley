@@ -3,11 +3,12 @@ package tunnel
 import (
 	"context"
 	"fmt"
-	"moley/internal/config"
-	"moley/internal/domain"
-	"moley/internal/feats/tunnel"
-	"moley/internal/logger"
-	"moley/internal/validation"
+
+	"github.com/stupside/moley/internal/config"
+	"github.com/stupside/moley/internal/domain"
+	"github.com/stupside/moley/internal/feats/tunnel"
+	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/validation"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -26,15 +27,15 @@ func execRun(cmd *cobra.Command, args []string) error {
 		"command": cmd.Name(),
 	})
 	v := viper.New()
-	v.SetConfigName("moley")
+	v.SetConfigName("github.com/stupside/moley")
 	v.SetConfigType("yaml")
 	v.AddConfigPath(".")
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logger.Errorf("Configuration file not found", map[string]interface{}{"config_file": "moley.yml"})
+			logger.Errorf("Configuration file not found", map[string]interface{}{"config_file": "github.com/stupside/moley.yml"})
 			return fmt.Errorf("configuration file not found")
 		}
-		logger.Errorf("Failed to read configuration file", map[string]interface{}{"config_file": "moley.yml", "error": err.Error()})
+		logger.Errorf("Failed to read configuration file", map[string]interface{}{"config_file": "github.com/stupside/moley.yml", "error": err.Error()})
 		return fmt.Errorf("failed to read configuration file: %w", err)
 	}
 	var tunnelConfig tunnel.TunnelConfig

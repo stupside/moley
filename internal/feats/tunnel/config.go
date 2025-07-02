@@ -1,7 +1,7 @@
 package tunnel
 
 import (
-	"moley/internal/domain"
+	"github.com/stupside/moley/internal/domain"
 )
 
 // TunnelConfig holds the configuration for the tunnel feature

@@ -2,10 +2,11 @@ package steps
 
 import (
 	"context"
-	"moley/internal/domain"
-	"moley/internal/errors"
-	"moley/internal/logger"
-	"moley/internal/services"
+
+	"github.com/stupside/moley/internal/domain"
+	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/services"
 )
 
 // TunnelStep handles tunnel operations

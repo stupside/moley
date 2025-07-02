@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"moley/internal/config"
-	"moley/internal/logger"
+	"github.com/stupside/moley/internal/config"
+	"github.com/stupside/moley/internal/logger"
 
 	"github.com/spf13/cobra"
 )

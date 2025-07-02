@@ -1,9 +1,10 @@
 package main
 
 import (
-	"moley/cmd"
-	"moley/internal/logger"
 	"os"
+
+	"github.com/stupside/moley/cmd"
+	"github.com/stupside/moley/internal/logger"
 
 	"github.com/rs/zerolog"
 )

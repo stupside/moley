@@ -19,7 +19,7 @@ func NewTunnelName() string {
 	randomBytes := make([]byte, 4)
 	rand.Read(randomBytes)
 	randomHex := hex.EncodeToString(randomBytes)
-	return fmt.Sprintf("moley-%d-%s", timestamp, randomHex)
+	return fmt.Sprintf("github.com/stupside/moley-%d-%s", timestamp, randomHex)
 }
 
 // NewTunnel creates a new Tunnel instance with the specified name

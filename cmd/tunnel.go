@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"moley/cmd/tunnel"
+	"github.com/stupside/moley/cmd/tunnel"
 
 	"github.com/spf13/cobra"
 )

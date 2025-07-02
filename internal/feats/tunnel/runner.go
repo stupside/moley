@@ -2,11 +2,12 @@ package tunnel
 
 import (
 	"context"
-	"moley/internal/errors"
-	"moley/internal/logger"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/logger"
 )
 
 // Runner provides a high-level API for tunnel operations

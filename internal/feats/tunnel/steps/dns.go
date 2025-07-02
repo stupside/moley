@@ -2,11 +2,12 @@ package steps
 
 import (
 	"context"
-	"moley/internal/domain"
-	"moley/internal/logger"
-	"moley/internal/services"
 
-	"moley/internal/errors"
+	"github.com/stupside/moley/internal/domain"
+	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/services"
+
+	"github.com/stupside/moley/internal/errors"
 )
 
 // DNSStep handles DNS record operations

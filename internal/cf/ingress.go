@@ -3,13 +3,14 @@ package cf
 import (
 	"context"
 	"fmt"
-	"moley/internal/config"
-	"moley/internal/domain"
-	"moley/internal/errors"
-	"moley/internal/logger"
-	"moley/internal/services"
 	"os"
 	"path/filepath"
+
+	"github.com/stupside/moley/internal/config"
+	"github.com/stupside/moley/internal/domain"
+	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/services"
 
 	"gopkg.in/yaml.v3"
 )

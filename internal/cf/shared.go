@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"moley/internal/errors"
 	"os/exec"
+
+	"github.com/stupside/moley/internal/errors"
 )
 
 // execCloudflared is an internal helper function to execute cloudflared commands

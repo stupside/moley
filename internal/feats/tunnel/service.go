@@ -3,16 +3,17 @@ package tunnel
 import (
 	"context"
 	"fmt"
-	"moley/internal/cf"
-	"moley/internal/config"
-	"moley/internal/domain"
-	"moley/internal/errors"
-	"moley/internal/feats/tunnel/steps"
-	"moley/internal/logger"
-	"moley/internal/services"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/stupside/moley/internal/cf"
+	"github.com/stupside/moley/internal/config"
+	"github.com/stupside/moley/internal/domain"
+	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/feats/tunnel/steps"
+	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/services"
 )
 
 // Service orchestrates tunnel deployment and cleanup

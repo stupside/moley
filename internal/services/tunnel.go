@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"moley/internal/domain"
+
+	"github.com/stupside/moley/internal/domain"
 )
 
 // TunnelService defines the interface for managing Cloudflare tunnels
