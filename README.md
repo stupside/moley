@@ -2,6 +2,8 @@
   <img src=".github/images/moley.png" alt="Moley Logo" width="200"/>
 </p>
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/stupside/moley.svg)](https://pkg.go.dev/github.com/stupside/moley)
+
 # Moley
 
 **Expose your local apps to the world—securely, instantly, and with zero hassle.**
