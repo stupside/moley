@@ -34,7 +34,19 @@ func GetConfigFilePath() (string, error) {
 	}
 
 	// Return the full path to the config file <homedir>/.moley/config.yaml
-	return fmt.Sprintf("%s/%s", configFolderPath, configFileName), nil
+	configFilePath := fmt.Sprintf("%s/%s", configFolderPath, configFileName)
+
+	// Ensure the config file exists
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		// Create the config file if it does not exist
+		file, err := os.Create(configFilePath)
+		if err != nil {
+			return "", fmt.Errorf("failed to create config file: %w", err)
+		}
+		defer file.Close()
+	}
+
+	return configFilePath, nil
 }
 
 // GetConfigFolderPath returns the path to the config folder
