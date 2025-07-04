@@ -22,9 +22,9 @@ func execInit(cmd *cobra.Command, args []string) error {
 	logger.Infof("Initializing tunnel configuration file", map[string]interface{}{
 		"command": cmd.Name(),
 	})
-	if _, err := os.Stat("github.com/stupside/moley.yml"); err == nil {
+	if _, err := os.Stat("moley.yml"); err == nil {
 		logger.Warnf("Configuration file already exists", map[string]interface{}{
-			"config_file": "github.com/stupside/moley.yml",
+			"config_file": "moley.yml",
 		})
 		return fmt.Errorf("configuration file already exists")
 	}
@@ -33,7 +33,7 @@ func execInit(cmd *cobra.Command, args []string) error {
 		logger.Errorf("Failed to marshal default config", map[string]interface{}{"error": err.Error()})
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
-	if err := os.WriteFile("github.com/stupside/moley.yml", data, 0644); err != nil {
+	if err := os.WriteFile("moley.yml", data, 0644); err != nil {
 		logger.Errorf("Failed to write config file", map[string]interface{}{"error": err.Error()})
 		return fmt.Errorf("failed to write config file: %w", err)
 	}

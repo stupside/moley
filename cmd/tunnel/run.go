@@ -27,15 +27,15 @@ func execRun(cmd *cobra.Command, args []string) error {
 		"command": cmd.Name(),
 	})
 	v := viper.New()
-	v.SetConfigName("github.com/stupside/moley")
+	v.SetConfigName("moley")
 	v.SetConfigType("yaml")
 	v.AddConfigPath(".")
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logger.Errorf("Configuration file not found", map[string]interface{}{"config_file": "github.com/stupside/moley.yml"})
+			logger.Errorf("Configuration file not found", map[string]interface{}{"config_file": "moley.yml"})
 			return fmt.Errorf("configuration file not found")
 		}
-		logger.Errorf("Failed to read configuration file", map[string]interface{}{"config_file": "github.com/stupside/moley.yml", "error": err.Error()})
+		logger.Errorf("Failed to read configuration file", map[string]interface{}{"config_file": "moley.yml", "error": err.Error()})
 		return fmt.Errorf("failed to read configuration file: %w", err)
 	}
 	var tunnelConfig tunnel.TunnelConfig
