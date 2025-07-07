@@ -5,7 +5,7 @@ BINARY_NAME=moley
 VERSION=$(shell git describe --tags --always --dirty)
 COMMIT=$(shell git rev-parse --short HEAD)
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
-LDFLAGS=-ldflags "-X 'moley/internal/version.Version=${VERSION}' -X 'moley/internal/version.Commit=${COMMIT}' -X 'moley/internal/version.BuildTime=${BUILD_TIME}'"
+LDFLAGS=-ldflags "-X 'github.com/stupside/moley/internal/version.Version=${VERSION}' -X 'github.com/stupside/moley/internal/version.Commit=${COMMIT}' -X 'github.com/stupside/moley/internal/version.BuildTime=${BUILD_TIME}'"
 
 # Build the application (for local dev; for releases, use 'make goreleaser')
 build: fmt vet
