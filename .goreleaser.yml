@@ -33,3 +33,20 @@ release:
   name_template: "v{{ .Version }}"
   footer: |
     **Full Changelog**: https://github.com/stupside/moley/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
+
+homebrew_casks:
+  - name: moley
+    description: "Expose your local apps to the world—securely, instantly, and with zero hassle."
+    commit_author:
+      name: moley
+      email: git@moley.dev
+    commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
+    zap:
+      trash:
+        - "~/.moley/config.yml"
+      delete:
+        - "~/.moley/config.yml"
+    repository:
+      name: "homebrew-tap"
+      owner: "stupside"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
