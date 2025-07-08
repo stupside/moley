@@ -1,16 +1,12 @@
 package tunnel
 
 import (
-	"fmt"
-
-	"github.com/spf13/viper"
 	"github.com/stupside/moley/internal/domain"
-	"github.com/stupside/moley/internal/logger"
-	"github.com/stupside/moley/internal/validation"
+	"github.com/stupside/moley/internal/shared"
 )
 
 const (
-	TunneConfigFile = "moley.yml"
+	TunnelConfigFile = "moley.yml"
 )
 
 // TunnelConfig holds the configuration for the tunnel feature
@@ -32,32 +28,6 @@ func GetDefaultConfig() *TunnelConfig {
 	}
 }
 
-func LoadConfigFromFile(filePath string) (*TunnelConfig, error) {
-	v := viper.New()
-
-	v.SetConfigName("moley")
-	v.SetConfigType("yaml")
-	v.AddConfigPath(".")
-
-	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logger.Errorf("Configuration file not found", map[string]interface{}{"config_file": TunneConfigFile})
-			return nil, fmt.Errorf("configuration file not found")
-		}
-		logger.Errorf("Failed to read configuration file", map[string]interface{}{"config_file": TunneConfigFile, "error": err.Error()})
-		return nil, fmt.Errorf("failed to read configuration file: %w", err)
-	}
-
-	var tunnelConfig TunnelConfig
-	if err := v.Unmarshal(&tunnelConfig); err != nil {
-		logger.Errorf("Failed to unmarshal tunnel configuration", map[string]interface{}{"error": err.Error()})
-		return nil, fmt.Errorf("failed to unmarshal tunnel configuration: %w", err)
-	}
-
-	if err := validation.ValidateStruct(&tunnelConfig); err != nil {
-		logger.Errorf("Tunnel configuration validation failed", map[string]interface{}{"error": err.Error()})
-		return nil, fmt.Errorf("tunnel configuration error: %w", err)
-	}
-
-	return &tunnelConfig, nil
+func NewTunnelConfigManager() *shared.BaseConfigManager[TunnelConfig] {
+	return shared.NewConfigManager(TunnelConfigFile, GetDefaultConfig())
 }
