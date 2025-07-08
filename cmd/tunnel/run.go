@@ -8,10 +8,8 @@ import (
 	"github.com/stupside/moley/internal/domain"
 	"github.com/stupside/moley/internal/feats/tunnel"
 	"github.com/stupside/moley/internal/logger"
-	"github.com/stupside/moley/internal/validation"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var RunCmd = &cobra.Command{
@@ -26,27 +24,12 @@ func execRun(cmd *cobra.Command, args []string) error {
 	logger.Infof("Running tunnel", map[string]interface{}{
 		"command": cmd.Name(),
 	})
-	v := viper.New()
-	v.SetConfigName("moley")
-	v.SetConfigType("yaml")
-	v.AddConfigPath(".")
-	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logger.Errorf("Configuration file not found", map[string]interface{}{"config_file": "moley.yml"})
-			return fmt.Errorf("configuration file not found")
-		}
-		logger.Errorf("Failed to read configuration file", map[string]interface{}{"config_file": "moley.yml", "error": err.Error()})
-		return fmt.Errorf("failed to read configuration file: %w", err)
+
+	tunnelConfig, err := tunnel.LoadConfigFromFile(tunnel.TunneConfigFile)
+	if err != nil {
+		return fmt.Errorf("failed to load tunnel configuration: %w", err)
 	}
-	var tunnelConfig tunnel.TunnelConfig
-	if err := v.Unmarshal(&tunnelConfig); err != nil {
-		logger.Errorf("Failed to unmarshal tunnel configuration", map[string]interface{}{"error": err.Error()})
-		return fmt.Errorf("failed to unmarshal tunnel configuration: %w", err)
-	}
-	if err := validation.ValidateStruct(&tunnelConfig); err != nil {
-		logger.Errorf("Tunnel configuration validation failed", map[string]interface{}{"error": err.Error()})
-		return fmt.Errorf("tunnel configuration error: %w", err)
-	}
+
 	tunnelName := domain.NewTunnelName()
 	manager := config.GetManager()
 	moleyConfig := manager.Get()
@@ -54,7 +37,7 @@ func execRun(cmd *cobra.Command, args []string) error {
 		logger.Errorf("MoleyConfig not loaded", map[string]interface{}{"error": "MoleyConfig is nil"})
 		return fmt.Errorf("MoleyConfig not loaded")
 	}
-	managerService, err := tunnel.NewService(moleyConfig, &tunnelConfig, tunnelName)
+	managerService, err := tunnel.NewService(moleyConfig, tunnelConfig, tunnelName)
 	if err != nil {
 		logger.Errorf("Failed to create tunnel manager", map[string]interface{}{"tunnel": tunnelName, "error": err.Error()})
 		return fmt.Errorf("failed to create tunnel manager: %w", err)
