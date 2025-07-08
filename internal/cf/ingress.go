@@ -104,27 +104,30 @@ func (c *ingressService) GetConfigurationPath(ctx context.Context, domainTunnel 
 	logger.Debugf("Getting ingress configuration file path", map[string]interface{}{
 		"tunnel": domainTunnel.GetName(),
 	})
-	homeDir, err := os.UserHomeDir()
+
+	globalConfigDir, err := config.GetGlobalFolderPath()
 	if err != nil {
-		logger.Errorf("Failed to get user home directory for ingress config path", map[string]interface{}{
+		logger.Errorf("Failed to get global config directory for ingress config", map[string]interface{}{
 			"tunnel": domainTunnel.GetName(),
 			"error":  err.Error(),
 		})
-		return "", errors.NewConfigError(errors.ErrCodePermissionDenied, "failed to get user home directory", err)
+		return "", errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to get global config directory", err)
 	}
-	cloudflaredFolder := filepath.Join(homeDir, config.ConfigFileFolder, "tunnels")
-	if err := os.MkdirAll(cloudflaredFolder, 0755); err != nil {
+
+	tunnelsFolder := filepath.Join(globalConfigDir, "tunnels")
+	if err := os.MkdirAll(tunnelsFolder, 0755); err != nil {
 		logger.Errorf("Failed to create directory for ingress config", map[string]interface{}{
 			"tunnel": domainTunnel.GetName(),
-			"dir":    cloudflaredFolder,
+			"dir":    tunnelsFolder,
 			"error":  err.Error(),
 		})
 		return "", errors.NewConfigError(errors.ErrCodePermissionDenied, "failed to create directory", err)
 	}
-	configPath := filepath.Join(cloudflaredFolder, fmt.Sprintf("%s.yml", domainTunnel.GetName()))
+
+	tunnelFile := filepath.Join(tunnelsFolder, fmt.Sprintf("%s.yml", domainTunnel.GetName()))
 	logger.Debugf("Ingress configuration file path determined", map[string]interface{}{
 		"tunnel": domainTunnel.GetName(),
-		"file":   configPath,
+		"file":   tunnelFile,
 	})
-	return configPath, nil
+	return tunnelFile, nil
 }
