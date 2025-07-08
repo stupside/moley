@@ -27,10 +27,10 @@ type Service struct {
 }
 
 // NewService creates a new tunnel manager
-func NewService(moleyConfig *config.MoleyConfig, config *TunnelConfig, tunnelName string) (*Service, error) {
+func NewService(globalConfig *config.GlobalConfig, tunnelConfig *TunnelConfig, tunnelName string) (*Service, error) {
 
 	// Create DNS configuration
-	dns := domain.NewDNS(config.Zone, config.Apps)
+	dns := domain.NewDNS(tunnelConfig.Zone, tunnelConfig.Apps)
 	// Create tunnel using the provided name
 	tunnel, err := domain.NewTunnel(tunnelName)
 	if err != nil {
@@ -43,7 +43,7 @@ func NewService(moleyConfig *config.MoleyConfig, config *TunnelConfig, tunnelNam
 	ingressService := cf.NewIngressService(tunnelService)
 
 	// Create dns service
-	dnsService, err := cf.NewDNSService(moleyConfig.Cloudflare.Token, tunnelService)
+	dnsService, err := cf.NewDNSService(globalConfig.Cloudflare.Token, tunnelService)
 	if err != nil {
 		return nil, errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to create Cloudflare client", err)
 	}
