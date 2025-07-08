@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/stupside/moley/internal/config"
 	"github.com/stupside/moley/internal/logger"
 
@@ -15,25 +17,22 @@ var configCmd = &cobra.Command{
 }
 
 func execConfig(cmd *cobra.Command, args []string) error {
-	logger.Infof("Editing configuration", map[string]interface{}{
-		"command": cmd.Name(),
-	})
+	logger.Info("Editing configuration")
 
-	flagConfig, err := config.LoadFromFlags(cmd)
+	globalConfigManager, err := config.NewGlobalConfigManager(cmd)
 	if err != nil {
-		logger.Errorf("Failed to load configuration from flags", map[string]interface{}{"error": err.Error()})
-		return err
+		return fmt.Errorf("failed to get global config manager: %w", err)
 	}
 
-	manager := config.GetManager()
-	currentConfig := manager.Get()
+	// Load configuration (this will now work even if file doesn't exist)
+	globalConfig, err := globalConfigManager.Load(false)
+	if err != nil {
+		return fmt.Errorf("failed to load global configuration: %w", err)
+	}
 
-	currentConfig.Cloudflare.Token = flagConfig.Cloudflare.Token
-
-	manager.Set(currentConfig)
-	if err := manager.Save(); err != nil {
-		logger.Errorf("Failed to save configuration", map[string]interface{}{"error": err.Error()})
-		return err
+	// Save the configuration with validation
+	if err := globalConfigManager.Save(globalConfig, true); err != nil {
+		return fmt.Errorf("failed to save configuration: %w", err)
 	}
 
 	logger.Debug("Configuration saved")
