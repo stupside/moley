@@ -21,38 +21,38 @@ var RunCmd = &cobra.Command{
 
 // execRun is the main function for running the tunnel
 func execRun(cmd *cobra.Command, args []string) error {
-	logger.Infof("Running tunnel", map[string]interface{}{
-		"command": cmd.Name(),
-	})
+	logger.Info("Running tunnel")
 
-	tunnelConfig, err := tunnel.LoadConfigFromFile(tunnel.TunneConfigFile)
+	tunnelConfigManager := tunnel.NewTunnelConfigManager()
+
+	tunnelConfig, err := tunnelConfigManager.Load(true)
 	if err != nil {
 		return fmt.Errorf("failed to load tunnel configuration: %w", err)
 	}
 
-	tunnelName := domain.NewTunnelName()
-	manager := config.GetManager()
-	moleyConfig := manager.Get()
-	if moleyConfig == nil {
-		logger.Errorf("MoleyConfig not loaded", map[string]interface{}{"error": "MoleyConfig is nil"})
-		return fmt.Errorf("MoleyConfig not loaded")
-	}
-	managerService, err := tunnel.NewService(moleyConfig, tunnelConfig, tunnelName)
+	globalConfigManager, err := config.NewGlobalConfigManager(cmd)
 	if err != nil {
-		logger.Errorf("Failed to create tunnel manager", map[string]interface{}{"tunnel": tunnelName, "error": err.Error()})
+		return fmt.Errorf("failed to get global config manager: %w", err)
+	}
+
+	globalConfig, err := globalConfigManager.Load(true)
+	if err != nil {
+		return fmt.Errorf("failed to load global configuration: %w", err)
+	}
+
+	managerService, err := tunnel.NewService(globalConfig, tunnelConfig, domain.NewTunnelName())
+	if err != nil {
 		return fmt.Errorf("failed to create tunnel manager: %w", err)
 	}
-	service, err := tunnel.NewRunner(managerService)
+
+	tunnelRunner, err := tunnel.NewRunner(managerService)
 	if err != nil {
-		logger.Errorf("Failed to create tunnel service", map[string]interface{}{"tunnel": tunnelName, "error": err.Error()})
 		return fmt.Errorf("failed to create tunnel service: %w", err)
 	}
-	logger.Infof("Deploying and running tunnel", map[string]interface{}{"tunnel": tunnelName})
-	err = service.DeployAndRun(context.Background())
-	if err != nil {
-		logger.Errorf("Tunnel run failed", map[string]interface{}{"tunnel": tunnelName, "error": err.Error()})
-		return err
+
+	if err := tunnelRunner.DeployAndRun(context.Background()); err != nil {
+		return fmt.Errorf("failed to deploy and run tunnel: %w", err)
 	}
-	logger.Info("Tunnel run completed")
+
 	return nil
 }
