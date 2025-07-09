@@ -1,7 +1,7 @@
 zone: xonery.dev
 apps:
-  - target:
-      port: 8080
-      hostname: localhost
-    expose:
-      subdomain: api
+    - target:
+        port: 8080
+        hostname: localhost
+      expose:
+        subdomain: api

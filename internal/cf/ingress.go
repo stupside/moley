@@ -8,17 +8,15 @@ import (
 
 	"github.com/stupside/moley/internal/config"
 	"github.com/stupside/moley/internal/domain"
-	"github.com/stupside/moley/internal/errors"
 	"github.com/stupside/moley/internal/logger"
 	"github.com/stupside/moley/internal/services"
+	"github.com/stupside/moley/internal/shared"
 
 	"gopkg.in/yaml.v3"
 )
 
 // ingressService implements the IngressService interface for Cloudflare
 type ingressService struct {
-	services.IngressService
-
 	tunnelService services.TunnelService
 }
 
@@ -31,16 +29,11 @@ func NewIngressService(tunnelService services.TunnelService) *ingressService {
 
 // GetConfiguration generates the Cloudflare configuration for a tunnel and its associated DNS
 func (c *ingressService) GetConfiguration(ctx context.Context, domainTunnel *domain.Tunnel, domainDNS *domain.DNS) ([]byte, error) {
-	logger.Debugf("Generating Cloudflare ingress configuration", map[string]interface{}{
-		"tunnel": domainTunnel.GetName(),
-	})
+	logger.Debug(fmt.Sprintf("Generating Cloudflare ingress configuration for tunnel: %s", domainTunnel.GetName()))
+
 	credentialsFile, err := c.tunnelService.GetCredentialsPath(ctx, domainTunnel)
 	if err != nil {
-		logger.Errorf("Failed to get credentials path for ingress config", map[string]interface{}{
-			"tunnel": domainTunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return nil, errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to determine credentials file path", err)
+		return nil, shared.WrapError(err, "failed to determine credentials file path")
 	}
 
 	// Create configuration
@@ -87,47 +80,28 @@ func (c *ingressService) GetConfiguration(ctx context.Context, domainTunnel *dom
 	// Marshal to YAML
 	yamlData, err := yaml.Marshal(&cloudflareConfig)
 	if err != nil {
-		logger.Errorf("Failed to marshal ingress configuration to YAML", map[string]interface{}{
-			"tunnel": domainTunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return nil, errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to marshal Cloudflare configuration", err)
+		return nil, shared.WrapError(err, "failed to marshal Cloudflare configuration")
 	}
-	logger.Infof("Cloudflare ingress configuration generated successfully", map[string]interface{}{
-		"tunnel": domainTunnel.GetName(),
-	})
+
+	logger.Debug("Cloudflare ingress configuration generated successfully")
 	return yamlData, nil
 }
 
 // GetConfigurationPath returns the path where the Cloudflare configuration file should be stored
 func (c *ingressService) GetConfigurationPath(ctx context.Context, domainTunnel *domain.Tunnel) (string, error) {
-	logger.Debugf("Getting ingress configuration file path", map[string]interface{}{
-		"tunnel": domainTunnel.GetName(),
-	})
+	logger.Debug(fmt.Sprintf("Getting ingress configuration file path for tunnel: %s", domainTunnel.GetName()))
 
 	globalConfigDir, err := config.GetGlobalFolderPath()
 	if err != nil {
-		logger.Errorf("Failed to get global config directory for ingress config", map[string]interface{}{
-			"tunnel": domainTunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return "", errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to get global config directory", err)
+		return "", shared.WrapError(err, "failed to get global config directory")
 	}
 
 	tunnelsFolder := filepath.Join(globalConfigDir, "tunnels")
 	if err := os.MkdirAll(tunnelsFolder, 0755); err != nil {
-		logger.Errorf("Failed to create directory for ingress config", map[string]interface{}{
-			"tunnel": domainTunnel.GetName(),
-			"dir":    tunnelsFolder,
-			"error":  err.Error(),
-		})
-		return "", errors.NewConfigError(errors.ErrCodePermissionDenied, "failed to create directory", err)
+		return "", shared.WrapError(err, "failed to create tunnels directory")
 	}
 
 	tunnelFile := filepath.Join(tunnelsFolder, fmt.Sprintf("%s.yml", domainTunnel.GetName()))
-	logger.Debugf("Ingress configuration file path determined", map[string]interface{}{
-		"tunnel": domainTunnel.GetName(),
-		"file":   tunnelFile,
-	})
+	logger.Debug(fmt.Sprintf("Ingress configuration file path: %s", tunnelFile))
 	return tunnelFile, nil
 }

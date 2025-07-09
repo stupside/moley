@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/stupside/moley/internal/config"
 	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/shared"
 
 	"github.com/spf13/cobra"
 )
@@ -21,30 +20,28 @@ func execConfig(cmd *cobra.Command, args []string) error {
 
 	globalConfigManager, err := config.NewGlobalConfigManager(cmd)
 	if err != nil {
-		return fmt.Errorf("failed to get global config manager: %w", err)
+		return shared.WrapError(err, "failed to get global config manager")
 	}
 
 	// Load configuration (this will now work even if file doesn't exist)
 	globalConfig, err := globalConfigManager.Load(false)
 	if err != nil {
-		return fmt.Errorf("failed to load global configuration: %w", err)
+		return shared.WrapError(err, "failed to load global configuration")
 	}
 
 	// Save the configuration with validation
 	if err := globalConfigManager.Save(globalConfig, true); err != nil {
-		return fmt.Errorf("failed to save configuration: %w", err)
+		return shared.WrapError(err, "failed to save configuration")
 	}
 
-	logger.Debug("Configuration saved")
+	logger.Info("Configuration saved successfully")
 	return nil
 }
 
 func init() {
 	configCmd.Flags().String("cloudflare.token", "", "Cloudflare API token")
 	if err := configCmd.MarkFlagRequired("cloudflare.token"); err != nil {
-		logger.Fatalf("Failed to mark flag as required", map[string]interface{}{
-			"error": err.Error(),
-		})
+		logger.LogFatal(err, "Failed to mark flag as required")
 	}
 
 	rootCmd.AddCommand(configCmd)

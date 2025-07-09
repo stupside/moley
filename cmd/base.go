@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/stupside/moley/internal/logger"
 	"github.com/stupside/moley/internal/version"
 
@@ -32,11 +34,10 @@ func init() {
 		Use:   "info",
 		Short: "Show detailed build information",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Infof("Build info", map[string]interface{}{
-				"version":    version.Version,
-				"commit":     version.Commit,
-				"build_time": version.BuildTime,
-			})
+			logger.Info("Moley Build Information:")
+			logger.Info(fmt.Sprintf("  Version:    %s", version.Version))
+			logger.Info(fmt.Sprintf("  Commit:     %s", version.Commit))
+			logger.Info(fmt.Sprintf("  Build Time: %s", version.BuildTime))
 		},
 	})
 }

@@ -44,17 +44,16 @@ func (m *BaseConfigManager[T]) Init() error {
 		return nil
 	}
 
-	logger.Debugf("Checking if initial configuration is provided", map[string]interface{}{"path": m.path})
+	logger.Debug("Config file not found, checking for initial configuration")
 	if _, exists := configs[m.path]; exists {
 		if _, ok := configs[m.path].(*T); ok {
-			return ErrConfigAlreadyLoaded
+			return WrapError(ErrConfigAlreadyLoaded, "config already loaded at this path")
 		}
-		return ErrConfigAlreadyLoadedInvalidType
+		return WrapError(ErrConfigAlreadyLoadedInvalidType, "config already loaded at this path has an invalid type")
 	}
-	logger.Info("Configuration file not found")
 
 	if err := m.Save(m.initial, false); err != nil {
-		return fmt.Errorf("%w: %w", ErrConfigSave, err)
+		return WrapError(err, "failed to save initial config")
 	}
 
 	return nil
@@ -63,27 +62,27 @@ func (m *BaseConfigManager[T]) Init() error {
 // Save writes the configuration to the file after validating it if required
 func (m *BaseConfigManager[T]) Save(config *T, validate bool) error {
 	if config == nil {
-		return ErrConfigNil
+		return WrapError(ErrConfigNil, "config is nil")
 	}
 
 	if validate {
 		logger.Debug("Validating configuration")
 		if err := validation.ValidateStruct(config); err != nil {
-			return fmt.Errorf("%w: %w", ErrConfigValidation, err)
+			return WrapError(ErrConfigValidation, err.Error())
 		}
-		logger.Info("Configuration validation successful")
+		logger.Debug("Configuration validation successful")
 	}
 
 	data, err := yaml.Marshal(config)
 	if err != nil {
-		return fmt.Errorf("%w: %w", ErrConfigMarshal, err)
+		return WrapError(ErrConfigMarshal, err.Error())
 	}
 
-	logger.Debugf("Writing configuration to file", map[string]interface{}{"path": m.path})
+	logger.Debug(fmt.Sprintf("Writing configuration file: %s", m.path))
 	if err := os.WriteFile(m.path, data, 0755); err != nil {
-		return fmt.Errorf("%w: %w", ErrConfigWrite, err)
+		return WrapError(ErrConfigWrite, err.Error())
 	}
-	logger.Infof("Written configuration to file successfully", map[string]interface{}{"path": m.path})
+	logger.Info("Configuration file written successfully")
 
 	configs[m.path] = config
 
@@ -98,36 +97,35 @@ func (m *BaseConfigManager[T]) Load(validate bool) (*T, error) {
 		}
 	}
 
-	logger.Debug("Loading configuration from")
+	logger.Debug(fmt.Sprintf("Loading configuration: %s", m.path))
 
 	// Try to read config file if it exists
 	if m.IsFound() {
 		if err := m.vp.ReadInConfig(); err != nil {
 			if os.IsNotExist(err) {
-				logger.Debug("Configuration file not found, using default values and bound flags")
+				logger.Debug("Configuration file not found, using defaults")
 			} else {
-				return nil, fmt.Errorf("%w: %w", ErrConfigRead, err)
+				return nil, WrapError(ErrConfigRead, err.Error())
 			}
 		} else {
-			logger.Infof("Configuration loaded successfully", map[string]interface{}{"path": m.path})
+			logger.Debug("Configuration loaded from file")
 		}
 	} else {
-		logger.Debug("Configuration file not found, using default values and bound flags")
+		logger.Debug("Configuration file not found, using defaults")
 	}
 
 	// Unmarshal the configuration into the specified type
-	// This will include values from config file (if exists) and bound flags
 	config := new(T)
 	if err := m.vp.Unmarshal(&config); err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrConfigUnmarshal, err)
+		return nil, WrapError(ErrConfigUnmarshal, err.Error())
 	}
 
 	if validate {
 		logger.Debug("Validating loaded configuration")
 		if err := validation.ValidateStruct(config); err != nil {
-			return nil, fmt.Errorf("%w: %w", ErrConfigValidation, err)
+			return nil, WrapError(ErrConfigValidation, err.Error())
 		}
-		logger.Info("Configuration validation successful")
+		logger.Debug("Configuration validation successful")
 	}
 
 	configs[m.path] = config

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/stupside/moley/internal/shared"
 )
@@ -28,7 +26,7 @@ func GetDefaultConfig() *GlobalConfig {
 func NewGlobalConfigManager(cmd *cobra.Command) (*shared.BaseConfigManager[GlobalConfig], error) {
 	configPath, err := GetGlobalConfigPath()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get config path: %w", err)
+		return nil, shared.WrapError(err, "failed to get config path")
 	}
 
 	options := []shared.WithOption{

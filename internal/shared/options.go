@@ -1,7 +1,7 @@
 package shared
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -9,14 +9,13 @@ import (
 
 type WithOption = func(*viper.Viper) error
 
-var (
-	ErrConfigFailedToBindFlags = fmt.Errorf("failed to bind flags")
-)
+// Use MoleyError for binding errors
+var ErrConfigFailedToBindFlags = errors.New("failed to bind flags")
 
 func WithBindFlags(cmd *cobra.Command) WithOption {
 	return func(v *viper.Viper) error {
 		if err := v.BindPFlags(cmd.Flags()); err != nil {
-			return fmt.Errorf("%w: %v", ErrConfigFailedToBindFlags, err)
+			return WrapError(ErrConfigFailedToBindFlags, err.Error())
 		}
 		return nil
 	}

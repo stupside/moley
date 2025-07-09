@@ -2,12 +2,13 @@ package steps
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/stupside/moley/internal/domain"
-	"github.com/stupside/moley/internal/errors"
 	"github.com/stupside/moley/internal/logger"
 	"github.com/stupside/moley/internal/services"
+	"github.com/stupside/moley/internal/shared"
 )
 
 // IngressStep handles Cloudflare tunnel ingress configuration file operations
@@ -36,64 +37,46 @@ func (i *IngressStep) Name() string {
 
 // Up generates and writes the Cloudflare tunnel ingress configuration file
 func (i *IngressStep) Up(ctx context.Context) error {
-	logger.Debugf("Generating ingress configuration file", map[string]interface{}{
-		"tunnel": i.tunnel.GetName(),
-	})
+	apps := i.dns.GetApps()
+	zone := i.dns.GetZone()
+
+	logger.Info(fmt.Sprintf("Generating ingress configuration for tunnel: %s", i.tunnel.GetName()))
+	for _, app := range apps {
+		hostname := fmt.Sprintf("%s.%s", app.Expose.Subdomain, zone)
+		logger.Info(fmt.Sprintf("  → Configuring ingress: %s → %s", hostname, app.Target.GetTargetURL()))
+	}
+
 	configYAML, err := i.ingressService.GetConfiguration(ctx, i.tunnel, i.dns)
 	if err != nil {
-		logger.Errorf("Failed to generate ingress configuration", map[string]interface{}{
-			"tunnel": i.tunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to generate tunnel configuration", err)
+		return shared.WrapError(err, "failed to generate tunnel configuration")
 	}
+
 	configYAMLPath, err := i.ingressService.GetConfigurationPath(ctx, i.tunnel)
 	if err != nil {
-		logger.Errorf("Failed to determine ingress config file path", map[string]interface{}{
-			"tunnel": i.tunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to determine configuration file path", err)
+		return shared.WrapError(err, "failed to determine configuration file path")
 	}
+
 	if err := os.WriteFile(configYAMLPath, configYAML, 0644); err != nil {
-		logger.Errorf("Failed to write ingress config file", map[string]interface{}{
-			"tunnel": i.tunnel.GetName(),
-			"file":   configYAMLPath,
-			"error":  err.Error(),
-		})
-		return errors.NewConfigError(errors.ErrCodePermissionDenied, "failed to write tunnel configuration file", err)
+		return shared.WrapError(err, "failed to write tunnel configuration file")
 	}
-	logger.Infof("Ingress configuration file created successfully", map[string]interface{}{
-		"tunnel": i.tunnel.GetName(),
-		"file":   configYAMLPath,
-	})
+
+	logger.Info(fmt.Sprintf("Ingress configuration file created: %s", configYAMLPath))
 	return nil
 }
 
 // Down removes the Cloudflare tunnel configuration file
 func (i *IngressStep) Down(ctx context.Context) error {
-	logger.Debugf("Removing ingress configuration file", map[string]interface{}{
-		"tunnel": i.tunnel.GetName(),
-	})
+	logger.Debug(fmt.Sprintf("Removing ingress configuration for tunnel: %s", i.tunnel.GetName()))
+
 	configYAMLPath, err := i.ingressService.GetConfigurationPath(ctx, i.tunnel)
 	if err != nil {
-		logger.Errorf("Failed to determine ingress config file path for removal", map[string]interface{}{
-			"tunnel": i.tunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return errors.NewConfigError(errors.ErrCodeInvalidConfig, "failed to determine configuration file path", err)
+		return shared.WrapError(err, "failed to determine configuration file path")
 	}
+
 	if err := os.Remove(configYAMLPath); err != nil {
-		logger.Warnf("Failed to remove ingress config file", map[string]interface{}{
-			"tunnel": i.tunnel.GetName(),
-			"file":   configYAMLPath,
-			"error":  err.Error(),
-		})
-		return errors.NewConfigError(errors.ErrCodePermissionDenied, "failed to remove config file", err)
+		return shared.WrapError(err, "failed to remove config file")
 	}
-	logger.Infof("Ingress configuration file removed successfully", map[string]interface{}{
-		"tunnel": i.tunnel.GetName(),
-		"file":   configYAMLPath,
-	})
+
+	logger.Debug(fmt.Sprintf("Ingress configuration file removed: %s", configYAMLPath))
 	return nil
 }

@@ -2,11 +2,12 @@ package steps
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stupside/moley/internal/domain"
-	"github.com/stupside/moley/internal/errors"
 	"github.com/stupside/moley/internal/logger"
 	"github.com/stupside/moley/internal/services"
+	"github.com/stupside/moley/internal/shared"
 )
 
 // TunnelStep handles tunnel operations
@@ -32,38 +33,25 @@ func (t *TunnelStep) Name() string {
 
 // Up creates the tunnel and stores the tunnel ID
 func (t *TunnelStep) Up(ctx context.Context) error {
-	logger.Debugf("Creating tunnel", map[string]interface{}{
-		"tunnel": t.tunnel.GetName(),
-	})
+	logger.Info(fmt.Sprintf("Creating tunnel: %s", t.tunnel.GetName()))
+
 	tunnelId, err := t.tunnelService.CreateTunnel(ctx, t.tunnel)
 	if err != nil {
-		logger.Warnf("Tunnel creation failed", map[string]interface{}{
-			"tunnel": t.tunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return errors.NewExecutionError(errors.ErrCodeCommandFailed, "cloudflared tunnel create failed", err)
+		return shared.WrapError(err, "cloudflared tunnel create failed")
 	}
-	logger.Debugf("Tunnel created successfully", map[string]interface{}{
-		"id":     tunnelId,
-		"tunnel": t.tunnel.GetName(),
-	})
+
+	logger.Info(fmt.Sprintf("Tunnel created successfully with ID: %s", tunnelId))
 	return nil
 }
 
 // Down deletes the tunnel
 func (t *TunnelStep) Down(ctx context.Context) error {
-	logger.Debugf("Deleting tunnel", map[string]interface{}{
-		"tunnel": t.tunnel.GetName(),
-	})
+	logger.Debug(fmt.Sprintf("Deleting tunnel: %s", t.tunnel.GetName()))
+
 	if err := t.tunnelService.DeleteTunnel(ctx, t.tunnel); err != nil {
-		logger.Warnf("Tunnel deletion failed", map[string]interface{}{
-			"tunnel": t.tunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return errors.NewExecutionError(errors.ErrCodeCommandFailed, "cloudflared tunnel delete failed", err)
+		return shared.WrapError(err, "cloudflared tunnel delete failed")
 	}
-	logger.Infof("Tunnel deleted successfully", map[string]interface{}{
-		"tunnel": t.tunnel.GetName(),
-	})
+
+	logger.Debug("Tunnel deleted successfully")
 	return nil
 }

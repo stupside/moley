@@ -1,7 +1,7 @@
 package validation
 
 import (
-	"github.com/stupside/moley/internal/errors"
+	"fmt"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -14,7 +14,7 @@ var validate = validator.New()
 func ValidateStruct(s interface{}) error {
 	err := validate.Struct(s)
 	if err != nil {
-		return errors.NewValidationError(errors.ErrCodeInvalidConfig, "validation failed", err)
+		return fmt.Errorf("validation failed: %w", err)
 	}
 	return nil
 }

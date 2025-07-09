@@ -2,12 +2,12 @@ package steps
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stupside/moley/internal/domain"
 	"github.com/stupside/moley/internal/logger"
 	"github.com/stupside/moley/internal/services"
-
-	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/shared"
 )
 
 // DNSStep handles DNS record operations
@@ -36,40 +36,30 @@ func (d *DNSStep) Name() string {
 
 // Up creates DNS records for all hostnames
 func (d *DNSStep) Up(ctx context.Context) error {
-	logger.Debugf("Creating DNS records for tunnel", map[string]interface{}{
-		"tunnel":     d.tunnel.GetName(),
-		"subdomains": d.dns.GetSubdomains(),
-	})
-	if err := d.dnsService.Route(ctx, d.tunnel, d.dns); err != nil {
-		logger.Warnf("DNS record creation failed", map[string]interface{}{
-			"tunnel":     d.tunnel.GetName(),
-			"subdomains": d.dns.GetSubdomains(),
-			"error":      err.Error(),
-		})
-		return errors.NewExecutionError(errors.ErrCodeCommandFailed, "cloudflared tunnel dns create failed", err)
+	apps := d.dns.GetApps()
+	zone := d.dns.GetZone()
+
+	for _, app := range apps {
+		hostname := fmt.Sprintf("%s.%s", app.Expose.Subdomain, zone)
+		logger.Info(fmt.Sprintf("Setting up DNS record: %s → %s", hostname, app.Target.GetTargetURL()))
 	}
-	logger.Infof("DNS records created successfully", map[string]interface{}{
-		"tunnel":     d.tunnel.GetName(),
-		"subdomains": d.dns.GetSubdomains(),
-	})
+
+	if err := d.dnsService.Route(ctx, d.tunnel, d.dns); err != nil {
+		return shared.WrapError(err, "cloudflared tunnel dns create failed")
+	}
+
+	logger.Info(fmt.Sprintf("DNS records created successfully for %d app(s)", len(apps)))
 	return nil
 }
 
 // Down removes DNS records for all hostnames
 func (d *DNSStep) Down(ctx context.Context) error {
-	logger.Debugf("Deleting DNS records for tunnel", map[string]interface{}{
-		"tunnel":     d.tunnel.GetName(),
-		"subdomains": d.dns.GetSubdomains(),
-	})
+	logger.Debug(fmt.Sprintf("Deleting DNS records for tunnel: %s", d.tunnel.GetName()))
+
 	if err := d.dnsService.DeleteRecords(ctx, d.tunnel, d.dns); err != nil {
-		logger.Warnf("DNS record deletion failed", map[string]interface{}{
-			"tunnel": d.tunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return errors.NewExecutionError(errors.ErrCodeCommandFailed, "failed to delete DNS records", err)
+		return shared.WrapError(err, "failed to delete DNS records")
 	}
-	logger.Infof("DNS records deleted successfully", map[string]interface{}{
-		"tunnel": d.tunnel.GetName(),
-	})
+
+	logger.Debug("DNS records deleted successfully")
 	return nil
 }

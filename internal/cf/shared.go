@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/stupside/moley/internal/errors"
+	"github.com/stupside/moley/internal/shared"
 )
 
 // execCloudflared is an internal helper function to execute cloudflared commands
@@ -17,7 +17,7 @@ func execCloudflared(ctx context.Context, args ...string) (string, error) {
 	cmd.Stderr = &out
 
 	if err := cmd.Run(); err != nil {
-		return "", errors.NewExecutionError(errors.ErrCodeCommandFailed, fmt.Sprintf("cloudflared command failed: %s", cmd.Args), err)
+		return "", shared.WrapError(err, fmt.Sprintf("cloudflared command failed: %s", cmd.Args))
 	}
 
 	return out.String(), nil

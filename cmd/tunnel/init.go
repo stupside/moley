@@ -5,6 +5,7 @@ import (
 
 	"github.com/stupside/moley/internal/feats/tunnel"
 	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/shared"
 
 	"github.com/spf13/cobra"
 )
@@ -17,14 +18,14 @@ var InitCmd = &cobra.Command{
 }
 
 func execInit(cmd *cobra.Command, args []string) error {
-	logger.Info("Initializing tunnel configuration file")
+	logger.Info("Initializing tunnel configuration")
 
 	tunnelConfigManager := tunnel.NewTunnelConfigManager()
 
 	if err := tunnelConfigManager.Init(); err != nil {
-		return fmt.Errorf("failed to initialize tunnel configuration file: %w", err)
+		return shared.WrapError(err, "failed to initialize tunnel configuration")
 	}
 
-	logger.Info("Tunnel configuration file created")
+	logger.Info("Tunnel configuration initialized successfully")
 	return nil
 }

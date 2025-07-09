@@ -6,76 +6,72 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/stupside/moley/internal/errors"
 	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/shared"
 )
+
+// MoleyConfig represents the configuration manager for the tunnel
+var MoleyConfig *shared.BaseConfigManager[TunnelConfig]
+
+func init() {
+	MoleyConfig = NewTunnelConfigManager()
+}
 
 // Runner provides a high-level API for tunnel operations
 type Runner struct {
 	// service manages the tunnel lifecycle
 	service *Service
+	// config is the tunnel configuration
+	config *TunnelConfig
 }
 
 // NewRunner creates a new tunnel service
 func NewRunner(manager *Service) (*Runner, error) {
+	// Load the configuration
+	config, err := MoleyConfig.Load(true)
+	if err != nil {
+		return nil, shared.WrapError(err, "failed to load tunnel configuration")
+	}
+
 	return &Runner{
 		service: manager,
+		config:  config,
 	}, nil
 }
 
 // DeployAndRun deploys the tunnel and runs it until interrupted
 func (s *Runner) DeployAndRun(ctx context.Context) error {
-	logger.Debugf("Tunnel runner starting", map[string]interface{}{
-		"tunnel": s.service.tunnel.GetName(),
-	})
+	logger.Debug("Starting tunnel runner")
 
 	// Set up signal handling for graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(sigChan)
 
-	logger.Debugf("Deploying tunnel and starting service", map[string]interface{}{
-		"tunnel": s.service.tunnel.GetName(),
-	})
+	logger.Debug("Deploying tunnel")
 	if err := s.service.Deploy(ctx); err != nil {
-		logger.Errorf("Tunnel deployment failed", map[string]interface{}{
-			"tunnel": s.service.tunnel.GetName(),
-			"error":  err.Error(),
-		})
-		return errors.NewExecutionError(errors.ErrCodeCommandFailed, "tunnel deployment failed", err)
+		return shared.WrapError(err, "tunnel deployment failed")
 	}
 
 	errChan := make(chan error, 1)
 	go func() {
 		if err := s.service.Run(ctx); err != nil {
-			errChan <- errors.NewExecutionError(errors.ErrCodeCommandFailed, "tunnel service failed", err)
+			errChan <- shared.WrapError(err, "tunnel service failed")
 		}
 	}()
 
 	select {
 	case <-sigChan:
-		logger.Infof("Tunnel shutdown signal received", map[string]interface{}{
-			"tunnel": s.service.tunnel.GetName(),
-		})
+		logger.Info("Shutdown signal received, stopping tunnel")
 	case err := <-errChan:
-		logger.Errorf("Tunnel service error", map[string]interface{}{
-			"tunnel": s.service.tunnel.GetName(),
-			"error":  err.Error(),
-		})
 		return err
 	}
 
 	logger.Debug("Cleaning up tunnel resources")
 	if err := s.service.Cleanup(ctx); err != nil {
-		logger.Warnf("Tunnel cleanup completed with errors", map[string]interface{}{
-			"tunnel": s.service.tunnel.GetName(),
-			"error":  err.Error(),
-		})
 		return err
 	}
 
-	logger.Infof("Tunnel stopped and cleaned up successfully", map[string]interface{}{
-		"tunnel": s.service.tunnel.GetName(),
-	})
+	logger.Info("Tunnel stopped and cleaned up successfully")
 	return nil
 }

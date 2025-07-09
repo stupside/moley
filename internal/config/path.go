@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
+
+	"github.com/stupside/moley/internal/shared"
 )
 
 const (
@@ -15,7 +17,7 @@ func GetGlobalConfigPath() (string, error) {
 	// Get the path to the config folder
 	folderPath, err := GetGlobalFolderPath()
 	if err != nil {
-		return "", fmt.Errorf("failed to get config folder path: %w", err)
+		return "", shared.WrapError(err, "failed to get config folder path")
 	}
 
 	// Return the full path to the config file <homedir>/.moley/config.yml
@@ -26,7 +28,7 @@ func GetGlobalConfigPath() (string, error) {
 func GetGlobalFolderPath() (string, error) {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("failed to get user home directory: %w", err)
+		return "", shared.WrapError(err, "failed to get user home directory")
 	}
 
 	// Construct the path to the config folder <homedir>/.moley
@@ -34,7 +36,7 @@ func GetGlobalFolderPath() (string, error) {
 
 	// Ensure the config folder exists
 	if err := os.MkdirAll(folderPath, 0755); err != nil {
-		return "", fmt.Errorf("failed to create config folder: %w", err)
+		return "", shared.WrapError(err, "failed to create config folder")
 	}
 
 	return folderPath, nil

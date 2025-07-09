@@ -13,7 +13,7 @@ func main() {
 	logger.SetLevel(zerolog.InfoLevel)
 
 	if err := cmd.Execute(); err != nil {
-		logger.Errorf("Command execution failed", map[string]interface{}{"error": err.Error()})
+		logger.LogError(err, "Command execution failed")
 		os.Exit(1)
 	}
 }
