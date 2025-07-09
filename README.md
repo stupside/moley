@@ -1,8 +1,15 @@
 <p align="center">
-  <img src=".github/images/moley.png" alt="Moley Logo" width="200"/>
+  <img src=".github/images/moley.png" alt="Moley Logo" width="200"/><br/>
 </p>
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/stupside/moley.svg)](https://pkg.go.dev/github.com/stupside/moley)
+<div style="display:flex;justify-content:center;gap:8px">
+  <a href="https://pkg.go.dev/github.com/stupside/moley">
+    <img src="https://pkg.go.dev/badge/github.com/stupside/moley.svg" alt="Go Reference">
+  </a>
+  <a href="https://github.com/stupside/homebrew-tap/blob/main/Casks/moley.rb">
+    <img src="https://img.shields.io/badge/homebrew-install-brightgreen.svg" alt="Homebrew">
+  </a>
+</div>
 
 # Moley
 
@@ -50,25 +57,23 @@ sudo dpkg -i cloudflared-linux-amd64.deb
 # 2. Authenticate cloudflared with your Cloudflare account
 cloudflared tunnel login
 
-# 3. Clone and build Moley
-git clone <repository-url>
-cd mole
-make build
+# 3. Install Moley
+brew install --cask stupside/tap/moley
 
 # 4. Set your Cloudflare API token
-./moley config --cloudflare.token="your-api-token"
+moley config --cloudflare.token="your-api-token"
 
 # 5. Initialize Moley configuration
-./moley tunnel init
+moley tunnel init
 
 # 6. Edit the generated moley.yml file to match your requirements
 # (open moley.yml in your editor)
 
 # 7. Start the tunnel
-./moley tunnel run
+moley tunnel run
 ```
 
-For a full list of available commands and options, run `./moley --help` or `./moley <command> --help`.
+For a full list of available commands and options, run `moley --help` or `moley <command> --help`.
 
 ---
 
