@@ -1,0 +1,11 @@
+services:
+  moley:
+    build: .
+    container_name: moley
+    volumes:
+      # Configuration file for moley
+      - ./moley.yml:/root/moley.yml:ro
+      # Data directories for moley and cloudflared
+      - ./data/.moley:/root/.moley
+      - ./data/.cloudflared:/root/.cloudflared
+    command: ["--help"]
