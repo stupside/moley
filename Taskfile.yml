@@ -1,0 +1,67 @@
+version: '3'
+
+vars:
+  BINARY_NAME: moley
+  VERSION:
+    sh: git describe --tags --always --dirty
+  COMMIT:
+    sh: git rev-parse --short HEAD
+  BUILD_TIME:
+    sh: date -u '+%Y-%m-%d_%H:%M:%S'
+  LDFLAGS: -ldflags "-X 'github.com/stupide/moley/internal/version.Version={{.VERSION}}' -X 'github.com/stupide/moley/internal/version.Commit={{.COMMIT}}' -X 'github.com/stupide/moley/internal/version.BuildTime={{.BUILD_TIME}}'"
+
+tasks:
+  # Go tasks
+  go:run:
+    desc: Run the application
+    cmds:
+      - go run {{.LDFLAGS}} .
+
+  go:fmt:
+    desc: Format Go code
+    cmds:
+      - go fmt ./...
+
+  go:vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  go:test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  go:coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - go test -v -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out -o coverage.html
+
+  # Go build tasks
+  go:build:
+    desc: Build the application
+    cmds:
+      - go build {{.LDFLAGS}} -o {{.BINARY_NAME}} .
+
+  go:install:
+    desc: Install the application globally
+    deps: [build]
+    cmds:
+      - go install {{.LDFLAGS}} .
+
+  # Docker tasks
+  docker:build:
+    desc: Build Docker image
+    cmds:
+      - docker compose build
+
+  docker:moley:
+    desc: Run moley commands in Docker (pass args after --)
+    cmds:
+      - docker compose run --rm moley {{.CLI_ARGS}}
+
+  docker:cloudflared:
+    desc: Run cloudflared commands in Docker (pass args after --)
+    cmds:
+      - docker compose run --rm --entrypoint cloudflared moley {{.CLI_ARGS}}

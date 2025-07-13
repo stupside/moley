@@ -45,33 +45,39 @@ Moley offers automated setup, streamlined tunnel creation and configuration, and
 
 Get your local app online in minutes:
 
-```sh
-# 1. Install cloudflared (choose your OS)
-# macOS
-brew install cloudflare/cloudflare/cloudflared
-# Linux
-wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-sudo dpkg -i cloudflared-linux-amd64.deb
-# Windows: Download from https://github.com/cloudflare/cloudflared/releases
+### Native Installation
 
-# 2. Authenticate cloudflared with your Cloudflare account
+```sh
+# 1. Install cloudflared and authenticate
 cloudflared tunnel login
 
-# 3. Install Moley
+# 2. Install Moley
 brew install --cask stupside/tap/moley
 
-# 4. Set your Cloudflare API token
+# 3. Set your Cloudflare API token
 moley config --cloudflare.token="your-api-token"
 
-# 5. Initialize Moley configuration
+# 4. Initialize and run
 moley tunnel init
-
-# 6. Edit the generated moley.yml file to match your requirements
-# (open moley.yml in your editor)
-
-# 7. Start the tunnel
 moley tunnel run
 ```
+
+### Docker Installation
+
+```sh
+# 1. Clone the repository
+git clone https://github.com/stupside/moley.git
+cd moley
+
+# 2. Build and run setup
+task docker:build
+task docker:cloudflared -- tunnel login
+task docker:moley -- config --cloudflare.token="your-api-token"
+task docker:moley -- tunnel init
+task docker:moley -- tunnel run
+```
+
+> You can also use `docker compose run` to manually run commands. See examples above.
 
 For a full list of available commands and options, run `moley --help` or `moley <command> --help`.
 
@@ -148,37 +154,74 @@ Refer to [SECURITY.md](SECURITY.md) for comprehensive security guidelines.
 
 ## Development
 
+### Prerequisites
+
+Install [Task](https://taskfile.dev) - a modern alternative to Make:
+
+```bash
+# macOS
+brew install go-task/tap/go-task
+
+# Linux/Windows
+sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+
+# Or see https://taskfile.dev/installation/ for other options
+```
+
 ### Build Commands
 
 ```bash
-# Development build
-make build
+# Build the application
+task go:build
 
-# Global installation
-make install
+# Install globally
+task go:install
 
-# Clean build artifacts
-make clean
+# Run the application
+task go:run
 ```
 
 ### Testing
 
 ```bash
 # Run test suite
-make test
+task go:test
 
 # Generate coverage report
-make test-coverage
+task go:coverage
 ```
 
 ### Code Quality
 
 ```bash
 # Format code
-make fmt
+task go:fmt
 
 # Static analysis
-make vet
+task go:vet
+```
+
+### Docker Development
+
+```bash
+# Build Docker image
+task docker:build
+
+# Then follow the steps in [Getting Started](#getting-started) for Docker usage.
+```
+
+#### Docker Configuration
+
+Configuration is stored in local volumes:
+- `./data/.moley` - Moley user config and API tokens
+- `./data/.cloudflared` - Cloudflare tunnel authentication
+
+### Available Tasks
+
+See all available tasks:
+
+```bash
+task --list
 ```
 
 ---
