@@ -51,11 +51,6 @@ tasks:
       - go install {{.LDFLAGS}} .
 
   # Docker tasks
-  docker:build:
-    desc: Build Docker image
-    cmds:
-      - docker compose build
-
   docker:moley:
     desc: Run moley commands in Docker (pass args after --)
     cmds:

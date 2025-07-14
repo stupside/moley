@@ -19,6 +19,27 @@ builds:
       - -X 'github.com/stupside/moley/internal/version.Version={{.Version}}'
     binary: moley
 
+dockers:
+  - image_templates:
+      - "ghcr.io/stupside/moley:latest"
+      - "ghcr.io/stupside/moley:{{ .Tag }}"
+      - "ghcr.io/stupside/moley:v{{ .Major }}"
+      - "ghcr.io/stupside/moley:v{{ .Major }}.{{ .Minor }}"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+      # Labels for OCI image
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/stupside/moley"
+      # Multi-platform builds
+      - "--platform=linux/amd64,linux/arm64"
+      # Build flags for Go binaries
+      - "--build-arg=LDFLAGS=-s -w -X 'github.com/stupside/moley/internal/version.Commit={{.Commit}}' -X 'github.com/stupside/moley/internal/version.BuildTime={{.Date}}' -X 'github.com/stupside/moley/internal/version.Version={{.Version}}'"
+
 changelog:
   sort: asc
   use: git

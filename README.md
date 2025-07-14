@@ -45,8 +45,6 @@ Moley offers automated setup, streamlined tunnel creation and configuration, and
 
 Get your local app online in minutes:
 
-### Native Installation
-
 ```sh
 # 1. Install cloudflared and authenticate
 cloudflared tunnel login
@@ -65,12 +63,10 @@ moley tunnel run
 ### Docker Installation
 
 ```sh
-# 1. Clone the repository
-git clone https://github.com/stupside/moley.git
-cd moley
+# 1. Up
+docker compose up -d
 
-# 2. Build and run setup
-task docker:build
+# 2. Run cloudflared and moley
 task docker:cloudflared -- tunnel login
 task docker:moley -- config --cloudflare.token="your-api-token"
 task docker:moley -- tunnel init
@@ -200,21 +196,6 @@ task go:fmt
 # Static analysis
 task go:vet
 ```
-
-### Docker Development
-
-```bash
-# Build Docker image
-task docker:build
-
-# Then follow the steps in [Getting Started](#getting-started) for Docker usage.
-```
-
-#### Docker Configuration
-
-Configuration is stored in local volumes:
-- `./data/.moley` - Moley user config and API tokens
-- `./data/.cloudflared` - Cloudflare tunnel authentication
 
 ### Available Tasks
 
