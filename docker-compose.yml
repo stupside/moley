@@ -1,6 +1,6 @@
 services:
   moley:
-    build: .
+    image: ghcr.io/stupside/moley:latest
     container_name: moley
     volumes:
       # Configuration file for moley
