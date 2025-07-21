@@ -1,5 +1,26 @@
 # GoReleaser Dockerfile - uses pre-built binaries from build context
-FROM alpine:latest
+
+# Builder stage for cloudflared
+FROM golang:1.24.5-alpine3.22 AS cloudflared
+
+# Install build dependencies
+RUN apk --no-cache add \
+    git \
+    make \
+    gcc \
+    musl-dev
+
+# Clone cloudflared repository
+RUN git clone --depth 1 https://github.com/cloudflare/cloudflared.git /go/src/cloudflared
+
+# Set the working directory for cloudflared build
+WORKDIR /go/src/cloudflared
+
+# Build cloudflared from latest
+RUN make cloudflared
+
+# Final runtime stage
+FROM alpine:latest AS runtime
 
 # Use buildx automatic platform detection for multi-arch builds
 ARG TARGETARCH
