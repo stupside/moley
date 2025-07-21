@@ -26,21 +26,26 @@ FROM alpine:latest AS runtime
 ARG TARGETARCH
 ARG TARGETOS
 
-# Install ca-certificates and wget for cloudflared
-RUN apk --no-cache add ca-certificates wget
+# Install runtime dependencies and setup in a single layer
+RUN apk --no-cache add ca-certificates && \
+    adduser -D -s /bin/sh moley
 
-# Download and install cloudflared for the target architecture
-RUN wget -O /usr/local/bin/cloudflared \
-        "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-${TARGETOS}-${TARGETARCH}" && \
-    chmod +x /usr/local/bin/cloudflared
-
-# Set working directory
-WORKDIR /root
+# Copy cloudflared binary from builder stage
+COPY --from=cloudflared /go/src/cloudflared/cloudflared /usr/local/bin/cloudflared
 
 # Copy the pre-built binary from GoReleaser build context
-# GoReleaser will automatically provide the correct binary for each platform
-COPY moley /usr/local/bin/moley
-RUN chmod +x /usr/local/bin/moley
+# Use TARGETOS and TARGETARCH to find the correct platform-specific binary
+COPY dist/moley_${TARGETOS}_${TARGETARCH}*/moley /usr/local/bin/moley
+
+# Make binaries executable and set proper ownership in a single layer
+RUN chmod +x /usr/local/bin/cloudflared /usr/local/bin/moley && \
+    chown root:root /usr/local/bin/cloudflared /usr/local/bin/moley
+
+# Set working directory
+WORKDIR /usr/local/bin
+
+# Switch to non-root user for security
+USER moley
 
 ENTRYPOINT ["moley"]
 CMD ["--help"]
