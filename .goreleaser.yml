@@ -29,16 +29,13 @@ dockers:
     dockerfile: Dockerfile
     build_flag_templates:
       - "--pull"
-      # Labels for OCI image
+      - "--platform=linux/amd64,linux/arm64"
+      # OCI image labels
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source=https://github.com/stupside/moley"
-      # Multi-platform builds
-      - "--platform=linux/amd64,linux/arm64"
-      # Build flags for Go binaries
-      - "--build-arg=LDFLAGS=-s -w -X 'github.com/stupside/moley/internal/version.Commit={{.Commit}}' -X 'github.com/stupside/moley/internal/version.BuildTime={{.Date}}' -X 'github.com/stupside/moley/internal/version.Version={{.Version}}'"
 
 changelog:
   sort: asc
