@@ -28,6 +28,7 @@ dockers:
     use: buildx
     dockerfile: Dockerfile
     build_flag_templates:
+      - "--push"
       - "--pull"
       - "--platform=linux/amd64,linux/arm64"
       # OCI image labels

@@ -20,7 +20,7 @@ WORKDIR /go/src/cloudflared
 RUN make cloudflared
 
 # Final runtime stage
-FROM alpine:latest AS runtime
+FROM alpine:3.22.1 AS runtime
 
 # Use buildx automatic platform detection for multi-arch builds
 ARG TARGETARCH
@@ -34,8 +34,8 @@ RUN apk --no-cache add ca-certificates && \
 COPY --from=cloudflared /go/src/cloudflared/cloudflared /usr/local/bin/cloudflared
 
 # Copy the pre-built binary from GoReleaser build context
-# Use TARGETOS and TARGETARCH to find the correct platform-specific binary
-COPY dist/moley_${TARGETOS}_${TARGETARCH}*/moley /usr/local/bin/moley
+# GoReleaser provides the binary directly in the build context
+COPY moley /usr/local/bin/moley
 
 # Make binaries executable and set proper ownership in a single layer
 RUN chmod +x /usr/local/bin/cloudflared /usr/local/bin/moley && \
