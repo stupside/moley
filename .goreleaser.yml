@@ -1,6 +1,10 @@
 version: 2
 project_name: moley
 
+before: 
+  hooks:
+    - go mod tidy
+
 builds:
   - main: .
     env:
@@ -19,24 +23,17 @@ builds:
       - -X 'github.com/stupside/moley/internal/version.Version={{.Version}}'
     binary: moley
 
-dockers:
-  - image_templates:
-      - "ghcr.io/stupside/moley:latest"
-      - "ghcr.io/stupside/moley:{{ .Tag }}"
-      - "ghcr.io/stupside/moley:v{{ .Major }}"
-      - "ghcr.io/stupside/moley:v{{ .Major }}.{{ .Minor }}"
-    use: buildx
-    dockerfile: Dockerfile
-    build_flag_templates:
-      - "--push"
-      - "--pull"
-      - "--platform=linux/amd64,linux/arm64"
-      # OCI image labels
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/stupside/moley"
+kos:
+  - repositories: 
+      - ghcr.io/stupside/moley
+    tags:
+      - latest
+      - "{{.Tag}}"
+    bare: true
+    preserve_import_paths: false
+    platforms:
+      - linux/amd64
+      - linux/arm64
 
 changelog:
   sort: asc

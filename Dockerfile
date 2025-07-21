@@ -22,10 +22,6 @@ RUN make cloudflared
 # Final runtime stage
 FROM alpine:3.22.1 AS runtime
 
-# Use buildx automatic platform detection for multi-arch builds
-ARG TARGETARCH
-ARG TARGETOS
-
 # Install runtime dependencies and setup in a single layer
 RUN apk --no-cache add ca-certificates && \
     adduser -D -s /bin/sh moley
