@@ -30,6 +30,15 @@ kos:
       - latest
       - "{{.Tag}}"
     bare: true
+    labels:
+      org.opencontainers.image.url: "{{.GitURL}}"
+      org.opencontainers.image.title: "{{.ProjectName}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.licenses: "MIT"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.description: "Expose your local apps to the world—securely, instantly, and with zero hassle."
+      org.opencontainers.image.documentation: "{{.GitURL}}/blob/main/README.md"
     preserve_import_paths: false
     platforms:
       - linux/amd64
