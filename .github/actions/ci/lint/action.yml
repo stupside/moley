@@ -1,0 +1,23 @@
+name: Lint
+
+description: Run Go linting and formatting checks
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download dependencies
+      run: go mod download
+      shell: bash
+
+    - name: Run go vet
+      run: go vet ./...
+      shell: bash
+
+    - name: Check formatting
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not formatted. Run 'go fmt ./...'"
+          gofmt -s -l .
+          exit 1
+        fi
+      shell: bash
