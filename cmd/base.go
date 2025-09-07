@@ -1,43 +1,63 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/internal/platform/infrastructure/logger"
+	"github.com/stupside/moley/internal/shared"
 	"github.com/stupside/moley/internal/version"
 
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+)
+
+const (
+	logLevelFlag = "log-level"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "moley",
-	Short: "A simple CLI tool for exposing local services through Cloudflare Tunnel",
-	Long:  "Moley makes it easy to expose your local development services through Cloudflare Tunnel with your own domain names.",
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
+	Use:           "moley",
+	Short:         "Expose local services through Cloudflare Tunnel",
+	Long:          "Expose local development services through Cloudflare Tunnel using your own domain names.",
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		logLevel, err := cmd.Flags().GetString(logLevelFlag)
+		if err != nil {
+			return shared.WrapError(err, "failed to get log level")
+		}
+		logLevelValue, err := zerolog.ParseLevel(logLevel)
+		if err != nil {
+			return shared.WrapError(err, "failed to parse log level")
+		}
+		logger.InitLogger(logLevelValue)
+		return nil
+	},
 }
 
-// Execute runs the root command
 func Execute() error {
 	return rootCmd.Execute()
 }
 
 func init() {
-	// Set the version for --version flag
 	rootCmd.Version = version.Version
 
-	// Add info command
+	addLoggingFlags(rootCmd.PersistentFlags())
+
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "info",
 		Short: "Show detailed build information",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Info("Moley Build Information:")
-			logger.Info(fmt.Sprintf("  Version:    %s", version.Version))
-			logger.Info(fmt.Sprintf("  Commit:     %s", version.Commit))
-			logger.Info(fmt.Sprintf("  Build Time: %s", version.BuildTime))
+			level, _ := cmd.Flags().GetString(logLevelFlag)
+			logger.Infof("Build information", map[string]any{
+				"commit":    version.Commit,
+				"version":   version.Version,
+				"logLevel":  level,
+				"buildTime": version.BuildTime,
+			})
 		},
 	})
+}
+
+func addLoggingFlags(flags *pflag.FlagSet) {
+	flags.String(logLevelFlag, zerolog.LevelInfoValue, "Log level (trace, debug, info, warn, error, fatal, panic, disabled)")
 }

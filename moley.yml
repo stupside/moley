@@ -1,4 +1,4 @@
-zone: xonery.dev
+zone: moley.dev
 apps:
     - target:
         port: 8080
