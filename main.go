@@ -3,17 +3,17 @@ package main
 import (
 	"os"
 
-	"github.com/stupside/moley/cmd"
-	"github.com/stupside/moley/internal/logger"
+	"github.com/stupside/moley/v2/cmd"
+	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 
 	"github.com/rs/zerolog"
 )
 
 func main() {
-	logger.SetLevel(zerolog.InfoLevel)
+	logger.InitLogger(zerolog.InfoLevel)
 
 	if err := cmd.Execute(); err != nil {
-		logger.LogError(err, "Command execution failed")
+		logger.LogError(err, "Application failed to execute")
 		os.Exit(1)
 	}
 }

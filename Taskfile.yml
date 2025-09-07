@@ -8,47 +8,14 @@ vars:
     sh: git rev-parse --short HEAD
   BUILD_TIME:
     sh: date -u '+%Y-%m-%d_%H:%M:%S'
-  LDFLAGS: -ldflags "-X 'github.com/stupide/moley/internal/version.Version={{.VERSION}}' -X 'github.com/stupide/moley/internal/version.Commit={{.COMMIT}}' -X 'github.com/stupide/moley/internal/version.BuildTime={{.BUILD_TIME}}'"
+  LDFLAGS: -ldflags "-X 'github.com/stupside/moley/v2/internal/version.Version={{.VERSION}}' -X 'github.com/stupside/moley/v2/internal/version.Commit={{.COMMIT}}' -X 'github.com/stupside/moley/v2/internal/version.BuildTime={{.BUILD_TIME}}'"
 
 tasks:
-  # Go tasks
-  go:run:
-    desc: Run the application
-    cmds:
-      - go run {{.LDFLAGS}} .
-
-  go:fmt:
-    desc: Format Go code
-    cmds:
-      - go fmt ./...
-
-  go:vet:
-    desc: Run go vet
-    cmds:
-      - go vet ./...
-
-  go:test:
-    desc: Run tests
-    cmds:
-      - go test -v ./...
-
-  go:coverage:
-    desc: Run tests with coverage report
-    cmds:
-      - go test -v -coverprofile=coverage.out ./...
-      - go tool cover -html=coverage.out -o coverage.html
-
   # Go build tasks
   go:build:
     desc: Build the application
     cmds:
       - go build {{.LDFLAGS}} -o {{.BINARY_NAME}} .
-
-  go:install:
-    desc: Install the application globally
-    deps: [build]
-    cmds:
-      - go install {{.LDFLAGS}} .
 
   # Docker tasks
   docker:moley:

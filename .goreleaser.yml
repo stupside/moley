@@ -18,9 +18,9 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X 'github.com/stupside/moley/internal/version.Commit={{.Commit}}'
-      - -X 'github.com/stupside/moley/internal/version.BuildTime={{.Date}}'
-      - -X 'github.com/stupside/moley/internal/version.Version={{.Version}}'
+      - -X 'github.com/stupside/moley/v2/internal/version.Commit={{.Commit}}'
+      - -X 'github.com/stupside/moley/v2/internal/version.BuildTime={{.Date}}'
+      - -X 'github.com/stupside/moley/v2/internal/version.Version={{.Version}}'
     binary: moley
 
 kos:
@@ -57,7 +57,7 @@ changelog:
 release:
   name_template: "v{{ .Version }}"
   footer: |
-    **Full Changelog**: https://github.com/stupside/moley/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
+    **Full Changelog**: https://github.com/stupside/moley/v2/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
 
 homebrew_casks:
   - name: moley

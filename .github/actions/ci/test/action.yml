@@ -1,0 +1,14 @@
+name: Test
+
+description: Run Go tests
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download dependencies
+      run: go mod download
+      shell: bash
+
+    - name: Run tests
+      run: go test -v ./...
+      shell: bash
