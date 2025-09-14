@@ -1,7 +1,10 @@
-zone: moley.dev
-apps:
-    - target:
-        port: 8080
-        hostname: localhost
-      expose:
-        subdomain: api
+tunnel:
+    id: 17ba4975-e8f2-41c4-af61-c45fd4d6a91c
+ingress:
+    zone: xonery.dev
+    apps:
+        - target:
+            port: 8080
+            hostname: localhost
+          expose:
+            subdomain: api
