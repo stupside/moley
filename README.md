@@ -69,20 +69,24 @@ brew install --cask stupside/tap/moley
 # Authenticate with Cloudflare
 cloudflared tunnel login
 
-# Set your Cloudflare API token
+# Set your Cloudflare API token (creates ~/.moley/config.yml)
 moley config set --cloudflare.token="your-api-token"
 ```
+
+This creates your global configuration file at `~/.moley/config.yml` containing sensitive data like API tokens.
 
 ### 4. Initialize Configuration
 
 ```bash
-# Create a new tunnel configuration
+# Create a new tunnel configuration (auto-generates moley.yml with defaults)
 moley tunnel init
 ```
 
+This automatically creates a `moley.yml` file with a unique tunnel ID and example configuration.
+
 ### 5. Configure Your Apps
 
-Edit the generated `moley.yml` file:
+Edit the auto-generated `moley.yml` file to match your local services:
 
 ```yaml
 tunnel:
@@ -106,80 +110,40 @@ ingress:
 ### 6. Start Your Tunnel
 
 ```bash
-# Start the tunnel service
+# Start the tunnel service in the foreground
 moley tunnel run
 
-# Stop when done: press Ctrl-C (Moley will clean up gracefully)
+# Or run in detached mode (background)
+moley tunnel run --detach
+
+# Stop the tunnel (works for both foreground and detached)
+moley tunnel stop
+
+# Test configuration without creating resources
+moley tunnel run --dry-run
+
+# Use a custom configuration file
+moley tunnel run --config custom-config.yml
 ```
+
+**Detached Mode**: When using `--detach`, the tunnel runs in the background and you get your terminal back immediately. The tunnel continues running even if you close your terminal. Use `moley tunnel stop` to stop it later.
+
+**Smart Stop**: The stop command intelligently cleans up all resources (tunnels, DNS records, processes). It first uses the `moley.lock` file to remove tracked resources, then uses your `moley.yml` configuration to detect and remove any orphaned resources, even if the lock file is missing or corrupted.
 
 Your apps are now accessible at:
 - `https://api.yourdomain.com` → `localhost:8080`
 - `https://web.yourdomain.com` → `localhost:3000`
 
----
+### 7. Additional Commands
 
-## Architecture
+```bash
+# View version and build information
+moley --version
+moley info
 
-Moley uses **Hexagonal Architecture** (Ports & Adapters) to keep business logic separate from external dependencies, making it maintainable and testable:
-
-### Core Components
-
-- **Domain Layer**: Business entities (`Tunnel`, `Ingress`, `AppConfig`) with validation
-- **Application Layer**: Orchestration services that coordinate resource lifecycle
-- **Ports**: Interfaces defining contracts (`TunnelService`, `DNSService`)
-- **Adapters**: Cloudflare-specific implementations of the ports
-- **Framework**: Resource management with state tracking and idempotent operations
-
-### Key Features
-
-- **Resource Management Framework**: Declarative resource lifecycle with `Up`/`Down`/`Status` operations
-- **State Persistence**: `moley.lock` file tracks deployed resources for crash recovery
-- **Idempotent Operations**: Resources are only created/destroyed when needed
-- **Configuration System**: Global config (`~/.moley/config.yml`) + local config (`moley.yml`)
-- **Dry-Run Support**: Test configurations without making real changes
-- **Graceful Shutdown**: Proper cleanup on termination signals
-
-### Architecture Flow
-
+# Debug with verbose logging
+moley --log-level=debug tunnel run
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                           CLI Layer                             │
-│  moley tunnel run | moley tunnel init | moley config set        │
-└─────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────┐
-│                    Application Layer                           │
-│              Tunnel Service (orchestrates resources)           │
-└─────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────┐
-│                    Resource Framework                          │
-│    Resource Manager -> Resource Handlers -> Resource Lock      │
-│    ┌──────────────┐ ┌─────────────────┐ ┌──────────────────┐   │
-│    │ Tunnel Create│ │ Tunnel Config   │ │ DNS Records      │   │
-│    │ Handler      │ │ Handler         │ │ Handler          │   │
-│    └──────────────┘ └─────────────────┘ └──────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────┐
-│                      Ports (Interfaces)                        │
-│              TunnelService      │      DNSService               │
-└─────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────┐
-│                 Cloudflare Adapters                            │
-│     tunnel.go (cloudflared CLI) │ dns.go (Cloudflare API)      │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Resource Lifecycle
-
-1. **Parse Configuration**: Load tunnel and ingress configuration from `moley.yml`
-2. **Create Resources**: Generate resource specifications (tunnel, config, DNS records)
-3. **Diff Management**: Compare desired state vs. current state in `moley.lock`
-4. **Sequential Operations**: Execute resource operations in dependency order
-5. **State Persistence**: Update lock file with actual resource states
-6. **Graceful Cleanup**: Reverse-order teardown on shutdown
 
 ---
 
@@ -190,7 +154,7 @@ Moley uses **Hexagonal Architecture** (Ports & Adapters) to keep business logic 
 Moley uses two configuration files:
 
 1. **Global Configuration** (`~/.moley/config.yml`): Contains sensitive data like API tokens
-2. **Local Configuration** (`moley.yml`): Project-specific tunnel and ingress settings
+2. **Local Configuration** (`moley.yml`): Project-specific tunnel and ingress settings (auto-generated by `moley tunnel init`)
 
 ### Configuration Schema
 
@@ -212,12 +176,14 @@ cloudflare:
 
 ### Local Configuration (`moley.yml`)
 
+Auto-generated by `moley tunnel init` with a unique tunnel ID:
+
 ```yaml
 tunnel:
-  id: "1663c83d-8801-424f-b060-734882126071"
+  id: "1663c83d-8801-424f-b060-734882126071"  # Auto-generated UUID
 
 ingress:
-  zone: "example.com"
+  zone: "example.com"  # Edit to match your domain
   apps:
     - target:
         port: 8080
@@ -233,89 +199,50 @@ ingress:
 
 ### State Management
 
-Moley creates a `moley.lock` file that tracks deployed resources:
+Moley maintains state through a `moley.lock` file to enable intelligent resource management:
+
+**Why a lockfile?**
+- **Diff Detection**: Compare current state vs desired configuration to only update what changed
+- **Crash Recovery**: Resume operations after interruption without recreating existing resources
+- **Smart Cleanup**: Know exactly what resources to remove during `moley tunnel stop`
+- **Idempotent Operations**: Avoid duplicate resources by tracking what's already deployed
+- **Incremental Updates**: When you modify `moley.yml`, only deploy the differences
+
+**Lockfile Structure:**
 
 ```json
 {
-  "resources": {
-    "hash1": {
-      "handler": "tunnel-create",
-      "payload": "..."
+  "entries": [
+    {
+      "handler_name": "tunnel-create",
+      "data": {
+        "config": { "tunnel": { "id": "..." } },
+        "state": { "tunnel": { "id": "..." } }
+      }
     },
-    "hash2": {
-      "handler": "dns-record", 
-      "payload": "..."
+    {
+      "handler_name": "tunnel-run",
+      "data": {
+        "config": { "tunnel": { "id": "..." } },
+        "state": { "pid": 31124, "tunnel": { "id": "..." } }
+      }
+    },
+    {
+      "handler_name": "dns-record",
+      "data": {
+        "config": { "subdomain": "api", "zone": "example.com" },
+        "state": { "record_id": "..." }
+      }
     }
-  }
+  ]
 }
 ```
 
-This lockfile enables:
-- **Crash Recovery**: Resume operations after interruption
-- **Incremental Updates**: Only deploy changes, not everything
-- **Clean Teardown**: Remove only what was actually created
-
----
-
-## Commands
-
-### Global Information
-
-```bash
-# Show version and build information
-moley --version
-moley info
-
-# Adjust logging level
-moley --log-level=debug tunnel run
-```
-
-### Configuration Management
-
-```bash
-# Set Cloudflare API token (stored in ~/.moley/config.yml)
-moley config set --cloudflare.token="your-token"
-```
-
-### Tunnel Management
-
-```bash
-# Initialize a new tunnel configuration (creates moley.yml)
-moley tunnel init
-
-# Start the tunnel service (uses moley.yml by default)
-moley tunnel run
-
-# Use a custom configuration file
-moley tunnel run --config custom-config.yml
-
-```
-
-### Available Commands
-
-| Command | Description |
-|---------|-------------|
-| `moley info` | Display detailed build and configuration information |
-| `moley config set` | Set global configuration values (API tokens, etc.) |
-| `moley tunnel init` | Create a new tunnel configuration file with defaults |
-| `moley tunnel run` | Deploy and run the tunnel with current configuration |
-| `moley tunnel run --config FILE` | Deploy and run with a custom configuration file |
-| `moley tunnel run --dry-run` | Validate configuration without creating resources |
-
-### Development
-
-```bash
-# Run with dry-run mode (no actual resources created)
-moley tunnel run --dry-run
-
-# Use custom config file for different environments
-moley tunnel run --config production.yml
-
-# Use Task for development workflows
-task go:test     # Run tests
-task go:lint     # Run linting
-task go:build    # Build binary
-```
+**Key Benefits:**
+- **Efficient**: Only creates/updates/removes resources that actually changed
+- **Reliable**: Survives crashes and interruptions without losing track of resources
+- **Safe**: Prevents accidental duplicate resources or orphaned infrastructure
+- **Transparent**: You can see exactly what Moley has deployed at any time
 
 ---
 
@@ -334,8 +261,8 @@ go mod download
 # Build the binary
 go build -o moley .
 
-# Or use Task for development
-task go:build
+# Or use Task for development workflows
+task go:build    # Build binary
 ```
 
 ### Docker Development
