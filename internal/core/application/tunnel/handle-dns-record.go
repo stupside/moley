@@ -30,7 +30,7 @@ type DNSRecordHandler struct {
 	dnsService ports.DNSService
 }
 
-// Ensure DNSRecordHandler implements the typed interface
+// Ensure DNSRecordHandler implements the required interfaces
 var _ framework.ResourceHandler[DNSRecordConfig, DNSRecordState] = (*DNSRecordHandler)(nil)
 
 func newDNSRecordHandler(dnsService ports.DNSService) *DNSRecordHandler {
@@ -83,7 +83,7 @@ func (h *DNSRecordHandler) Destroy(ctx context.Context, state DNSRecordState) er
 	return nil
 }
 
-func (h *DNSRecordHandler) Status(ctx context.Context, state DNSRecordState) (domain.State, error) {
+func (h *DNSRecordHandler) CheckFromState(ctx context.Context, state DNSRecordState) (domain.State, error) {
 	exists, err := h.dnsService.RecordExists(ctx, state.Tunnel, state.Zone, state.Subdomain)
 	if err != nil {
 		return domain.StateDown, shared.WrapError(err, "failed to check DNS record existence")
@@ -99,4 +99,23 @@ func (h *DNSRecordHandler) Equals(a, b DNSRecordConfig) bool {
 	return a.Zone == b.Zone &&
 		a.Subdomain == b.Subdomain &&
 		a.Tunnel.ID == b.Tunnel.ID
+}
+
+// CheckFromConfig finds existing DNS record from config and returns state + status
+func (h *DNSRecordHandler) CheckFromConfig(ctx context.Context, config DNSRecordConfig) (DNSRecordState, domain.State, error) {
+	exists, err := h.dnsService.RecordExists(ctx, config.Tunnel, config.Zone, config.Subdomain)
+	if err != nil {
+		return DNSRecordState{}, domain.StateDown, shared.WrapError(err, "failed to check DNS record existence")
+	}
+
+	state := DNSRecordState{
+		Zone:      config.Zone,
+		Tunnel:    config.Tunnel,
+		Subdomain: config.Subdomain,
+	}
+
+	if exists {
+		return state, domain.StateUp, nil
+	}
+	return state, domain.StateDown, nil
 }

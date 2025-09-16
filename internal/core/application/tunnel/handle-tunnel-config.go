@@ -30,7 +30,7 @@ type TunnelConfigHandler struct {
 	tunnelService ports.TunnelService
 }
 
-// Ensure TunnelConfigHandler implements the typed interface
+// Ensure TunnelConfigHandler implements the required interfaces
 var _ framework.ResourceHandler[TunnelConfigConfig, TunnelConfigState] = (*TunnelConfigHandler)(nil)
 
 func newTunnelConfigHandler(tunnelService ports.TunnelService) *TunnelConfigHandler {
@@ -80,7 +80,7 @@ func (h *TunnelConfigHandler) Destroy(ctx context.Context, state TunnelConfigSta
 	return nil
 }
 
-func (h *TunnelConfigHandler) Status(ctx context.Context, state TunnelConfigState) (domain.State, error) {
+func (h *TunnelConfigHandler) CheckFromState(ctx context.Context, state TunnelConfigState) (domain.State, error) {
 	if _, err := os.Stat(state.ConfigPath); err != nil {
 		if os.IsNotExist(err) {
 			return domain.StateDown, nil
@@ -94,4 +94,29 @@ func (h *TunnelConfigHandler) Status(ctx context.Context, state TunnelConfigStat
 func (h *TunnelConfigHandler) Equals(a, b TunnelConfigConfig) bool {
 	return a.Tunnel.ID == b.Tunnel.ID &&
 		reflect.DeepEqual(a.Ingress, b.Ingress)
+}
+
+// CheckFromConfig finds existing tunnel configuration from config and returns state + status
+func (h *TunnelConfigHandler) CheckFromConfig(ctx context.Context, config TunnelConfigConfig) (TunnelConfigState, domain.State, error) {
+	configPath, err := h.tunnelService.GetConfigurationPath(ctx, config.Tunnel)
+	if err != nil {
+		return TunnelConfigState{}, domain.StateDown, shared.WrapError(err, "failed to get configuration path")
+	}
+
+	// Check if config file exists
+	if _, err := os.Stat(configPath); err != nil {
+		if os.IsNotExist(err) {
+			return TunnelConfigState{}, domain.StateDown, nil
+		}
+		return TunnelConfigState{}, domain.StateDown, shared.WrapError(err, "failed to check configuration file")
+	}
+
+	// Convert config to state
+	state := TunnelConfigState{
+		Tunnel:     config.Tunnel,
+		Ingress:    config.Ingress,
+		ConfigPath: configPath,
+	}
+
+	return state, domain.StateUp, nil
 }
