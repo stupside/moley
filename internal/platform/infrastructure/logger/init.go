@@ -27,4 +27,3 @@ func InitLogger(level zerolog.Level) {
 		},
 	}).Level(level).With().Timestamp().CallerWithSkipFrameCount(3).Logger()
 }
-
