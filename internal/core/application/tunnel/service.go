@@ -17,6 +17,8 @@ type Service struct {
 	tunnelService ports.TunnelService
 }
 
+var _ shared.Runnable = (*Service)(nil)
+
 func NewService(tunnel *domain.Tunnel, ingress *domain.Ingress, dnsService ports.DNSService, tunnelService ports.TunnelService) *Service {
 	return &Service{
 		tunnel:        tunnel,
@@ -41,12 +43,9 @@ func (s *Service) Start(ctx context.Context) error {
 		return shared.WrapError(err, "failed to start resources")
 	}
 
-	if err := s.tunnelService.Run(ctx, s.tunnel); err != nil {
-		return shared.WrapError(err, "failed to run tunnel")
-	}
-
 	logger.Info("Tunnel service started")
-	return nil
+
+	return ctx.Err()
 }
 
 func (s *Service) Stop(ctx context.Context) error {

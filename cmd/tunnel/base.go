@@ -1,22 +1,38 @@
-package cmd
+package tunnel
 
 import (
-	"github.com/stupside/moley/v2/cmd/tunnel"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var tunnelCmd = &cobra.Command{
+const (
+	dryRunFlag     = "dry-run"
+	configPathFlag = "config"
+)
+
+var Cmd = &cobra.Command{
 	Use:   "tunnel",
 	Short: "Manage Cloudflare tunnels",
-	Long:  "Create, configure, and run Cloudflare tunnels.",
 }
 
 func init() {
-	tunnelCmd.AddCommand(&cobra.Command{
+	Cmd.PersistentFlags().Bool(dryRunFlag, false, "Simulate actions without making any changes")
+	if err := viper.BindPFlag(dryRunFlag, Cmd.PersistentFlags().Lookup(dryRunFlag)); err != nil {
+		logger.Fatal("Failed to bind dry-run flag to Viper")
+	}
+
+	Cmd.PersistentFlags().String(configPathFlag, "moley.yml", "Path to the tunnel configuration file")
+	if err := viper.BindPFlag(configPathFlag, Cmd.PersistentFlags().Lookup(configPathFlag)); err != nil {
+		logger.Fatal("Failed to bind config flag to Viper")
+	}
+
+	Cmd.AddCommand(runCmd)
+
+	Cmd.AddCommand(&cobra.Command{
 		Use:   "init",
 		Short: "Initialize a new tunnel configuration file",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -28,10 +44,4 @@ func init() {
 			return nil
 		},
 	})
-
-	// Add commands to the tunnel command
-	tunnelCmd.AddCommand(tunnel.RunCmd)
-
-	// Register the tunnel command with the root command
-	rootCmd.AddCommand(tunnelCmd)
 }

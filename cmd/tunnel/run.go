@@ -12,10 +12,9 @@ import (
 )
 
 const (
-	dryRunFlag = "dry-run"
 )
 
-var RunCmd = &cobra.Command{
+var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run a Cloudflare tunnel",
 	Long:  "Run a Cloudflare tunnel with the specified configuration. This command will start the tunnel service.",
@@ -24,7 +23,7 @@ var RunCmd = &cobra.Command{
 
 func execRun(cmd *cobra.Command, args []string) error {
 	dryRun := viper.GetBool(dryRunFlag)
-	configPath := viper.GetString("config")
+	configPath := viper.GetString(configPathFlag)
 
 	logger.Infof("Starting tunnel", map[string]any{
 		"dry":    dryRun,
@@ -55,11 +54,11 @@ func execRun(cmd *cobra.Command, args []string) error {
 
 	// Extract tunnel and ingress from config
 	tunnelConfig := tunnelConfigManager.GetTunnelConfig()
-
 	tunnelService := tunnel.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel)
 
-	if err := shared.Run(cmd.Context(), tunnelService); err != nil {
-		return shared.WrapError(err, "failed to start tunnel service")
+		if err := shared.StartManaged(cmd.Context(), tunnelService); err != nil {
+			return shared.WrapError(err, "failed to start tunnel service")
+		}
 	}
 
 	logger.Info("Run completed")
@@ -67,13 +66,5 @@ func execRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	RunCmd.Flags().Bool(dryRunFlag, false, "Dry run")
-	RunCmd.Flags().String("config", "moley.yml", "Path to the configuration file")
-
-	if err := viper.BindPFlag("config", RunCmd.Flags().Lookup("config")); err != nil {
-		logger.Fatal("Failed to bind config flag to Viper")
-	}
-	if err := viper.BindPFlag(dryRunFlag, RunCmd.Flags().Lookup(dryRunFlag)); err != nil {
-		logger.Fatal("Failed to bind dry.run flag to Viper")
 	}
 }

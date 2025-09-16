@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"github.com/stupside/moley/v2/cmd/config"
+	"github.com/stupside/moley/v2/cmd/tunnel"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
 	"github.com/stupside/moley/v2/internal/version"
@@ -42,6 +44,9 @@ func init() {
 	rootCmd.Version = version.Version
 
 	addLoggingFlags(rootCmd.PersistentFlags())
+
+	rootCmd.AddCommand(config.Cmd)
+	rootCmd.AddCommand(tunnel.Cmd)
 
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "info",

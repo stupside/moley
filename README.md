@@ -325,7 +325,7 @@ task go:build    # Build binary
 
 ```bash
 # Clone the repository
-git clone https://github.com/stupside/moley/v2.git
+git clone https://github.com/stupside/moley.git
 cd moley
 
 # Install dependencies

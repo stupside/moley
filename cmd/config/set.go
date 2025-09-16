@@ -11,14 +11,14 @@ const (
 	cloudflareTokenFlag = "cloudflare.token"
 )
 
-var SetCmd = &cobra.Command{
+var setCmd = &cobra.Command{
 	Use:   "set",
 	Short: "Set Moley configuration values",
 	Long:  "Set Moley configuration values using command-line flags.",
-	RunE:  execConfig,
+	RunE:  execSet,
 }
 
-func execConfig(cmd *cobra.Command, args []string) error {
+func execSet(cmd *cobra.Command, args []string) error {
 	logger.Info("Editing configuration")
 
 	// Load global config
@@ -38,8 +38,8 @@ func execConfig(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	SetCmd.Flags().String(cloudflareTokenFlag, "", "Cloudflare API token")
-	if err := SetCmd.MarkFlagRequired(cloudflareTokenFlag); err != nil {
+	setCmd.Flags().String(cloudflareTokenFlag, "", "Cloudflare API token")
+	if err := setCmd.MarkFlagRequired(cloudflareTokenFlag); err != nil {
 		logger.LogError(err, "failed to mark flag as required")
 	}
 }

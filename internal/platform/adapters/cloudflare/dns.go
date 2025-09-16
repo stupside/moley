@@ -43,7 +43,8 @@ func (c *dnsService) GetContent(ctx context.Context, tunnel *domain.Tunnel) (str
 func (c *dnsService) RouteRecord(ctx context.Context, tunnel *domain.Tunnel, zoneName string, subdomain string) error {
 	_, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
 		cfCommand := NewCommand(ctx, "tunnel", "route", "dns", tunnel.GetName(), subdomain)
-		return cfCommand.Exec()
+		output, execErr := cfCommand.ExecSync()
+		return output, execErr
 	}, "")
 	if err != nil {
 		return shared.WrapError(err, fmt.Sprintf("failed to create DNS record for subdomain %s", subdomain))

@@ -7,46 +7,48 @@ import (
 	"github.com/stupside/moley/v2/internal/shared"
 )
 
-func (s *Service) createResourceManager(ctx context.Context) (*framework.ResourceManager, error) {
-	dnsHandler := &DNSRecordHandler{dnsService: s.dnsService}
-	tunnelCreateHandler := &TunnelCreateHandler{tunnelService: s.tunnelService}
-	tunnelConfigHandler := &TunnelConfigHandler{tunnelService: s.tunnelService}
-
-	type spec struct {
-		payload any
-		handler framework.ResourceHandler
+func (s *Service) createResourceManager(_ context.Context) (*framework.ResourceOrchestrator, error) {
+	// Create the resource orchestrator
+	orchestrator, err := framework.NewResourceOrchestrator()
+	if err != nil {
+		return nil, shared.WrapError(err, "failed to create resource orchestrator")
 	}
 
-	specs := []spec{
-		{handler: tunnelCreateHandler, payload: &TunnelCreatePayload{Tunnel: s.tunnel}},
-		{handler: tunnelConfigHandler, payload: &TunnelConfigPayload{
+	// Add tunnel creation management
+	tunnelCreateHandler := newTunnelCreateHandler(s.tunnelService)
+	tunnelCreateConfigs := []TunnelCreateConfig{
+		{Tunnel: s.tunnel},
+	}
+	framework.AddManager(orchestrator, tunnelCreateHandler, tunnelCreateConfigs)
+
+	// Add tunnel configuration management
+	tunnelConfigHandler := newTunnelConfigHandler(s.tunnelService)
+	tunnelConfigConfigs := []TunnelConfigConfig{
+		{
 			Tunnel:  s.tunnel,
 			Ingress: s.ingress,
-		}},
+		},
 	}
+	framework.AddManager(orchestrator, tunnelConfigHandler, tunnelConfigConfigs)
 
+	// Add tunnel run management
+	tunnelRunHandler := newTunnelRunHandler(s.tunnelService)
+	tunnelRunConfigs := []TunnelRunConfig{
+		{Tunnel: s.tunnel},
+	}
+	framework.AddManager(orchestrator, tunnelRunHandler, tunnelRunConfigs)
+
+	// Add DNS record management for each app
+	dnsHandler := newDNSRecordHandler(s.dnsService)
+	var dnsConfigs []DNSRecordConfig
 	for _, app := range s.ingress.Apps {
-		specs = append(specs, spec{
-			handler: dnsHandler,
-			payload: &DNSRecordPayload{
-				Tunnel:    s.tunnel,
-				Zone:      s.ingress.Zone,
-				Subdomain: app.Expose.Subdomain,
-			},
+		dnsConfigs = append(dnsConfigs, DNSRecordConfig{
+			Tunnel:    s.tunnel,
+			Zone:      s.ingress.Zone,
+			Subdomain: app.Expose.Subdomain,
 		})
 	}
+	framework.AddManager(orchestrator, dnsHandler, dnsConfigs)
 
-	handlers := make(map[string]framework.ResourceHandler, len(specs))
-	resources := make([]framework.Resource, 0, len(specs))
-
-	for _, spt := range specs {
-		r, err := framework.NewResource(ctx, spt.handler, spt.payload)
-		if err != nil {
-			return nil, shared.WrapError(err, "failed to create resource")
-		}
-		handlers[spt.handler.Name(ctx)] = spt.handler
-		resources = append(resources, *r)
-	}
-
-	return framework.NewResourceManager(handlers, resources)
+	return orchestrator, nil
 }
