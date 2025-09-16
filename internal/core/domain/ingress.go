@@ -43,4 +43,3 @@ func NewDefaultIngress() *Ingress {
 		},
 	}
 }
-
