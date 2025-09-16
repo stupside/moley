@@ -104,5 +104,5 @@ func (tro *ReconcileOperation[TConfig, TState]) Name() string {
 }
 
 func (tro *ReconcileOperation[TConfig, TState]) Stop(ctx context.Context) error {
-	return tro.manager.Stop(ctx)
+	return tro.manager.Stop(ctx, tro.configs)
 }

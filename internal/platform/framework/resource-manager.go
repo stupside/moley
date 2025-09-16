@@ -102,8 +102,8 @@ func (rm *ResourceManager[TConfig, TState]) computeActions(
 	toRemove []ResourceRecord[TConfig, TState],
 	toAdd []TConfig,
 	toUpdate []struct {
-		old ResourceRecord[TConfig, TState]
 		new TConfig
+		old ResourceRecord[TConfig, TState]
 	},
 ) {
 	// Build map of current configs
@@ -133,8 +133,8 @@ func (rm *ResourceManager[TConfig, TState]) computeActions(
 			// Check if config changed
 			if !rm.handler.Equals(currentRecord.Config, desiredConfig) {
 				toUpdate = append(toUpdate, struct {
-					old ResourceRecord[TConfig, TState]
 					new TConfig
+					old ResourceRecord[TConfig, TState]
 				}{old: currentRecord, new: desiredConfig})
 			}
 			// If config unchanged, no action needed
@@ -193,7 +193,7 @@ func (rm *ResourceManager[TConfig, TState]) addResources(
 		}
 
 		// Verify it's actually up
-		status, err := rm.handler.Status(ctx, state)
+		status, err := rm.handler.CheckFromState(ctx, state)
 		if err != nil {
 			return shared.WrapError(err, "failed to verify resource status")
 		}
@@ -204,8 +204,8 @@ func (rm *ResourceManager[TConfig, TState]) addResources(
 
 		// Add to persistent storage
 		record := ResourceRecord[TConfig, TState]{
-			Config: config,
 			State:  state,
+			Config: config,
 		}
 		if err := rm.addToRegistry(record); err != nil {
 			return shared.WrapError(err, "failed to add to registry")
@@ -218,8 +218,8 @@ func (rm *ResourceManager[TConfig, TState]) addResources(
 func (rm *ResourceManager[TConfig, TState]) updateResources(
 	ctx context.Context,
 	toUpdate []struct {
-		old ResourceRecord[TConfig, TState]
 		new TConfig
+		old ResourceRecord[TConfig, TState]
 	},
 ) error {
 	for _, update := range toUpdate {
@@ -239,7 +239,7 @@ func (rm *ResourceManager[TConfig, TState]) updateResources(
 		}
 
 		// Verify it's up
-		status, err := rm.handler.Status(ctx, newState)
+		status, err := rm.handler.CheckFromState(ctx, newState)
 		if err != nil {
 			return shared.WrapError(err, "failed to verify updated resource status")
 		}
@@ -290,14 +290,48 @@ func (rm *ResourceManager[TConfig, TState]) removeFromRegistry(record ResourceRe
 	return rm.registry.Remove(persistentEntry)
 }
 
-// Stop removes all resources managed by this typed manager
-func (rm *ResourceManager[TConfig, TState]) Stop(ctx context.Context) error {
+// Stop removes all resources managed by this typed manager (tracked + detected)
+func (rm *ResourceManager[TConfig, TState]) Stop(ctx context.Context, configs []TConfig) error {
+	// Get currently tracked resources
 	currentRecords := rm.getCurrentRecords()
 
-	logger.Debugf("Stop found resources", map[string]any{
+	// Create a map of tracked resources for efficient lookup
+	trackedMap := make(map[string]ResourceRecord[TConfig, TState])
+	for _, record := range currentRecords {
+		key := rm.getConfigKey(record.Config)
+		trackedMap[key] = record
+	}
+
+	// Collect all resources to remove (tracked + detected)
+	allResourcesToRemove := currentRecords
+
+	// Check for untracked resources matching configs
+	for _, config := range configs {
+		key := rm.getConfigKey(config)
+
+		// Skip if already tracked
+		if _, exists := trackedMap[key]; exists {
+			continue
+		}
+
+		// Try to check untracked resource directly from config
+		if state, status, err := rm.handler.CheckFromConfig(ctx, config); err == nil && status == domain.StateUp {
+			logger.Infof("Found untracked running resource", map[string]any{
+				"handler": rm.handlerName,
+			})
+
+			record := ResourceRecord[TConfig, TState]{
+				Config: config,
+				State:  state,
+			}
+			allResourcesToRemove = append(allResourcesToRemove, record)
+		}
+	}
+
+	logger.Debugf("Stop found total resources", map[string]any{
 		"handler": rm.handlerName,
-		"count":   len(currentRecords),
+		"count":   len(allResourcesToRemove),
 	})
 
-	return rm.removeResources(ctx, currentRecords)
+	return rm.removeResources(ctx, allResourcesToRemove)
 }

@@ -25,7 +25,7 @@ type TunnelCreateHandler struct {
 	tunnelService ports.TunnelService
 }
 
-// Ensure TunnelCreateHandler implements the typed interface
+// Ensure TunnelCreateHandler implements the required interfaces
 var _ framework.ResourceHandler[TunnelCreateConfig, TunnelCreateState] = (*TunnelCreateHandler)(nil)
 
 func newTunnelCreateHandler(tunnelService ports.TunnelService) *TunnelCreateHandler {
@@ -65,7 +65,7 @@ func (h *TunnelCreateHandler) Destroy(ctx context.Context, state TunnelCreateSta
 	return nil
 }
 
-func (h *TunnelCreateHandler) Status(ctx context.Context, state TunnelCreateState) (domain.State, error) {
+func (h *TunnelCreateHandler) CheckFromState(ctx context.Context, state TunnelCreateState) (domain.State, error) {
 	exists, err := h.tunnelService.TunnelExists(ctx, state.Tunnel)
 	if err != nil {
 		return domain.StateDown, shared.WrapError(err, "failed to check tunnel existence")
@@ -79,4 +79,21 @@ func (h *TunnelCreateHandler) Status(ctx context.Context, state TunnelCreateStat
 
 func (h *TunnelCreateHandler) Equals(a, b TunnelCreateConfig) bool {
 	return a.Tunnel.ID == b.Tunnel.ID
+}
+
+// CheckFromConfig finds existing tunnel from config and returns state + status
+func (h *TunnelCreateHandler) CheckFromConfig(ctx context.Context, config TunnelCreateConfig) (TunnelCreateState, domain.State, error) {
+	exists, err := h.tunnelService.TunnelExists(ctx, config.Tunnel)
+	if err != nil {
+		return TunnelCreateState{}, domain.StateDown, shared.WrapError(err, "failed to check tunnel existence")
+	}
+
+	state := TunnelCreateState{
+		Tunnel: config.Tunnel,
+	}
+
+	if exists {
+		return state, domain.StateUp, nil
+	}
+	return state, domain.StateDown, nil
 }

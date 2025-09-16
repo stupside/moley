@@ -29,7 +29,7 @@ type TunnelRunHandler struct {
 	tunnelService ports.TunnelService
 }
 
-// Ensure TunnelRunHandler implements the typed interface
+// Ensure TunnelRunHandler implements the required interfaces
 var _ framework.ResourceHandler[TunnelRunConfig, TunnelRunState] = (*TunnelRunHandler)(nil)
 
 func newTunnelRunHandler(tunnelService ports.TunnelService) *TunnelRunHandler {
@@ -67,8 +67,14 @@ func (h *TunnelRunHandler) Destroy(ctx context.Context, state TunnelRunState) er
 		"pid": state.PID,
 	})
 
-	if err := h.stopProcess(state.PID); err != nil {
-		return shared.WrapError(err, "failed to stop tunnel process")
+	process, err := os.FindProcess(state.PID)
+	if err != nil {
+		return fmt.Errorf("failed to find process %d: %w", state.PID, err)
+	}
+
+	// Try graceful termination first
+	if err := process.Signal(syscall.SIGTERM); err != nil {
+		return fmt.Errorf("failed to send SIGTERM to process %d: %w", state.PID, err)
 	}
 
 	logger.Infof("Tunnel process stopped", map[string]any{
@@ -78,44 +84,32 @@ func (h *TunnelRunHandler) Destroy(ctx context.Context, state TunnelRunState) er
 	return nil
 }
 
-func (h *TunnelRunHandler) Status(ctx context.Context, state TunnelRunState) (domain.State, error) {
-	return h.checkProcessStatus(state.PID), nil
-}
-
-func (h *TunnelRunHandler) Equals(a, b TunnelRunConfig) bool {
-	return a.Tunnel.ID == b.Tunnel.ID
-}
-
-// stopProcess gracefully stops a process with fallback to force kill
-func (h *TunnelRunHandler) stopProcess(pid int) error {
-	process, err := os.FindProcess(pid)
+func (h *TunnelRunHandler) CheckFromState(ctx context.Context, state TunnelRunState) (domain.State, error) {
+	process, err := os.FindProcess(state.PID)
 	if err != nil {
-		return fmt.Errorf("failed to find process %d: %w", pid, err)
-	}
-
-	// Try graceful termination first
-	if err := process.Signal(syscall.SIGTERM); err != nil {
-		// Process might already be dead
-		if h.checkProcessStatus(pid) == domain.StateDown {
-			return nil
-		}
-		return fmt.Errorf("failed to send SIGTERM to process %d: %w", pid, err)
-	}
-
-	return nil
-}
-
-// checkProcessStatus checks if a process is running using signal 0
-func (h *TunnelRunHandler) checkProcessStatus(pid int) domain.State {
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return domain.StateDown
+		return domain.StateDown, nil
 	}
 
 	// Send signal 0 to check if process exists and is accessible
 	if err := process.Signal(syscall.Signal(0)); err != nil {
-		return domain.StateDown
+		return domain.StateDown, nil
 	}
 
-	return domain.StateUp
+	return domain.StateUp, nil
+}
+
+// CheckFromConfig finds existing tunnel process from config and returns state + status
+func (h *TunnelRunHandler) CheckFromConfig(ctx context.Context, config TunnelRunConfig) (TunnelRunState, domain.State, error) {
+	pid := 0 // TODO: Implement a way to retrieve the PID of the running tunnel process if needed
+
+	state := TunnelRunState{
+		PID:    pid,
+		Tunnel: config.Tunnel,
+	}
+
+	return state, domain.StateUp, nil
+}
+
+func (h *TunnelRunHandler) Equals(a, b TunnelRunConfig) bool {
+	return a.Tunnel.ID == b.Tunnel.ID
 }
