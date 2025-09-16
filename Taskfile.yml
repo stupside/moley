@@ -11,6 +11,13 @@ vars:
   LDFLAGS: -ldflags "-X 'github.com/stupside/moley/v2/internal/version.Version={{.VERSION}}' -X 'github.com/stupside/moley/v2/internal/version.Commit={{.COMMIT}}' -X 'github.com/stupside/moley/v2/internal/version.BuildTime={{.BUILD_TIME}}'"
 
 tasks:
+  
+  clean: 
+    desc: Clean build artifacts
+    cmds:
+      - rm -f {{.BINARY_NAME}}
+      - cloudflared tunnel list --output json | jq -r '.[].id' | xargs -n1 -I{} cloudflared tunnel delete {}
+
   # Go build tasks
   go:build:
     desc: Build the application
