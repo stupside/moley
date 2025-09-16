@@ -13,7 +13,7 @@ type Runnable interface {
 	Start(ctx context.Context) error
 }
 
-func Run(ctx context.Context, r Runnable) error {
+func StartManaged(ctx context.Context, r Runnable) error {
 	sigCtx, cancel := signal.NotifyContext(ctx, osInterruptSignals()...)
 	defer cancel()
 
@@ -24,6 +24,7 @@ func Run(ctx context.Context, r Runnable) error {
 		if err := r.Start(sigCtx); err != nil {
 			errCh <- err
 		}
+		<-ctx.Done()
 	}()
 
 	select {

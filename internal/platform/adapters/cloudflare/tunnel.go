@@ -27,18 +27,18 @@ func NewTunnelService(config *framework.Config) *tunnelService {
 	}
 }
 
-func (c *tunnelService) Run(ctx context.Context, tunnel *domain.Tunnel) error {
+func (c *tunnelService) Run(ctx context.Context, tunnel *domain.Tunnel) (int, error) {
 	configPath, err := c.GetConfigurationPath(ctx, tunnel)
 	if err != nil {
-		return shared.WrapError(err, "failed to get tunnel configuration path")
+		return 0, shared.WrapError(err, "failed to get tunnel configuration path")
 	}
 
 	cfCommand := NewCommand(ctx, "tunnel", "--config", configPath, "run", tunnel.GetName())
-	if _, err := cfCommand.Exec(); err != nil {
-		return shared.WrapError(err, "failed to run tunnel")
+	if pid, err := cfCommand.ExecAsync(); err != nil {
+		return 0, shared.WrapError(err, "failed to run tunnel")
+	} else {
+		return pid, nil
 	}
-
-	return nil
 }
 
 func (c *tunnelService) GetID(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
@@ -64,7 +64,11 @@ func (c *tunnelService) GetToken(ctx context.Context, tunnel *domain.Tunnel) (*s
 }, error) {
 	output, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
 		cfCommand := NewCommand(ctx, "tunnel", "token", tunnel.GetName())
-		return cfCommand.Exec()
+		out, err := cfCommand.ExecSync()
+		if err != nil {
+			return "", shared.WrapError(err, "failed to get tunnel token")
+		}
+		return out, nil
 	}, base64.StdEncoding.EncodeToString(fmt.Appendf([]byte{}, `{"t":"%s","a":"%s"}`, tunnel.GetName(), tunnel.GetName())))
 	if err != nil {
 		return nil, shared.WrapError(err, "failed to get tunnel token")
@@ -97,7 +101,11 @@ func (c *tunnelService) CreateTunnel(ctx context.Context, tunnel *domain.Tunnel)
 
 	if _, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
 		cfCommand := NewCommand(ctx, "tunnel", "create", tunnel.GetName())
-		return cfCommand.Exec()
+		out, err := cfCommand.ExecSync()
+		if err != nil {
+			return "", shared.WrapError(err, "failed to create tunnel")
+		}
+		return out, nil
 	}, ""); err != nil {
 		return "", shared.WrapError(err, "failed to create tunnel")
 	}
@@ -120,7 +128,11 @@ func (c *tunnelService) DeleteTunnel(ctx context.Context, tunnel *domain.Tunnel)
 
 	if _, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
 		cfCommand := NewCommand(ctx, "tunnel", "cleanup", tunnel.GetName())
-		return cfCommand.Exec()
+		out, err := cfCommand.ExecSync()
+		if err != nil {
+			return "", shared.WrapError(err, "failed to cleanup tunnel")
+		}
+		return out, nil
 	}, ""); err != nil {
 		logger.Warn(fmt.Sprintf("Tunnel cleanup before deletion failed: %s", err.Error()))
 		return shared.WrapError(err, "failed to cleanup tunnel")
@@ -128,7 +140,11 @@ func (c *tunnelService) DeleteTunnel(ctx context.Context, tunnel *domain.Tunnel)
 
 	if _, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
 		cfCommand := NewCommand(ctx, "tunnel", "delete", tunnel.GetName())
-		return cfCommand.Exec()
+		out, err := cfCommand.ExecSync()
+		if err != nil {
+			return "", shared.WrapError(err, "failed to delete tunnel")
+		}
+		return out, nil
 	}, ""); err != nil {
 		return shared.WrapError(err, "failed to delete tunnel")
 	}
@@ -249,7 +265,7 @@ func (c *tunnelService) TunnelExists(ctx context.Context, tunnel *domain.Tunnel)
 
 	exists, err := framework.RunWithDryRunGuard(c.config, func() (bool, error) {
 		cfCommand := NewCommand(ctx, "tunnel", "list", "--output", "json")
-		output, err := cfCommand.Exec()
+		output, err := cfCommand.ExecSync()
 		if err != nil {
 			return false, shared.WrapError(err, "failed to list tunnels")
 		}

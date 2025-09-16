@@ -8,7 +8,7 @@ import (
 )
 
 type TunnelService interface {
-	Run(ctx context.Context, tunnel *domain.Tunnel) error
+	Run(ctx context.Context, tunnel *domain.Tunnel) (int, error)
 	GetID(ctx context.Context, tunnel *domain.Tunnel) (string, error)
 	GetAccountID(ctx context.Context, tunnel *domain.Tunnel) (string, error)
 	GetCredentialsPath(ctx context.Context, tunnel *domain.Tunnel) (string, error)

@@ -44,10 +44,3 @@ func NewDefaultIngress() *Ingress {
 	}
 }
 
-func (i *Ingress) GetSubdomains() []string {
-	subdomains := make([]string, 0, len(i.Apps))
-	for _, app := range i.Apps {
-		subdomains = append(subdomains, app.Expose.Subdomain)
-	}
-	return subdomains
-}
