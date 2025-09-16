@@ -11,25 +11,18 @@ import (
 	"github.com/stupside/moley/v2/internal/shared"
 )
 
-const (
-	detachFlag = "detach"
-)
-
-var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "Run a Cloudflare tunnel",
-	Long:  "Run a Cloudflare tunnel with the specified configuration. This command will start the tunnel service.",
-	RunE:  execRun,
+var stopCmd = &cobra.Command{
+	Use:   "stop",
+	Short: "Bring the tunnel down",
+	RunE:  execStop,
 }
 
-func execRun(cmd *cobra.Command, args []string) error {
-	detach := viper.GetBool(detachFlag)
+func execStop(cmd *cobra.Command, args []string) error {
 	dryRun := viper.GetBool(dryRunFlag)
-	configPath := viper.GetString(configPathFlag)
+	configPath := viper.GetString("config")
 
-	logger.Infof("Starting tunnel", map[string]any{
+	logger.Infof("Bringing tunnel down", map[string]any{
 		"dry":    dryRun,
-		"detach": detach,
 		"config": configPath,
 	})
 
@@ -57,25 +50,12 @@ func execRun(cmd *cobra.Command, args []string) error {
 
 	// Extract tunnel and ingress from config
 	tunnelConfig := tunnelConfigManager.GetTunnelConfig()
+
 	tunnelService := tunnel.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel)
 
-	if detach {
-		if err := tunnelService.Start(cmd.Context()); err != nil {
-			return shared.WrapError(err, "failed to run tunnel service")
-		}
-	} else {
-		if err := shared.StartManaged(cmd.Context(), tunnelService); err != nil {
-			return shared.WrapError(err, "failed to start tunnel service")
-		}
+	if err := tunnelService.Stop(cmd.Context()); err != nil {
+		return shared.WrapError(err, "failed to stop tunnel service")
 	}
 
-	logger.Info("Run completed")
 	return nil
-}
-
-func init() {
-	runCmd.Flags().Bool(detachFlag, false, "Run the tunnel in the background (detached mode)")
-	if err := viper.BindPFlag(detachFlag, runCmd.Flags().Lookup(detachFlag)); err != nil {
-		logger.Fatal("Failed to bind detach flag to Viper")
-	}
 }

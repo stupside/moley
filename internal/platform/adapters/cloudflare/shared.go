@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
@@ -51,6 +52,10 @@ func (c *Cloudflared) ExecAsync() (int, error) {
 	logger.Debugf("Starting cloudflared command in background", map[string]any{
 		"args": args,
 	})
+
+	c.cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
 
 	if err := c.cmd.Start(); err != nil {
 		return 0, shared.WrapError(err, fmt.Sprintf("failed to start cloudflared: %s", args))

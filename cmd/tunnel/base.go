@@ -31,6 +31,7 @@ func init() {
 	}
 
 	Cmd.AddCommand(runCmd)
+	Cmd.AddCommand(stopCmd)
 
 	Cmd.AddCommand(&cobra.Command{
 		Use:   "init",
