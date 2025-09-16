@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"syscall"
 
 	"github.com/stupside/moley/v2/internal/core/domain"
 	"github.com/stupside/moley/v2/internal/core/ports"
 	"github.com/stupside/moley/v2/internal/platform/framework"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
+	"github.com/stupside/moley/v2/internal/shared/sys"
 )
 
 // TunnelRunConfig represents the desired tunnel run configuration
@@ -73,8 +73,8 @@ func (h *TunnelRunHandler) Destroy(ctx context.Context, state TunnelRunState) er
 	}
 
 	// Try graceful termination first
-	if err := process.Signal(syscall.SIGTERM); err != nil {
-		return fmt.Errorf("failed to send SIGTERM to process %d: %w", state.PID, err)
+	if err := sys.TerminateProcess(process); err != nil {
+		return err
 	}
 
 	logger.Infof("Tunnel process stopped", map[string]any{
@@ -90,8 +90,8 @@ func (h *TunnelRunHandler) CheckFromState(ctx context.Context, state TunnelRunSt
 		return domain.StateDown, nil
 	}
 
-	// Send signal 0 to check if process exists and is accessible
-	if err := process.Signal(syscall.Signal(0)); err != nil {
+	// Check if process exists and is accessible
+	if err := sys.CheckProcessExists(process); err != nil {
 		return domain.StateDown, nil
 	}
 

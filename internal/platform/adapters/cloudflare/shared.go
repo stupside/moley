@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"syscall"
 
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
+	"github.com/stupside/moley/v2/internal/shared/sys"
 )
 
 type Cloudflared struct {
@@ -53,9 +53,7 @@ func (c *Cloudflared) ExecAsync() (int, error) {
 		"args": args,
 	})
 
-	c.cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setsid: true,
-	}
+	c.cmd.SysProcAttr = sys.GetProcessAttributes()
 
 	if err := c.cmd.Start(); err != nil {
 		return 0, shared.WrapError(err, fmt.Sprintf("failed to start cloudflared: %s", args))

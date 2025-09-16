@@ -2,10 +2,10 @@ package shared
 
 import (
 	"context"
-	"os"
 	"os/signal"
-	"syscall"
 	"time"
+
+	"github.com/stupside/moley/v2/internal/shared/sys"
 )
 
 type Runnable interface {
@@ -14,7 +14,7 @@ type Runnable interface {
 }
 
 func StartManaged(ctx context.Context, r Runnable) error {
-	sigCtx, cancel := signal.NotifyContext(ctx, osInterruptSignals()...)
+	sigCtx, cancel := signal.NotifyContext(ctx, sys.GetShutdownSignals()...)
 	defer cancel()
 
 	errCh := make(chan error, 1)
@@ -43,10 +43,6 @@ func StartManaged(ctx context.Context, r Runnable) error {
 		}
 		return nil
 	}
-}
-
-func osInterruptSignals() []os.Signal {
-	return []os.Signal{syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP}
 }
 
 func newStopContext(parent context.Context) (context.Context, context.CancelFunc) {
