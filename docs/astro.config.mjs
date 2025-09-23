@@ -3,8 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-	base: "/moley/",
-	site: "https://stupside.github.io/moley",
+	base: "/",
+	site: "https://moley.dev",
 	server: {
 		allowedHosts: [".localhost", ".xonery.dev", ".moley.dev"],
 	},
