@@ -1,0 +1,198 @@
+---
+import Card from "../components/content/layout/Card.astro";
+import Hero from "../components/features/Hero.astro";
+import SearchEngines from "../components/layout/SearchEngines.astro";
+import Icon from "../components/ui/Icon/Icon.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const heroData = {
+  title: "Expose localhost on ",
+  titleAccent: "your domain",
+  subtitle:
+    "Simple Cloudflare Tunnels management. Make localhost available on your own Cloudflare domain with one command.",
+  logo: {
+    src: "/moley.png",
+    alt: "Moley Logo",
+    width: 120,
+    height: 120,
+  },
+  badges: [
+    { text: "Your Domain" },
+    { text: "One Command" },
+    { text: "No Port Forwarding" },
+    { text: "HTTPS Included" },
+  ],
+};
+
+const comparisonData = {
+  problem: {
+    title: "Without Moley",
+    subtitle: "Exposing localhost with Cloudflare Tunnels is painful",
+    features: [
+      { text: "Manual tunnel creation for each project" },
+      { text: "Complex YAML configuration files" },
+      { text: "Managing DNS records manually" },
+      { text: "Remembering cleanup commands" },
+      { text: "Losing track of running tunnels" },
+    ],
+    result: "You end up using paid services or limited free tiers instead.",
+  },
+  solution: {
+    title: "With Moley",
+    subtitle: "One command turns localhost into your domain",
+    features: [
+      { emphasis: "One command", text: " - everything happens automatically" },
+      {
+        emphasis: "Auto DNS setup",
+        text: " - subdomain points to your tunnel",
+      },
+      {
+        emphasis: "Smart cleanup",
+        text: " - tunnels auto-stop when process ends",
+      },
+      {
+        emphasis: "No monthly fees",
+        text: " - CF tunnels provide what paid services charge for",
+      },
+    ],
+    result: "Share localhost on your own Cloudflare domain in seconds.",
+  },
+};
+
+const docs = [
+  {
+    type: "card" as const,
+    title: "Installation",
+    href: "/docs/installation/",
+    icon: "download" as const,
+  },
+  {
+    type: "card" as const,
+    title: "Quick Start",
+    href: "/docs/quick-start/",
+    icon: "zap" as const,
+  },
+];
+
+const title =
+  "Moley – Expose Localhost with Cloudflare Tunnels & Custom Domains";
+
+const description =
+  "Expose your localhost instantly with Moley using Cloudflare Tunnels and custom domains. Secure, automated setup with zero extra infrastructure.";
+---
+
+<BaseLayout class="bg-gray-50">
+  <SearchEngines
+    slot="head"
+    title={title}
+    description={description}
+    type="website"
+  />
+
+  <Hero {...heroData} />
+
+  <!-- CostSavings Section -->
+  <section class="py-4 sm:py-6">
+    <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-sm text-gray-600">
+        <span class="font-semibold text-gray-900"
+          >Get for free what others charge for:</span
+        > Professional tunneling - just bring your domain
+      </p>
+      <p class="mt-3 text-sm text-gray-500 font-medium">
+        <span class="line-through">ngrok</span> • <span class="line-through"
+          >localtunnel</span
+        > • <span class="line-through">serveo</span> • <span
+          class="line-through">expose</span
+        >
+      </p>
+    </div>
+  </section>
+
+  <!-- Comparison Section -->
+  <section class="py-4 sm:py-6">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div class="grid gap-16 lg:grid-cols-2 lg:gap-20 items-center">
+        <!-- Solution Side - Enhanced (First) -->
+        <div class="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+          <h3 class="text-2xl font-bold tracking-tight text-gray-900 mb-4">
+            {comparisonData.solution.title}
+          </h3>
+          <p class="text-gray-600 mb-8">
+            {comparisonData.solution.subtitle}
+          </p>
+
+          <ul class="space-y-4 mb-8">
+            {
+              comparisonData.solution.features.map((feature) => (
+                <li class="flex items-start">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-white mt-0.5">
+                    <Icon name="check" size="sm" />
+                  </span>
+                  <span class="ml-3 text-gray-900 font-medium">
+                    {feature.emphasis && (
+                      <strong class="text-gray-900">{feature.emphasis}</strong>
+                    )}
+                    {feature.text}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-gray-900 font-semibold">
+              {comparisonData.solution.result}
+            </p>
+          </div>
+        </div>
+
+        <!-- Problem Side (Second) -->
+        <div>
+          <h3 class="text-2xl font-bold tracking-tight text-gray-900 mb-4">
+            {comparisonData.problem.title}
+          </h3>
+          <p class="text-gray-600 mb-8">
+            {comparisonData.problem.subtitle}
+          </p>
+
+          <ul class="space-y-4 mb-8">
+            {
+              comparisonData.problem.features.map((feature) => (
+                <li class="flex items-start">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-500 mt-0.5">
+                    <Icon name="x" size="sm" />
+                  </span>
+                  <span class="ml-3 text-gray-600">{feature.text}</span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="text-gray-600">
+            <p class="italic">
+              {comparisonData.problem.result}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white py-4 sm:py-6">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900">
+          Get Started
+        </h2>
+        <p class="mt-4 text-lg text-gray-600">
+          Everything you need to start exposing your local apps securely
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-8 sm:grid-cols-2">
+        {docs.map((doc) => <Card content={doc} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

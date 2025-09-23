@@ -1,0 +1,26 @@
+---
+import SearchEngines from "../components/layout/SearchEngines.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout class="bg-gray-50">
+  <SearchEngines
+    slot="head"
+    title="Page Not Found - Moley"
+    description="The page you're looking for doesn't exist."
+  />
+
+  <section class="py-16 sm:py-24 min-h-screen flex items-center">
+    <div class="text-center w-full">
+      <h1
+        class="text-4xl sm:text-5xl lg:text-6xl text-gray-900 font-bold tracking-tight mb-4"
+      >
+        404 <span class="text-gray-600">Not Found</span>
+      </h1>
+
+      <p class="text-lg mx-auto max-w-2xl mb-8 text-gray-600">
+        The page you're looking for doesn't exist.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

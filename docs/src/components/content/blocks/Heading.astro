@@ -1,0 +1,30 @@
+---
+import type { HeadingBlock } from "../../../types/content.js";
+import { createSlug } from "../../../utils/content.js";
+
+export interface Props {
+	content: HeadingBlock;
+}
+
+const { content } = Astro.props;
+
+const headingClasses = {
+	1: "text-4xl font-bold text-gray-900 mb-6",
+	2: "text-3xl font-bold text-gray-900 mb-4 mt-8",
+	3: "text-2xl font-semibold text-gray-900 mb-3 mt-6",
+	4: "text-xl font-semibold text-gray-900 mb-2 mt-4",
+	5: "text-lg font-semibold text-gray-900 mb-2 mt-4",
+	6: "text-base font-semibold text-gray-900 mb-2 mt-4",
+};
+
+const headingId =
+	content.id || (content.text ? createSlug(content.text) : undefined);
+const headingClass = `${headingClasses[content.level]} ${content.className || ""}`;
+---
+
+{content.level === 1 && <h1 class={headingClass} id={headingId}>{content.text}</h1>}
+{content.level === 2 && <h2 class={headingClass} id={headingId}>{content.text}</h2>}
+{content.level === 3 && <h3 class={headingClass} id={headingId}>{content.text}</h3>}
+{content.level === 4 && <h4 class={headingClass} id={headingId}>{content.text}</h4>}
+{content.level === 5 && <h5 class={headingClass} id={headingId}>{content.text}</h5>}
+{content.level === 6 && <h6 class={headingClass} id={headingId}>{content.text}</h6>}

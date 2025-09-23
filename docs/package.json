@@ -1,0 +1,29 @@
+{
+	"name": "moley-docs",
+	"type": "module",
+	"version": "1.0.0",
+	"packageManager": "yarn@4.0.0",
+	"scripts": {
+		"astro": "astro",
+		"astro:dev": "astro dev",
+		"astro:check": "astro check && tsc --noEmit",
+		"astro:build": "astro build",
+		"astro:preview": "astro preview",
+		"biome:fix": "biome format . --write",
+		"biome:check": "biome check . --fix"
+	},
+	"dependencies": {
+		"@astrojs/sitemap": "^3.6.0",
+		"@lucide/astro": "^0.544.0",
+		"@tailwindcss/vite": "^4.1.13",
+		"astro": "^5.13.10",
+		"tailwindcss": "^4.1.13",
+		"zod": "^4.1.11"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.4",
+		"@biomejs/biome": "^2.2.4",
+		"@types/node": "^24.5.2",
+		"typescript": "^5.9.2"
+	}
+}

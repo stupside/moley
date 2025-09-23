@@ -1,0 +1,16 @@
+---
+import type { TabBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: TabBlock;
+}
+
+const { content } = Astro.props;
+---
+
+<div class={`space-y-3 ${content.className || ''}`} id={content.id}>
+  {content.children?.map(child => (
+    <ContentRenderer content={child} />
+  ))}
+</div>

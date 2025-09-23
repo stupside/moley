@@ -1,0 +1,44 @@
+---
+import "../app.css";
+import Footer from "../components/layout/Footer.astro";
+import Header from "../components/layout/Header.astro";
+
+export interface Props {
+	class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-pt-20">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO and head content managed by pages -->
+    <slot name="head" />
+
+    <!-- View transition styles -->
+    <style define:vars={{ transitionDuration: "0.3s" }}>
+      @view-transition {
+        navigation: auto;
+      }
+
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: var(--transitionDuration);
+      }
+    </style>
+  </head>
+
+  <body class={`bg-white text-gray-900 font-sans antialiased ${className}`}>
+    <Header currentPath={Astro.url.pathname} />
+
+    <main class="relative">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

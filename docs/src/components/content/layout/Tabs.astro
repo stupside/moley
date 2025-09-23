@@ -1,0 +1,78 @@
+---
+import type { TabBlock, TabsBlock } from "../../../types/content.js";
+import { createSlug } from "../../../utils/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: TabsBlock;
+}
+
+const { content } = Astro.props;
+const tabs: TabBlock[] = content.children || [];
+const tabsId =
+	content.id || createSlug(`tabs-${tabs.map((t) => t.title).join("-")}`);
+---
+
+<div class={`mb-6 ${content.className || ""}`} id={content.id} data-tabs-container={tabsId}>
+  <div class="flex border-b border-gray-200" role="tablist">
+    {tabs.map((tab, index) => (
+      <button
+        class={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          index === 0
+            ? "border-gray-800 text-gray-800"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+        data-tab-index={index}
+        aria-selected={index === 0}
+        role="tab"
+      >
+        {tab.title}
+      </button>
+    ))}
+  </div>
+
+  <div class="mt-4">
+    {tabs.map((tab, index) => (
+      <div
+        class={index === 0 ? "block" : "hidden"}
+        data-tab-panel={index}
+        id={`${tabsId}-panel-${index}`}
+      >
+        <ContentRenderer content={tab} />
+      </div>
+    ))}
+  </div>
+</div>
+
+<script is:inline define:vars={{ tabs, tabsId }}>
+  const ACTIVE_TAB_CLASSES = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors border-gray-800 text-gray-800';
+  const INACTIVE_TAB_CLASSES = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors border-transparent text-gray-500 hover:text-gray-700';
+
+  function handleTabClick(event) {
+    const button = event.target;
+    if (!button?.hasAttribute('data-tab-index')) return;
+
+    const activeIndex = parseInt(button.getAttribute('data-tab-index'));
+    const container = document.querySelector(`[data-tabs-container="${tabsId}"]`);
+    if (!container) return;
+
+    // Update all tabs using data instead of DOM traversal
+    tabs.forEach((_, index) => {
+      const tabButton = container.querySelector(`[data-tab-index="${index}"]`);
+      const tabPanel = container.querySelector(`[data-tab-panel="${index}"]`);
+
+      if (tabButton && tabPanel) {
+        const isActive = index === activeIndex;
+
+        // Update button
+        tabButton.className = isActive ? ACTIVE_TAB_CLASSES : INACTIVE_TAB_CLASSES;
+        tabButton.setAttribute('aria-selected', String(isActive));
+
+        // Update panel
+        tabPanel.className = isActive ? 'block' : 'hidden';
+      }
+    });
+  }
+
+  document.addEventListener('click', handleTabClick);
+</script>

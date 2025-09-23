@@ -1,0 +1,22 @@
+---
+import type { LinkBlock } from "../../../types/content.js";
+
+export interface Props {
+	content: LinkBlock;
+}
+
+const { content } = Astro.props;
+
+const linkProps = content.external
+	? { target: "_blank", rel: content.rel || "noopener noreferrer nofollow" }
+	: {};
+---
+
+<a
+  href={content.href}
+  class={`text-gray-700 hover:text-gray-900 underline ${content.className || ''}`}
+  id={content.id}
+  {...linkProps}
+>
+  {content.text}
+</a>

@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+
+# Test binary, built with `go build` or `go install`
 moley
 
 # Test binary, built with `go test -c`
@@ -46,3 +48,5 @@ cloudflared.log
 # Temporary files
 *.tmp
 *.temp 
+
+# Docs

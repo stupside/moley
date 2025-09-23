@@ -1,0 +1,70 @@
+---
+import type { PageDefinition } from "../../types/content.js";
+import { extractTocItems } from "../../utils/content.js";
+
+export interface Props {
+	page: PageDefinition;
+}
+
+const { page } = Astro.props;
+
+const items = extractTocItems(page.content);
+---
+
+{
+  items.length > 0 && (
+    <nav class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto border-l border-gray-200 pl-4">
+      <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+        On this page
+      </h3>
+      <ul class="space-y-2 text-sm">
+        {items.map((item) => (
+          <li class={item.level > 2 ? "ml-4" : ""}>
+            <a
+              href={`#${item.id}`}
+              class="block text-gray-600 hover:text-gray-900 transition-colors py-1"
+              data-toc-link={item.id}
+            >
+              {item.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script is:inline define:vars={{ tocItems: items }}>
+  const SCROLL_OFFSET = 100;
+
+  const ACTIVE_CLASSES =
+    "block text-gray-900 font-medium transition-colors py-1";
+  const INACTIVE_CLASSES =
+    "block text-gray-600 hover:text-gray-900 transition-colors py-1";
+
+  const findActiveHeading = () => {
+    const scrollY = window.scrollY + SCROLL_OFFSET;
+    const active = [];
+
+    for (const item of tocItems) {
+      const element = document.getElementById(item.id);
+      if (element && element.offsetTop <= scrollY) {
+        active.push(item.id);
+      }
+    }
+    return active.length ? active[active.length - 1] : null;
+  };
+
+  const updateActiveLink = () => {
+    const links = document.querySelectorAll("[data-toc-link]");
+
+    links.forEach((link) => {
+      const isActive =
+        link.getAttribute("data-toc-link") === findActiveHeading();
+      link.className = isActive ? ACTIVE_CLASSES : INACTIVE_CLASSES;
+    });
+  };
+
+  document.addEventListener("scroll", updateActiveLink);
+  document.addEventListener("DOMContentLoaded", updateActiveLink);
+</script>

@@ -1,0 +1,31 @@
+---
+import type { ListBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: ListBlock;
+}
+
+const { content } = Astro.props;
+
+const isOrdered = content.style === "ordered";
+const baseClasses = "list-inside text-gray-700 space-y-1 mb-4";
+const listClasses = isOrdered
+	? `list-decimal ${baseClasses}`
+	: `list-disc ${baseClasses}`;
+const finalClasses = `${listClasses} ${content.className || ""}`;
+---
+
+{isOrdered ? (
+  <ol class={finalClasses} id={content.id}>
+    {content.children?.map(child => (
+      <ContentRenderer content={child} />
+    ))}
+  </ol>
+) : (
+  <ul class={finalClasses} id={content.id}>
+    {content.children?.map(child => (
+      <ContentRenderer content={child} />
+    ))}
+  </ul>
+)}

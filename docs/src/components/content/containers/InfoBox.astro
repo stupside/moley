@@ -1,0 +1,30 @@
+---
+import type { InfoBoxBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: InfoBoxBlock;
+}
+
+const { content } = Astro.props;
+
+const styles = {
+	info: "bg-blue-50 border-blue-200",
+	warning: "bg-amber-50 border-amber-200",
+	error: "bg-red-50 border-red-200",
+	tip: "bg-green-50 border-green-200",
+	note: "bg-gray-50 border-gray-200",
+};
+
+const style = content.style && content.style in styles ? content.style : "info";
+---
+
+<div class={`${styles[style]} border rounded-lg p-4 mb-4 space-y-2 ${content.className || ''}`} id={content.id}>
+  {content.title && (
+    <h4 class="font-semibold text-gray-900">{content.title}</h4>
+  )}
+
+  {content.children?.map(child => (
+    <ContentRenderer content={child} />
+  ))}
+</div>

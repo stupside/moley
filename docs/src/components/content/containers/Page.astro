@@ -1,0 +1,16 @@
+---
+import type { PageBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: PageBlock;
+}
+
+const { content } = Astro.props;
+---
+
+<div class={content.className} id={content.id}>
+  {content.children?.map(child => (
+    <ContentRenderer content={child} />
+  ))}
+</div>

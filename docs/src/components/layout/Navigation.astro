@@ -1,0 +1,39 @@
+---
+export interface NavItem {
+	href: string;
+	label: string;
+	external?: boolean;
+}
+
+export interface Props {
+	class?: string;
+	items: readonly NavItem[];
+	currentPath: string;
+}
+
+const { items, currentPath, class: className = "" } = Astro.props;
+
+const getLinkClasses = (href: string) => {
+	const baseClasses =
+		"rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100";
+	const activeClasses =
+		currentPath === href
+			? "bg-gray-100 text-gray-900"
+			: "text-gray-600 hover:text-gray-900";
+
+	return `${baseClasses} ${activeClasses}`;
+};
+---
+
+<nav class={`flex items-center space-x-1 ${className}`}>
+  {items.map((item) => (
+    <a
+      href={item.href}
+      class={getLinkClasses(item.href)}
+      target={item.external ? '_blank' : undefined}
+      rel={item.external ? 'noopener noreferrer' : undefined}
+    >
+      {item.label}
+    </a>
+  ))}
+</nav>

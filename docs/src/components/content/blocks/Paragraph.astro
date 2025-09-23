@@ -1,0 +1,17 @@
+---
+import type { ParagraphBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: ParagraphBlock;
+}
+
+const { content } = Astro.props;
+---
+
+<p class={`text-gray-700 mb-4 ${content.className || ''}`} id={content.id}>
+  {content.text}
+  {content.children?.map(child => (
+    <ContentRenderer content={child} />
+  ))}
+</p>

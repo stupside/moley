@@ -1,0 +1,49 @@
+---
+import type { CardBlock } from "../../../types/content.js";
+import Icon from "../../ui/Icon/Icon.astro";
+
+export interface Props {
+	content: CardBlock;
+}
+
+const { content } = Astro.props;
+
+const linkProps = content.external
+	? { target: "_blank", rel: "noopener noreferrer" }
+	: {};
+---
+
+<div class={`h-full bg-white border border-gray-200 rounded-lg p-6 group cursor-pointer hover:border-gray-300 transition-colors ${content.className || ''}`} id={content.id}>
+  <a href={content.href} {...linkProps} class="block h-full">
+    <div class="flex h-full">
+      {content.icon && (
+        <div class="flex-shrink-0 mr-4 mt-1">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors duration-200">
+            <Icon name={content.icon} size="md" />
+          </div>
+        </div>
+      )}
+
+      <div class="flex-1 min-w-0 flex flex-col">
+        <h3 class="text-lg font-bold text-gray-900 mb-2">
+          <div class="flex items-center">
+            {content.title}
+            {content.external && (
+              <Icon name="link" size="xs" class="ml-1" />
+            )}
+          </div>
+        </h3>
+
+        {content.description && (
+          <p class="text-gray-600 flex-1">
+            {content.description}
+          </p>
+        )}
+      </div>
+
+      <div class="flex-shrink-0 ml-4 flex items-center">
+        <Icon name="chevron-right" size="md" />
+      </div>
+    </div>
+  </a>
+</div>

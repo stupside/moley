@@ -1,0 +1,37 @@
+---
+import type { SectionBlock } from "../../../types/content.js";
+import { createSlug } from "../../../utils/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: SectionBlock;
+}
+
+const { content } = Astro.props;
+
+const spacingClasses = {
+	none: "",
+	small: "mb-4",
+	medium: "mb-8",
+	large: "mb-12",
+} as const;
+
+const spacing =
+	content.spacing && content.spacing in spacingClasses
+		? content.spacing
+		: "medium";
+const sectionClass = `${content.border ? "border-l-4 border-gray-200 pl-6" : ""} ${spacingClasses[spacing]} ${content.className || ""}`;
+
+const sectionId =
+	content.id || (content.title ? createSlug(content.title) : undefined);
+---
+
+<section class={sectionClass} id={sectionId}>
+  {content.title && (
+    <h2 class="section-title text-2xl font-bold text-gray-900 mb-4" id={sectionId}>{content.title}</h2>
+  )}
+
+  {content.children?.map(child => (
+    <ContentRenderer content={child} />
+  ))}
+</section>

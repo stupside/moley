@@ -1,0 +1,44 @@
+---
+/**
+ * Modern Header component with atomic design
+ */
+
+import { config } from "../../config.js";
+import Icon from "../ui/Icon/Icon.astro";
+import Navigation from "./Navigation.astro";
+
+export interface Props {
+	currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+const items = config.navigation.getItems();
+---
+
+<header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all duration-200">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-16 items-center justify-between">
+      <!-- Logo -->
+      <a href="/" class="transition-opacity hover:opacity-80">
+        <span class="font-bold text-gray-900">{config.site.name}</span>
+      </a>
+
+      <!-- Navigation -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <Navigation items={items} currentPath={currentPath} />
+
+        <!-- GitHub button -->
+        <a
+          href={config.site.repo.url}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          class="inline-flex items-center space-x-1 sm:space-x-2 rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 hover:shadow-md"
+        >
+          <Icon name="github" size="sm" />
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

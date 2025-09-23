@@ -1,0 +1,71 @@
+---
+/**
+ * Modern Hero component using atomic design
+ */
+
+// Inlined simple components to avoid over-engineering
+
+export interface Badge {
+	text: string;
+}
+
+export interface Logo {
+	src: string;
+	alt: string;
+	width?: number;
+	height?: number;
+}
+
+export interface Props {
+	title: string;
+	titleAccent: string;
+	subtitle: string;
+	logo?: Logo;
+	badges?: Badge[];
+	class?: string;
+}
+
+const {
+	title,
+	titleAccent,
+	subtitle,
+	logo,
+	badges = [],
+	class: className = "",
+} = Astro.props;
+---
+
+<section class={`bg-white py-8 sm:py-12 relative overflow-hidden bg-gradient-to-br from-gray-50 to-white ${className}`}>
+  <div class="text-center">
+    {logo && (
+      <img
+        src={logo.src}
+        alt={logo.alt}
+        width={logo.width}
+        height={logo.height}
+        class="mx-auto mb-6"
+      />
+    )}
+
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl text-gray-900 font-bold tracking-tight mb-4">
+      {title}
+      <span class="text-gray-600">{titleAccent}</span>
+    </h1>
+
+    <p class="text-lg mx-auto max-w-2xl mb-6 text-gray-600">
+      {subtitle}
+    </p>
+
+    {badges.length > 0 && (
+      <div class="flex flex-wrap justify-center gap-3 text-sm font-medium">
+        {badges.map((badge) => (
+          <span class="rounded-full bg-gray-100 px-4 py-2 text-gray-700">
+            {badge.text}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <slot />
+  </div>
+</section>

@@ -1,0 +1,35 @@
+---
+import type { StepBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: StepBlock;
+}
+
+const { content } = Astro.props;
+
+const stepNumber = content.number || 1;
+const stepId =
+	content.id ||
+	content.title
+		.toLowerCase()
+		.replace(/[^\w\s-]/g, "")
+		.replace(/\s+/g, "-");
+---
+
+<div class={`border-l-4 border-gray-200 pl-6 mb-8 ${content.className || ''}`} id={content.id}>
+  <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center" id={stepId}>
+    <span class="inline-flex items-center justify-center w-8 h-8 bg-gray-800 text-white rounded-full text-sm font-semibold mr-3">
+      {stepNumber}
+    </span>
+    {content.title}
+  </h3>
+
+  {content.description && (
+    <p class="text-gray-600 mb-4">{content.description}</p>
+  )}
+
+  {content.children?.map(child => (
+    <ContentRenderer content={child} />
+  ))}
+</div>

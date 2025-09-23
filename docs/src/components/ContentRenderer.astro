@@ -1,0 +1,81 @@
+---
+import type { ContentBlock } from "../types/content.js";
+import CodeBlock from "./content/blocks/CodeBlock.astro";
+// Block components
+import Heading from "./content/blocks/Heading.astro";
+import ListItem from "./content/blocks/ListItem.astro";
+import Paragraph from "./content/blocks/Paragraph.astro";
+import Callout from "./content/containers/Callout.astro";
+import InfoBox from "./content/containers/InfoBox.astro";
+import Page from "./content/containers/Page.astro";
+// Container components
+import Section from "./content/containers/Section.astro";
+import Step from "./content/containers/Step.astro";
+import Card from "./content/layout/Card.astro";
+import Grid from "./content/layout/Grid.astro";
+// Layout components
+import List from "./content/layout/List.astro";
+import Tab from "./content/layout/Tab.astro";
+import Tabs from "./content/layout/Tabs.astro";
+import InlineCode from "./content/text/InlineCode.astro";
+import Link from "./content/text/Link.astro";
+// Text components
+import Text from "./content/text/Text.astro";
+
+export interface Props {
+	content: ContentBlock;
+}
+
+const { content } = Astro.props;
+---
+
+{
+  (() => {
+    switch (content.type) {
+      // Text components
+      case "text":
+        return <Text content={content} />;
+      case "inline-code":
+        return <InlineCode content={content} />;
+      case "link":
+        return <Link content={content} />;
+
+      // Block components
+      case "heading":
+        return <Heading content={content} />;
+      case "paragraph":
+        return <Paragraph content={content} />;
+      case "codeblock":
+        return <CodeBlock content={content} />;
+      case "listitem":
+        return <ListItem content={content} />;
+
+      // Layout components
+      case "list":
+        return <List content={content} />;
+      case "card":
+        return <Card content={content} />;
+      case "grid":
+        return <Grid content={content} />;
+      case "tabs":
+        return <Tabs content={content} />;
+      case "tab":
+        return <Tab content={content} />;
+
+      // Container components
+      case "section":
+        return <Section content={content} />;
+      case "step":
+        return <Step content={content} />;
+      case "infobox":
+        return <InfoBox content={content} />;
+      case "callout":
+        return <Callout content={content} />;
+      case "page":
+        return <Page content={content} />;
+
+      default:
+        return null;
+    }
+  })()
+}

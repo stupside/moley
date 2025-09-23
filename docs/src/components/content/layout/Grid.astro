@@ -1,0 +1,35 @@
+---
+import type { GridBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: GridBlock;
+}
+
+const { content } = Astro.props;
+
+const gapClasses = {
+	none: "gap-0",
+	small: "gap-2",
+	medium: "gap-6",
+	large: "gap-8",
+} as const;
+
+const colClasses: Record<number, string> = {
+	1: "md:grid-cols-1",
+	2: "md:grid-cols-2",
+	3: "md:grid-cols-3",
+	4: "md:grid-cols-4",
+};
+
+const gap = content.gap && content.gap in gapClasses ? content.gap : "medium";
+const gridClass = `grid grid-cols-1 ${colClasses[content.columns] || ""} ${gapClasses[gap]} mb-6 ${content.className || ""}`;
+---
+
+<div class={gridClass} id={content.id} style={colClasses[content.columns] ? undefined : `grid-template-columns: repeat(${content.columns}, minmax(0, 1fr));`}>
+  {content.children?.map(child => (
+    <div class="h-full">
+      <ContentRenderer content={child} />
+    </div>
+  ))}
+</div>

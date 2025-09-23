@@ -1,0 +1,25 @@
+---
+import { Code } from "astro:components";
+import type { CodeBlock } from "../../../types/content.js";
+
+export interface Props {
+	content: CodeBlock;
+}
+
+const { content } = Astro.props;
+---
+
+<div class={`my-6 ${content.className || ''}`} id={content.id}>
+  {content.title && (
+    <div class="bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 border border-b-0 border-gray-200 rounded-t-lg">
+      {content.title}
+    </div>
+  )}
+  <div class={content.title ? "rounded-b-lg border border-gray-200 border-t-0 overflow-hidden" : "rounded-lg border border-gray-200 overflow-hidden"}>
+    <Code
+      code={content.code}
+      lang={content.language}
+      theme="github-dark"
+    />
+  </div>
+</div>

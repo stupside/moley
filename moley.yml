@@ -4,7 +4,7 @@ ingress:
     zone: xonery.dev
     apps:
         - target:
-            port: 8080
+            port: 4321
             hostname: localhost
           expose:
-            subdomain: api
+            subdomain: doc

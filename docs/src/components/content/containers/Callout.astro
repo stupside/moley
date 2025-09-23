@@ -1,0 +1,18 @@
+---
+import type { CalloutBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: CalloutBlock;
+}
+
+const { content } = Astro.props;
+---
+
+<div class={`bg-gray-50 rounded-lg px-8 py-6 my-4 ${content.className || ''}`} id={content.id}>
+  <div class="space-y-3">
+    {content.children?.map(child => (
+      <ContentRenderer content={child} />
+    ))}
+  </div>
+</div>

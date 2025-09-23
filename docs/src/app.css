@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+	--font-family-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.astro-code {
+	@apply bg-gray-900 text-gray-100 p-4 text-sm leading-relaxed;
+}
+
+.astro-code pre,
+.astro-code code {
+	@apply bg-transparent border-0 m-0 p-0;
+	color: inherit;
+	line-height: inherit;
+}

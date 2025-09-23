@@ -1,0 +1,22 @@
+---
+import type { IconProps } from "./constants";
+import { iconMap } from "./constants";
+
+export interface Props extends IconProps {}
+
+const { name, size = "md", class: className = "", ...props } = Astro.props;
+
+const IconComponent = iconMap[name];
+
+const sizeStyles = {
+	xs: "w-3 h-3",
+	sm: "w-4 h-4",
+	md: "w-5 h-5",
+	lg: "w-6 h-6",
+	xl: "w-8 h-8",
+} as const;
+
+const iconClasses = `${sizeStyles[size]} ${className}`.trim();
+---
+
+{IconComponent && <IconComponent class={iconClasses} {...props} />}

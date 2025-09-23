@@ -1,0 +1,11 @@
+---
+import type { TextBlock } from "../../../types/content.js";
+
+export interface Props {
+	content: TextBlock;
+}
+
+const { content } = Astro.props;
+---
+
+<span class={content.className} id={content.id}>{content.text}</span>

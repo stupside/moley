@@ -1,0 +1,17 @@
+---
+import type { ListItemBlock } from "../../../types/content.js";
+import ContentRenderer from "../../ContentRenderer.astro";
+
+export interface Props {
+	content: ListItemBlock;
+}
+
+const { content } = Astro.props;
+---
+
+<li class={`mb-2 ${content.className || ''}`} id={content.id}>
+  {content.text}
+  {content.children?.map(child => (
+    <ContentRenderer content={child} />
+  ))}
+</li>

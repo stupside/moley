@@ -1,0 +1,60 @@
+---
+/**
+ * Dynamic Page Generator
+ *
+ * This single file generates all documentation pages from the content definitions.
+ * It replaces individual .astro page files with a unified content-driven approach.
+ */
+
+import ContentRenderer from "../../components/ContentRenderer.astro";
+import SearchEngines from "../../components/layout/SearchEngines.astro";
+import TableOfContents from "../../components/layout/TableOfContents.astro";
+import { documentationPages } from "../../content/pages.js";
+import DocsLayout from "../../layouts/DocsLayout.astro";
+import type { PageDefinition } from "../../types/content.js";
+
+export async function getStaticPaths() {
+  const pages = documentationPages;
+  return pages.map((page) => {
+    const slug = page.meta.href
+      ? page.meta.href.match(/^\/docs\/(?:(.+)\/)?$/)?.[1] || ""
+      : page.meta.slug ||
+        page.meta.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-");
+    const params = slug ? { slug } : { slug: undefined };
+
+    return {
+      params,
+      props: { page },
+    };
+  });
+}
+
+export interface Props {
+  page: PageDefinition;
+}
+
+const { page } = Astro.props;
+---
+
+<DocsLayout title={page.meta.title} content={page.content}>
+  <SearchEngines
+    slot="head"
+    title={page.meta.title}
+    description={page.meta.description}
+    type="article"
+  />
+
+  <!-- Table of Contents in right sidebar -->
+  <aside
+    slot="right-sidebar"
+    class="w-40 lg:w-48 flex-shrink-0 hidden xl:block"
+  >
+    <TableOfContents page={page} />
+  </aside>
+
+  <!-- Render the page content -->
+  <ContentRenderer content={page.content} />
+</DocsLayout>

@@ -1,0 +1,63 @@
+---
+import { config } from "../../config.js";
+import type { IconName } from "../ui/Icon/constants.js";
+import Icon from "../ui/Icon/Icon.astro";
+
+export interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+
+const currentYear = new Date().getFullYear();
+
+const socialLinks = [
+  {
+    href: `${config.site.repo.url}`,
+    label: "GitHub",
+    icon: "code-2" as IconName,
+  },
+  {
+    href: config.site.repo.issues(),
+    label: "Issues",
+    icon: "alert-triangle" as IconName,
+  },
+  {
+    href: config.site.repo.releases(),
+    label: "Releases",
+    icon: "cloud-download" as IconName,
+  },
+];
+---
+
+<footer class={`border-t border-gray-200 bg-gray-50 ${className}`}>
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="text-center">
+      <p class="text-sm text-gray-600">
+        &copy; {currentYear}
+        {config.site.author.name}. Built with{" "}
+        <a
+          href="https://astro.build"
+          class="font-medium text-gray-900 hover:underline"
+          rel="nofollow noopener noreferrer"
+          target="_blank">Astro</a
+        >.
+      </p>
+      <div class="mt-4 flex justify-center space-x-6">
+        {
+          socialLinks.map((link) => (
+            <a
+              href={link.href}
+              class="text-gray-400 hover:text-gray-500 transition-colors"
+              aria-label={link.label}
+              rel="nofollow noopener noreferrer"
+              target="_blank"
+            >
+              <Icon name={link.icon} size="md" class="h-6 w-6" />
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</footer>
