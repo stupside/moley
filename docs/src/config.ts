@@ -8,7 +8,7 @@
 // Site branding configuration
 export const site = {
 	name: "Moley",
-	logo: "/moley.png", // Public assets - Astro handles base path automatically
+	logo: "moley.png",
 	repo: {
 		url: "https://github.com/stupside/moley",
 		issues: () => `${site.repo.url}/issues`,
