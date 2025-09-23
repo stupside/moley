@@ -17,7 +17,7 @@ export const documentationPages: PageDefinition[] = [
 				"Complete guide to using Moley for secure localhost tunneling with Cloudflare. Learn installation, configuration, and troubleshooting for your custom domain setup.",
 			order: 1,
 			category: "Getting Started",
-			href: "/docs/",
+			href: `${import.meta.env.BASE_URL}/docs/`,
 		},
 		content: {
 			type: "page",
@@ -82,28 +82,28 @@ export const documentationPages: PageDefinition[] = [
 							title: "Installation",
 							description:
 								"Install Moley using Homebrew, Go, or build from source.",
-							href: "/docs/installation/",
+							href: `${import.meta.env.BASE_URL}/docs/installation/`,
 							icon: "download",
 						},
 						{
 							type: "card",
 							title: "Quick Start",
 							description: "Get up and running with Moley in minutes.",
-							href: "/docs/quick-start/",
+							href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
 							icon: "zap",
 						},
 						{
 							type: "card",
 							title: "Configuration",
 							description: "Advanced configuration options and examples.",
-							href: "/docs/configuration/",
+							href: `${import.meta.env.BASE_URL}/docs/configuration/`,
 							icon: "code-2",
 						},
 						{
 							type: "card",
 							title: "Troubleshooting",
 							description: "Common issues and solutions.",
-							href: "/docs/troubleshooting/",
+							href: `${import.meta.env.BASE_URL}/docs/troubleshooting/`,
 							icon: "alert-triangle",
 						},
 					],
@@ -140,7 +140,7 @@ export const documentationPages: PageDefinition[] = [
 						},
 						{
 							type: "link",
-							href: "/docs/troubleshooting/",
+							href: `${import.meta.env.BASE_URL}/docs/troubleshooting/`,
 							text: "troubleshooting guide",
 						},
 						{
@@ -271,7 +271,7 @@ export const documentationPages: PageDefinition[] = [
 										},
 										{
 											type: "link",
-											href: "/docs/quick-start/",
+											href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
 											text: "Quick Start guide",
 										},
 										{
@@ -296,7 +296,7 @@ export const documentationPages: PageDefinition[] = [
 										},
 										{
 											type: "link",
-											href: "/docs/configuration/",
+											href: `${import.meta.env.BASE_URL}/docs/configuration/`,
 											text: "Configuration guide",
 										},
 										{
@@ -355,7 +355,7 @@ export const documentationPages: PageDefinition[] = [
 									children: [
 										{
 											type: "link",
-											href: "/docs/quick-start/",
+											href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
 											text: "Follow the Quick Start guide",
 										},
 									],
@@ -365,7 +365,7 @@ export const documentationPages: PageDefinition[] = [
 									children: [
 										{
 											type: "link",
-											href: "/docs/configuration/",
+											href: `${import.meta.env.BASE_URL}/docs/configuration/`,
 											text: "Learn about configuration options",
 										},
 									],
@@ -556,7 +556,7 @@ export const documentationPages: PageDefinition[] = [
 								},
 								{
 									type: "link",
-									href: "/docs/configuration/",
+									href: `${import.meta.env.BASE_URL}/docs/configuration/`,
 									text: "Configuration guide",
 								},
 								{
@@ -631,7 +631,7 @@ ingress:
 												},
 												{
 													type: "link",
-													href: "/docs/troubleshooting/",
+													href: `${import.meta.env.BASE_URL}/docs/troubleshooting/`,
 													text: "troubleshooting guide",
 												},
 												{
@@ -687,7 +687,7 @@ ingress:
 						},
 						{
 							type: "link",
-							href: "/docs/quick-start/",
+							href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
 							text: "Quick Start guide",
 						},
 						{
@@ -743,7 +743,7 @@ ingress:
 						},
 						{
 							type: "link",
-							href: "/docs/installation/",
+							href: `${import.meta.env.BASE_URL}/docs/installation/`,
 							text: "installation process",
 						},
 						{
@@ -816,7 +816,7 @@ cloudflare:
 								},
 								{
 									type: "link",
-									href: "/docs/quick-start/",
+									href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
 									text: "Quick Start guide",
 								},
 								{
@@ -825,7 +825,7 @@ cloudflare:
 								},
 								{
 									type: "link",
-									href: "/docs/configuration/",
+									href: `${import.meta.env.BASE_URL}/docs/configuration/`,
 									text: "Configuration guide",
 								},
 								{
@@ -907,7 +907,7 @@ cloudflare:
 								},
 								{
 									type: "link",
-									href: "/docs/installation/",
+									href: `${import.meta.env.BASE_URL}/docs/installation/`,
 									text: "installation steps",
 								},
 								{

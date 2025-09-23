@@ -3,6 +3,7 @@ import Card from "../components/content/layout/Card.astro";
 import Hero from "../components/features/Hero.astro";
 import SearchEngines from "../components/layout/SearchEngines.astro";
 import Icon from "../components/ui/Icon/Icon.astro";
+import { config } from "../config";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const heroData = {
@@ -11,7 +12,7 @@ const heroData = {
   subtitle:
     "Simple Cloudflare Tunnels management. Make localhost available on your own Cloudflare domain with one command.",
   logo: {
-    src: "/moley.png",
+    src: config.site.logo,
     alt: "Moley Logo",
     width: 120,
     height: 120,
@@ -63,13 +64,13 @@ const docs = [
   {
     type: "card" as const,
     title: "Installation",
-    href: "/docs/installation/",
+    href: `${import.meta.env.BASE_URL}/docs/installation/`,
     icon: "download" as const,
   },
   {
     type: "card" as const,
     title: "Quick Start",
-    href: "/docs/quick-start/",
+    href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
     icon: "zap" as const,
   },
 ];
