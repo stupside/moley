@@ -30,6 +30,9 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: docs/yarn.lock
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
