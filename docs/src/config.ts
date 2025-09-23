@@ -8,7 +8,7 @@
 // Site branding configuration
 export const site = {
 	name: "Moley",
-	logo: `${import.meta.env.BASE_URL}/moley.png`,
+	logo: "/moley.png", // Public assets - Astro handles base path automatically
 	repo: {
 		url: "https://github.com/stupside/moley",
 		issues: () => `${site.repo.url}/issues`,
@@ -22,8 +22,8 @@ export const site = {
 export const navigation = {
 	// Main navigation items
 	items: [
-		{ label: "Home", href: `${import.meta.env.BASE_URL}/` },
-		{ label: "Docs", href: `${import.meta.env.BASE_URL}/docs/` },
+		{ label: "Home", href: "/" },
+		{ label: "Docs", href: "/docs/" },
 	] as const,
 
 	// Generate navigation items

@@ -28,7 +28,7 @@ const getLinkClasses = (href: string) => {
 <nav class={`flex items-center space-x-1 ${className}`}>
   {items.map((item) => (
     <a
-      href={item.href}
+      href={`${import.meta.env.BASE_URL}${item.href.replace(/^\//, '')}`}
       class={getLinkClasses(item.href)}
       target={item.external ? '_blank' : undefined}
       rel={item.external ? 'noopener noreferrer' : undefined}

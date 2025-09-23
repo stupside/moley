@@ -1,11 +1,13 @@
 ---
 import SearchEngines from "../components/layout/SearchEngines.astro";
+import { config } from "../config";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout class="bg-gray-50">
   <SearchEngines
     slot="head"
+    image={config.site.logo}
     title="Page Not Found - Moley"
     description="The page you're looking for doesn't exist."
   />

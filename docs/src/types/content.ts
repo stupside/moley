@@ -66,8 +66,8 @@ export interface PageMeta {
 	category?: string;
 	/** Optional custom slug override (defaults to title-based slug) */
 	slug?: string;
-	/** Optional custom href override (defaults to generated path) */
-	href?: string;
+	/** Page URL path */
+	href: string;
 	/** Whether page is internal-only (excluded from public navigation) */
 	internal?: boolean;
 }

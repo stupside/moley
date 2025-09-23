@@ -10,10 +10,14 @@ const { content } = Astro.props;
 const linkProps = content.external
 	? { target: "_blank", rel: content.rel || "noopener noreferrer nofollow" }
 	: {};
+
+const href = content.external
+	? content.href
+	: `${import.meta.env.BASE_URL}${content.href.replace(/^\//, '')}`;
 ---
 
 <a
-  href={content.href}
+  href={href}
   class={`text-gray-700 hover:text-gray-900 underline ${content.className || ''}`}
   id={content.id}
   {...linkProps}

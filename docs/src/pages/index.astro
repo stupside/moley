@@ -64,13 +64,13 @@ const docs = [
   {
     type: "card" as const,
     title: "Installation",
-    href: `${import.meta.env.BASE_URL}/docs/installation/`,
+    href: "/docs/installation/",
     icon: "download" as const,
   },
   {
     type: "card" as const,
     title: "Quick Start",
-    href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
+    href: "/docs/quick-start/",
     icon: "zap" as const,
   },
 ];
@@ -85,6 +85,7 @@ const description =
 <BaseLayout class="bg-gray-50">
   <SearchEngines
     slot="head"
+    image={config.site.logo}
     title={title}
     description={description}
     type="website"

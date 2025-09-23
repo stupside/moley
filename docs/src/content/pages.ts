@@ -17,7 +17,7 @@ export const documentationPages: PageDefinition[] = [
 				"Complete guide to using Moley for secure localhost tunneling with Cloudflare. Learn installation, configuration, and troubleshooting for your custom domain setup.",
 			order: 1,
 			category: "Getting Started",
-			href: `${import.meta.env.BASE_URL}/docs/`,
+			href: `/docs/`,
 		},
 		content: {
 			type: "page",
@@ -82,28 +82,28 @@ export const documentationPages: PageDefinition[] = [
 							title: "Installation",
 							description:
 								"Install Moley using Homebrew, Go, or build from source.",
-							href: `${import.meta.env.BASE_URL}/docs/installation/`,
+							href: `/docs/installation/`,
 							icon: "download",
 						},
 						{
 							type: "card",
 							title: "Quick Start",
 							description: "Get up and running with Moley in minutes.",
-							href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
+							href: `/docs/quick-start/`,
 							icon: "zap",
 						},
 						{
 							type: "card",
 							title: "Configuration",
 							description: "Advanced configuration options and examples.",
-							href: `${import.meta.env.BASE_URL}/docs/configuration/`,
+							href: `/docs/configuration/`,
 							icon: "code-2",
 						},
 						{
 							type: "card",
 							title: "Troubleshooting",
 							description: "Common issues and solutions.",
-							href: `${import.meta.env.BASE_URL}/docs/troubleshooting/`,
+							href: `/docs/troubleshooting/`,
 							icon: "alert-triangle",
 						},
 					],
@@ -122,6 +122,7 @@ export const documentationPages: PageDefinition[] = [
 				"Install Moley using Homebrew, Go, or build from source. Quick setup guide for localhost tunneling with Cloudflare on macOS, Linux, and Windows systems.",
 			order: 2,
 			category: "Getting Started",
+			href: "/docs/installation/",
 		},
 		content: {
 			type: "page",
@@ -140,7 +141,7 @@ export const documentationPages: PageDefinition[] = [
 						},
 						{
 							type: "link",
-							href: `${import.meta.env.BASE_URL}/docs/troubleshooting/`,
+							href: `/docs/troubleshooting/`,
 							text: "troubleshooting guide",
 						},
 						{
@@ -271,7 +272,7 @@ export const documentationPages: PageDefinition[] = [
 										},
 										{
 											type: "link",
-											href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
+											href: `/docs/quick-start/`,
 											text: "Quick Start guide",
 										},
 										{
@@ -296,7 +297,7 @@ export const documentationPages: PageDefinition[] = [
 										},
 										{
 											type: "link",
-											href: `${import.meta.env.BASE_URL}/docs/configuration/`,
+											href: `/docs/configuration/`,
 											text: "Configuration guide",
 										},
 										{
@@ -355,7 +356,7 @@ export const documentationPages: PageDefinition[] = [
 									children: [
 										{
 											type: "link",
-											href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
+											href: `/docs/quick-start/`,
 											text: "Follow the Quick Start guide",
 										},
 									],
@@ -365,7 +366,7 @@ export const documentationPages: PageDefinition[] = [
 									children: [
 										{
 											type: "link",
-											href: `${import.meta.env.BASE_URL}/docs/configuration/`,
+											href: `/docs/configuration/`,
 											text: "Learn about configuration options",
 										},
 									],
@@ -388,6 +389,7 @@ export const documentationPages: PageDefinition[] = [
 				"Get up and running with Moley in minutes. Step-by-step guide to authenticate, configure, and run Cloudflare tunnels for your localhost applications instantly.",
 			order: 3,
 			category: "Getting Started",
+			href: "/docs/quick-start/",
 		},
 		content: {
 			type: "page",
@@ -556,7 +558,7 @@ export const documentationPages: PageDefinition[] = [
 								},
 								{
 									type: "link",
-									href: `${import.meta.env.BASE_URL}/docs/configuration/`,
+									href: `/docs/configuration/`,
 									text: "Configuration guide",
 								},
 								{
@@ -631,7 +633,7 @@ ingress:
 												},
 												{
 													type: "link",
-													href: `${import.meta.env.BASE_URL}/docs/troubleshooting/`,
+													href: `/docs/troubleshooting/`,
 													text: "troubleshooting guide",
 												},
 												{
@@ -661,6 +663,7 @@ ingress:
 				"Advanced configuration options for Moley tunnels. Learn YAML configuration, global settings, domain setup, and custom application routing for optimal performance.",
 			order: 4,
 			category: "Guides",
+			href: "/docs/configuration/",
 		},
 		content: {
 			type: "page",
@@ -687,7 +690,7 @@ ingress:
 						},
 						{
 							type: "link",
-							href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
+							href: `/docs/quick-start/`,
 							text: "Quick Start guide",
 						},
 						{
@@ -743,7 +746,7 @@ ingress:
 						},
 						{
 							type: "link",
-							href: `${import.meta.env.BASE_URL}/docs/installation/`,
+							href: `/docs/installation/`,
 							text: "installation process",
 						},
 						{
@@ -794,6 +797,7 @@ cloudflare:
 				"Common issues and solutions when using Moley. Fix DNS problems, authentication errors, tunnel failures, and orphaned resources with detailed debugging steps.",
 			order: 5,
 			category: "Guides",
+			href: "/docs/troubleshooting/",
 		},
 		content: {
 			type: "page",
@@ -816,7 +820,7 @@ cloudflare:
 								},
 								{
 									type: "link",
-									href: `${import.meta.env.BASE_URL}/docs/quick-start/`,
+									href: `/docs/quick-start/`,
 									text: "Quick Start guide",
 								},
 								{
@@ -825,7 +829,7 @@ cloudflare:
 								},
 								{
 									type: "link",
-									href: `${import.meta.env.BASE_URL}/docs/configuration/`,
+									href: `/docs/configuration/`,
 									text: "Configuration guide",
 								},
 								{
@@ -907,7 +911,7 @@ cloudflare:
 								},
 								{
 									type: "link",
-									href: `${import.meta.env.BASE_URL}/docs/installation/`,
+									href: `/docs/installation/`,
 									text: "installation steps",
 								},
 								{
@@ -1180,6 +1184,7 @@ cloudflare:
 			order: 10,
 			category: "Internal",
 			internal: true,
+			href: "/docs/advanced-debugging/",
 		},
 		content: {
 			type: "page",

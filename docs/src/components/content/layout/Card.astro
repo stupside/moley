@@ -14,7 +14,7 @@ const linkProps = content.external
 ---
 
 <div class={`h-full bg-white border border-gray-200 rounded-lg p-6 group cursor-pointer hover:border-gray-300 transition-colors ${content.className || ''}`} id={content.id}>
-  <a href={content.href} {...linkProps} class="block h-full">
+  <a href={`${import.meta.env.BASE_URL}${content.href.replace(/^\//, '')}`} {...linkProps} class="block h-full">
     <div class="flex h-full">
       {content.icon && (
         <div class="flex-shrink-0 mr-4 mt-1">

@@ -13,15 +13,7 @@ const nav = documentationPages
 				return acc;
 			}
 
-			const href =
-				page.meta.href ||
-				`/docs/${
-					page.meta.slug ||
-					page.meta.title
-						.toLowerCase()
-						.replace(/[^\w\s-]/g, "")
-						.replace(/\s+/g, "-")
-				}/`;
+			const href = page.meta.href;
 			const title = page.meta.menuTitle || page.meta.title;
 			const category = page.meta.category;
 
@@ -79,7 +71,7 @@ Object.values(nav).forEach((pages) => {
                           const isActive = currentPath === item.href;
                           return (
                             <a
-                              href={item.href}
+                              href={`${import.meta.env.BASE_URL}${item.href.replace(/^\//, '')}`}
                               class:list={[
                                 "block w-full px-3 py-2 text-sm font-medium rounded-md transition-colors",
                                 {

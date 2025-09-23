@@ -9,24 +9,17 @@
 import ContentRenderer from "../../components/ContentRenderer.astro";
 import SearchEngines from "../../components/layout/SearchEngines.astro";
 import TableOfContents from "../../components/layout/TableOfContents.astro";
+import { config } from "../../config";
 import { documentationPages } from "../../content/pages.js";
 import DocsLayout from "../../layouts/DocsLayout.astro";
 import type { PageDefinition } from "../../types/content.js";
 
 export async function getStaticPaths() {
-  const pages = documentationPages;
-  return pages.map((page) => {
-    const slug = page.meta.href
-      ? page.meta.href.match(/^\/docs\/(?:(.+)\/)?$/)?.[1] || ""
-      : page.meta.slug ||
-        page.meta.title
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, "")
-          .replace(/\s+/g, "-");
-    const params = slug ? { slug } : { slug: undefined };
+  return documentationPages.map((page) => {
+    const slug = page.meta.href.replace("/docs/", "").replace(/\/$/, "");
 
     return {
-      params,
+      params: { slug },
       props: { page },
     };
   });
@@ -42,6 +35,7 @@ const { page } = Astro.props;
 <DocsLayout title={page.meta.title} content={page.content}>
   <SearchEngines
     slot="head"
+    image={config.site.logo}
     title={page.meta.title}
     description={page.meta.description}
     type="article"
