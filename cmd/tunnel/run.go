@@ -18,8 +18,8 @@ const (
 )
 
 var runCmd = &cli.Command{
-	Name:  "run",
-	Usage: "Run a Cloudflare tunnel",
+	Name:        "run",
+	Usage:       "Run a Cloudflare tunnel",
 	Description: "Run a Cloudflare tunnel with the specified configuration. This command will start the tunnel service.",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
@@ -81,4 +81,3 @@ func execRun(ctx context.Context, cmd *cli.Command) error {
 	logger.Info("Run completed")
 	return nil
 }
-

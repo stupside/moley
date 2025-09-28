@@ -46,4 +46,3 @@ func execSet(ctx context.Context, cmd *cli.Command) error {
 	logger.Info("Configuration saved successfully")
 	return nil
 }
-
