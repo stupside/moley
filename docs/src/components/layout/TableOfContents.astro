@@ -7,29 +7,68 @@ export interface Props {
 }
 
 const { page } = Astro.props;
-
 const items = extractTocItems(page.content);
 ---
 
 {
   items.length > 0 && (
-    <nav class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto border-l border-gray-200 pl-4">
+    <nav class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto border-l border-gray-200 pl-4 w-72">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
         On this page
       </h3>
-      <ul class="space-y-2 text-sm">
-        {items.map((item) => (
-          <li class={item.level > 2 ? "ml-4" : ""}>
-            <a
-              href={`#${item.id}`}
-              class="block text-gray-600 hover:text-gray-900 transition-colors py-1"
-              data-toc-link={item.id}
-            >
-              {item.title}
-            </a>
-          </li>
+      <div class="space-y-2 text-sm">
+        {items.filter(item => item.level === 2).map((item) => (
+          <a
+            href={`#${item.id}`}
+            class="block transition-colors py-1 text-gray-800 font-medium hover:text-gray-900"
+            data-toc-link={item.id}
+          >
+            {item.title}
+          </a>
         ))}
-      </ul>
+
+        {items.filter(item => item.level >= 3).length > 0 && (
+          <div class="border-l border-gray-300 pl-4 space-y-1">
+            {items.filter(item => item.level === 3).map((item) => (
+              <a
+                href={`#${item.id}`}
+                class="block transition-colors py-1 text-gray-700 hover:text-gray-900"
+                data-toc-link={item.id}
+              >
+                {item.title}
+              </a>
+            ))}
+
+            {items.filter(item => item.level >= 4).length > 0 && (
+              <div class="border-l border-gray-300 pl-4 space-y-1">
+                {items.filter(item => item.level === 4).map((item) => (
+                  <a
+                    href={`#${item.id}`}
+                    class="block transition-colors py-1 text-gray-600 text-sm hover:text-gray-900"
+                    data-toc-link={item.id}
+                  >
+                    {item.title}
+                  </a>
+                ))}
+
+                {items.filter(item => item.level >= 5).length > 0 && (
+                  <div class="border-l border-gray-300 pl-4 space-y-1">
+                    {items.filter(item => item.level >= 5).map((item) => (
+                      <a
+                        href={`#${item.id}`}
+                        class="block transition-colors py-1 text-gray-500 text-sm hover:text-gray-900"
+                        data-toc-link={item.id}
+                      >
+                        {item.title}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </nav>
   )
 }
@@ -37,10 +76,21 @@ const items = extractTocItems(page.content);
 <script is:inline define:vars={{ tocItems: items }}>
   const SCROLL_OFFSET = 100;
 
-  const ACTIVE_CLASSES =
-    "block text-gray-900 font-medium transition-colors py-1";
-  const INACTIVE_CLASSES =
-    "block text-gray-600 hover:text-gray-900 transition-colors py-1";
+  const getActiveClasses = (level) =>
+    `block text-gray-900 font-bold transition-colors py-1 ${
+      level === 2 ? "" :
+      level === 3 ? "" :
+      level === 4 ? "text-sm" :
+      "text-sm"
+    }`;
+
+  const getInactiveClasses = (level) =>
+    `block transition-colors py-1 hover:text-gray-900 ${
+      level === 2 ? "text-gray-800 font-medium" :
+      level === 3 ? "text-gray-700" :
+      level === 4 ? "text-gray-600 text-sm" :
+      "text-gray-500 text-sm"
+    }`;
 
   const findActiveHeading = () => {
     const scrollY = window.scrollY + SCROLL_OFFSET;
@@ -59,9 +109,14 @@ const items = extractTocItems(page.content);
     const links = document.querySelectorAll("[data-toc-link]");
 
     links.forEach((link) => {
-      const isActive =
-        link.getAttribute("data-toc-link") === findActiveHeading();
-      link.className = isActive ? ACTIVE_CLASSES : INACTIVE_CLASSES;
+      const activeId = findActiveHeading();
+      const isActive = link.getAttribute("data-toc-link") === activeId;
+
+      // Find the level for this link's item
+      const item = tocItems.find(item => item.id === link.getAttribute("data-toc-link"));
+      const level = item ? item.level : 2;
+
+      link.className = isActive ? getActiveClasses(level) : getInactiveClasses(level);
     });
   };
 

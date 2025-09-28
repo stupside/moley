@@ -395,6 +395,31 @@ export const documentationPages: PageDefinition[] = [
 			type: "page",
 			children: [
 				{
+					type: "infobox",
+					style: "info",
+					title: "Configuration Options",
+					children: [
+						{
+							type: "paragraph",
+							children: [
+								{
+									type: "text",
+									text: "You can configure Moley using either configuration files or environment variables. Environment variables take precedence over file configuration and are ideal for CI/CD, containers, or keeping sensitive data secure. See the ",
+								},
+								{
+									type: "link",
+									href: `/docs/configuration/`,
+									text: "Configuration guide",
+								},
+								{
+									type: "text",
+									text: " for complete environment variable documentation.",
+								},
+							],
+						},
+					],
+				},
+				{
 					type: "step",
 					number: 1,
 					title: "Authentication Setup",
@@ -484,7 +509,7 @@ export const documentationPages: PageDefinition[] = [
 										},
 										{
 											type: "text",
-											text: ".",
+											text: ". Environment variables take precedence over file configuration.",
 										},
 									],
 								},
@@ -761,7 +786,7 @@ ingress:
 					title: "~/.moley/config.yml",
 					code: `# Global configuration
 cloudflare:
-  token: "your-api-token"y`,
+  token: "your-api-token"`,
 				},
 				{
 					type: "paragraph",
@@ -783,6 +808,267 @@ cloudflare:
 						},
 					],
 				},
+				{
+					type: "codeblock",
+					language: "bash",
+					title: "Environment Variable Override",
+					code: `# Override with environment variable instead of config file
+export MOLEY_CLOUDFLARE_TOKEN="your-api-token"`,
+				},
+
+				{
+					type: "heading",
+					level: 2,
+					text: "Ingress Configuration",
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "The ",
+						},
+						{
+							type: "inline-code",
+							code: "ingress",
+						},
+						{
+							type: "text",
+							text: " section defines how your local applications are exposed to the internet through your custom domain.",
+						},
+					],
+				},
+				{
+					type: "heading",
+					level: 3,
+					text: "Zone Configuration",
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "The ",
+						},
+						{
+							type: "inline-code",
+							code: "zone",
+						},
+						{
+							type: "text",
+							text: " field specifies your custom domain that must be configured in Cloudflare:",
+						},
+					],
+				},
+				{
+					type: "codeblock",
+					language: "yaml",
+					title: "Zone Configuration",
+					code: `ingress:
+  zone: "yourdomain.com"  # Your Cloudflare-managed domain`,
+				},
+				{
+					type: "codeblock",
+					language: "bash",
+					title: "Environment Variable Override",
+					code: `# Override zone with environment variable
+export MOLEY_TUNNEL_INGRESS_ZONE="yourdomain.com"`,
+				},
+				{
+					type: "infobox",
+					style: "warning",
+					title: "Domain Requirements",
+					children: [
+						{
+							type: "list",
+							style: "unordered",
+							children: [
+								{
+									type: "listitem",
+									text: "Domain must be registered with Cloudflare",
+								},
+								{
+									type: "listitem",
+									text: "DNS must be managed by Cloudflare (orange cloud enabled)",
+								},
+								{
+									type: "listitem",
+									text: "Your API token must have DNS edit permissions for this zone",
+								},
+							],
+						},
+					],
+				},
+
+				{
+					type: "heading",
+					level: 3,
+					text: "Apps Configuration",
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "The ",
+						},
+						{
+							type: "inline-code",
+							code: "apps",
+						},
+						{
+							type: "text",
+							text: " array defines which local services to expose and how to route traffic to them. Each app has two main sections: ",
+						},
+						{
+							type: "inline-code",
+							code: "target",
+						},
+						{
+							type: "text",
+							text: " (where the service runs locally) and ",
+						},
+						{
+							type: "inline-code",
+							code: "expose",
+						},
+						{
+							type: "text",
+							text: " (how it's accessible publicly).",
+						},
+					],
+				},
+				{
+					type: "codeblock",
+					language: "yaml",
+					title: "Complete Apps Configuration",
+					code: `ingress:
+  zone: "yourdomain.com"
+  apps:
+    # Web application
+    - target:
+        port: 3000                    # Local port where your app runs
+        hostname: "localhost"         # Local hostname (usually localhost)
+      expose:
+        subdomain: "app"             # Public URL: app.yourdomain.com
+
+    # API service
+    - target:
+        port: 8080
+        hostname: "localhost"
+      expose:
+        subdomain: "api"             # Public URL: api.yourdomain.com
+
+    # Development server
+    - target:
+        port: 4000
+        hostname: "127.0.0.1"        # Alternative to localhost
+      expose:
+        subdomain: "dev"             # Public URL: dev.yourdomain.com`,
+				},
+
+				{
+					type: "heading",
+					level: 4,
+					text: "Target Configuration",
+				},
+				{
+					type: "paragraph",
+					text: "The target section specifies where your local service is running:",
+				},
+				{
+					type: "list",
+					style: "unordered",
+					children: [
+						{
+							type: "listitem",
+							children: [
+								{
+									type: "inline-code",
+									code: "port",
+								},
+								{
+									type: "text",
+									text: ": The local port number (1-65535) where your application is listening",
+								},
+							],
+						},
+						{
+							type: "listitem",
+							children: [
+								{
+									type: "inline-code",
+									code: "hostname",
+								},
+								{
+									type: "text",
+									text: ": The local hostname, typically ",
+								},
+								{
+									type: "inline-code",
+									code: "localhost",
+								},
+								{
+									type: "text",
+									text: " or ",
+								},
+								{
+									type: "inline-code",
+									code: "127.0.0.1",
+								},
+							],
+						},
+					],
+				},
+
+				{
+					type: "heading",
+					level: 4,
+					text: "Expose Configuration",
+				},
+				{
+					type: "paragraph",
+					text: "The expose section defines how the service is accessible publicly:",
+				},
+				{
+					type: "list",
+					style: "unordered",
+					children: [
+						{
+							type: "listitem",
+							children: [
+								{
+									type: "inline-code",
+									code: "subdomain",
+								},
+								{
+									type: "text",
+									text: ": The subdomain prefix that creates the public URL. Must be alphanumeric with hyphens allowed.",
+								},
+							],
+						},
+					],
+				},
+				{
+					type: "heading",
+					level: 4,
+					text: "Environment Variables",
+				},
+				{
+					type: "codeblock",
+					language: "bash",
+					title: "Apps Environment Variables",
+					code: `# Configure first app (frontend)
+export MOLEY_TUNNEL_INGRESS_APPS_0_TARGET_PORT="3000"
+export MOLEY_TUNNEL_INGRESS_APPS_0_TARGET_HOSTNAME="localhost"
+export MOLEY_TUNNEL_INGRESS_APPS_0_EXPOSE_SUBDOMAIN="app"
+
+# Configure second app (backend)
+export MOLEY_TUNNEL_INGRESS_APPS_1_TARGET_PORT="8080"
+export MOLEY_TUNNEL_INGRESS_APPS_1_TARGET_HOSTNAME="localhost"
+export MOLEY_TUNNEL_INGRESS_APPS_1_EXPOSE_SUBDOMAIN="api"`,
+				},
+
 			],
 		},
 	},
