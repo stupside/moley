@@ -1,40 +1,42 @@
 package tunnel
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"context"
+
 	"github.com/stupside/moley/v2/internal/core/application/tunnel"
 	"github.com/stupside/moley/v2/internal/platform/adapters/cloudflare"
 	"github.com/stupside/moley/v2/internal/platform/framework"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
+
+	"github.com/urfave/cli/v3"
 )
 
-var stopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Bring the tunnel down",
-	RunE:  execStop,
+var stopCmd = &cli.Command{
+	Name:   "stop",
+	Usage:  "Bring the tunnel down",
+	Action: execStop,
 }
 
-func execStop(cmd *cobra.Command, args []string) error {
-	dryRun := viper.GetBool(dryRunFlag)
-	configPath := viper.GetString("config")
+func execStop(ctx context.Context, cmd *cli.Command) error {
+	dryRun := cmd.Bool(dryRunFlag)
+	configPath := cmd.String(configPathFlag)
 
 	logger.Infof("Bringing tunnel down", map[string]any{
 		"dry":    dryRun,
 		"config": configPath,
 	})
 
-	tunnelConfigManager, err := config.NewTunnelConfigManager(configPath)
+	tunnelMgr, err := config.NewTunnelManager(configPath)
 	if err != nil {
-		return shared.WrapError(err, "failed to create tunnel config manager")
+		return shared.WrapError(err, "create tunnel config manager failed")
 	}
 
 	// Build adapters (Cloudflare) implementing ports
-	globalConfigManager, err := config.NewGlobalConfigManager(cmd)
+	globalMgr, err := config.NewGlobalManager(cmd)
 	if err != nil {
-		return shared.WrapError(err, "failed to create global config manager")
+		return shared.WrapError(err, "create global config manager failed")
 	}
 
 	// Create framework config for dry-run support
@@ -43,17 +45,17 @@ func execStop(cmd *cobra.Command, args []string) error {
 	}
 
 	cfTunnel := cloudflare.NewTunnelService(frameworkConfig)
-	cfDNS, err := cloudflare.NewDNSService(globalConfigManager.GetGlobalConfig().Cloudflare.Token, cfTunnel, frameworkConfig)
+	cfDNS, err := cloudflare.NewDNSService(globalMgr.Get().Cloudflare.Token, cfTunnel, frameworkConfig)
 	if err != nil {
-		return shared.WrapError(err, "failed to create Cloudflare DNS service")
+		return shared.WrapError(err, "create Cloudflare DNS service failed")
 	}
 
 	// Extract tunnel and ingress from config
-	tunnelConfig := tunnelConfigManager.GetTunnelConfig()
+	tunnelConfig := tunnelMgr.Get()
 
 	tunnelService := tunnel.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel)
 
-	if err := tunnelService.Stop(cmd.Context()); err != nil {
+	if err := tunnelService.Stop(ctx); err != nil {
 		return shared.WrapError(err, "failed to stop tunnel service")
 	}
 

@@ -14,7 +14,7 @@ import (
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/paths"
 	"github.com/stupside/moley/v2/internal/shared"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 type tunnelService struct {

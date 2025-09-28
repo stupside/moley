@@ -1,12 +1,13 @@
 package tunnel
 
 import (
+	"context"
+
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/urfave/cli/v3"
 )
 
 const (
@@ -14,35 +15,41 @@ const (
 	configPathFlag = "config"
 )
 
-var Cmd = &cobra.Command{
-	Use:   "tunnel",
-	Short: "Manage Cloudflare tunnels",
-}
-
-func init() {
-	Cmd.PersistentFlags().Bool(dryRunFlag, false, "Simulate actions without making any changes")
-	if err := viper.BindPFlag(dryRunFlag, Cmd.PersistentFlags().Lookup(dryRunFlag)); err != nil {
-		logger.Fatal("Failed to bind dry-run flag to Viper")
-	}
-
-	Cmd.PersistentFlags().String(configPathFlag, "moley.yml", "Path to the tunnel configuration file")
-	if err := viper.BindPFlag(configPathFlag, Cmd.PersistentFlags().Lookup(configPathFlag)); err != nil {
-		logger.Fatal("Failed to bind config flag to Viper")
-	}
-
-	Cmd.AddCommand(runCmd)
-	Cmd.AddCommand(stopCmd)
-
-	Cmd.AddCommand(&cobra.Command{
-		Use:   "init",
-		Short: "Initialize a new tunnel configuration file",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// Load (or create) tunnel config; creation writes default if file doesn't exist
-			if _, err := config.NewTunnelConfigManager("moley.yml"); err != nil {
-				return shared.WrapError(err, "failed to initialize tunnel config")
-			}
-			logger.Info("Initialized tunnel configuration at ./moley.yml")
-			return nil
+var Cmd = &cli.Command{
+	Name:  "tunnel",
+	Usage: "Manage Cloudflare tunnels",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  dryRunFlag,
+			Value: false,
+			Usage: "Simulate actions without making any changes",
 		},
-	})
+		&cli.StringFlag{
+			Name:  configPathFlag,
+			Value: "moley.yml",
+			Usage: "Path to the tunnel configuration file",
+		},
+	},
+	Commands: []*cli.Command{
+		runCmd,
+		stopCmd,
+		{
+			Name:  "init",
+			Usage: "Initialize a new tunnel configuration file",
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				// Load (or create) tunnel config; creation writes default if file doesn't exist
+				mgr, err := config.NewTunnelManager("moley.yml")
+				if err != nil {
+					return shared.WrapError(err, "initialize tunnel config failed")
+				}
+
+				if err := mgr.Save(); err != nil {
+					return shared.WrapError(err, "save tunnel config failed")
+				}
+
+				logger.Info("Initialized tunnel configuration at ./moley.yml")
+				return nil
+			},
+		},
+	},
 }

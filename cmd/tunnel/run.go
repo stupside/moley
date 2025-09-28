@@ -1,31 +1,40 @@
 package tunnel
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"context"
+
 	"github.com/stupside/moley/v2/internal/core/application/tunnel"
 	"github.com/stupside/moley/v2/internal/platform/adapters/cloudflare"
 	"github.com/stupside/moley/v2/internal/platform/framework"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
+
+	"github.com/urfave/cli/v3"
 )
 
 const (
 	detachFlag = "detach"
 )
 
-var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "Run a Cloudflare tunnel",
-	Long:  "Run a Cloudflare tunnel with the specified configuration. This command will start the tunnel service.",
-	RunE:  execRun,
+var runCmd = &cli.Command{
+	Name:  "run",
+	Usage: "Run a Cloudflare tunnel",
+	Description: "Run a Cloudflare tunnel with the specified configuration. This command will start the tunnel service.",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  detachFlag,
+			Value: false,
+			Usage: "Run the tunnel in the background (detached mode)",
+		},
+	},
+	Action: execRun,
 }
 
-func execRun(cmd *cobra.Command, args []string) error {
-	detach := viper.GetBool(detachFlag)
-	dryRun := viper.GetBool(dryRunFlag)
-	configPath := viper.GetString(configPathFlag)
+func execRun(ctx context.Context, cmd *cli.Command) error {
+	detach := cmd.Bool(detachFlag)
+	dryRun := cmd.Bool(dryRunFlag)
+	configPath := cmd.String(configPathFlag)
 
 	logger.Infof("Starting tunnel", map[string]any{
 		"dry":    dryRun,
@@ -33,15 +42,15 @@ func execRun(cmd *cobra.Command, args []string) error {
 		"config": configPath,
 	})
 
-	tunnelConfigManager, err := config.NewTunnelConfigManager(configPath)
+	tunnelMgr, err := config.NewTunnelManager(configPath)
 	if err != nil {
-		return shared.WrapError(err, "failed to create tunnel config manager")
+		return shared.WrapError(err, "create tunnel config manager failed")
 	}
 
 	// Build adapters (Cloudflare) implementing ports
-	globalConfigManager, err := config.NewGlobalConfigManager(cmd)
+	globalMgr, err := config.NewGlobalManager(cmd)
 	if err != nil {
-		return shared.WrapError(err, "failed to create global config manager")
+		return shared.WrapError(err, "create global config manager failed")
 	}
 
 	// Create framework config for dry-run support
@@ -50,21 +59,21 @@ func execRun(cmd *cobra.Command, args []string) error {
 	}
 
 	cfTunnel := cloudflare.NewTunnelService(frameworkConfig)
-	cfDNS, err := cloudflare.NewDNSService(globalConfigManager.GetGlobalConfig().Cloudflare.Token, cfTunnel, frameworkConfig)
+	cfDNS, err := cloudflare.NewDNSService(globalMgr.Get().Cloudflare.Token, cfTunnel, frameworkConfig)
 	if err != nil {
-		return shared.WrapError(err, "failed to create Cloudflare DNS service")
+		return shared.WrapError(err, "create Cloudflare DNS service failed")
 	}
 
 	// Extract tunnel and ingress from config
-	tunnelConfig := tunnelConfigManager.GetTunnelConfig()
+	tunnelConfig := tunnelMgr.Get()
 	tunnelService := tunnel.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel)
 
 	if detach {
-		if err := tunnelService.Start(cmd.Context()); err != nil {
+		if err := tunnelService.Start(ctx); err != nil {
 			return shared.WrapError(err, "failed to run tunnel service")
 		}
 	} else {
-		if err := shared.StartManaged(cmd.Context(), tunnelService); err != nil {
+		if err := shared.StartManaged(ctx, tunnelService); err != nil {
 			return shared.WrapError(err, "failed to start tunnel service")
 		}
 	}
@@ -73,9 +82,3 @@ func execRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func init() {
-	runCmd.Flags().Bool(detachFlag, false, "Run the tunnel in the background (detached mode)")
-	if err := viper.BindPFlag(detachFlag, runCmd.Flags().Lookup(detachFlag)); err != nil {
-		logger.Fatal("Failed to bind detach flag to Viper")
-	}
-}

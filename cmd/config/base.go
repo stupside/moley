@@ -1,15 +1,14 @@
 package config
 
 import (
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli/v3"
 )
 
-var Cmd = &cobra.Command{
-	Use:   "config",
-	Short: "Edit Moley configuration",
-	Long:  "Edit Moley configuration. You can set any value in the Moley config file using command-line flags.",
-}
-
-func init() {
-	Cmd.AddCommand(setCmd)
+var Cmd = &cli.Command{
+	Name:        "config",
+	Usage:       "Edit Moley configuration",
+	Description: "Edit Moley configuration. You can set any value in the Moley config file using command-line flags.",
+	Commands: []*cli.Command{
+		setCmd,
+	},
 }

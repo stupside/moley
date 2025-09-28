@@ -1,45 +1,49 @@
 package config
 
 import (
-	"github.com/spf13/cobra"
+	"context"
+
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
+
+	"github.com/urfave/cli/v3"
 )
 
 const (
 	cloudflareTokenFlag = "cloudflare.token"
 )
 
-var setCmd = &cobra.Command{
-	Use:   "set",
-	Short: "Set Moley configuration values",
-	Long:  "Set Moley configuration values using command-line flags.",
-	RunE:  execSet,
+var setCmd = &cli.Command{
+	Name:        "set",
+	Usage:       "Set Moley configuration values",
+	Description: "Set Moley configuration values using command-line flags.",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     cloudflareTokenFlag,
+			Usage:    "Cloudflare API token",
+			Required: true,
+		},
+	},
+	Action: execSet,
 }
 
-func execSet(cmd *cobra.Command, args []string) error {
+func execSet(ctx context.Context, cmd *cli.Command) error {
 	logger.Info("Editing configuration")
 
 	// Load global config
-	manager, err := config.NewGlobalConfigManager(cmd)
+	mgr, err := config.NewGlobalManager(cmd)
 	if err != nil {
-		return shared.WrapError(err, "failed to create global config manager")
+		return shared.WrapError(err, "create global config manager failed")
 	}
 
-	if err := manager.UpdateGlobalConfig(func(cfg *config.GlobalConfig) {
-		cfg.Cloudflare.Token = cmd.Flag(cloudflareTokenFlag).Value.String()
+	if err := mgr.Update(func(cfg *config.GlobalConfig) {
+		cfg.Cloudflare.Token = cmd.String(cloudflareTokenFlag)
 	}); err != nil {
-		return shared.WrapError(err, "failed to update global config")
+		return shared.WrapError(err, "update global config failed")
 	}
 
 	logger.Info("Configuration saved successfully")
 	return nil
 }
 
-func init() {
-	setCmd.Flags().String(cloudflareTokenFlag, "", "Cloudflare API token")
-	if err := setCmd.MarkFlagRequired(cloudflareTokenFlag); err != nil {
-		logger.LogError(err, "failed to mark flag as required")
-	}
-}
