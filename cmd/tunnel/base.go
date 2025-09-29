@@ -43,8 +43,13 @@ var Cmd = &cli.Command{
 					return shared.WrapError(err, "initialize tunnel config failed")
 				}
 
-				if err := mgr.Save(); err != nil {
-					return shared.WrapError(err, "save tunnel config failed")
+				example, err := config.ExampleTunnelConfig()
+				if err != nil {
+					return shared.WrapError(err, "create example tunnel config failed")
+				}
+
+				if err := mgr.Override(example); err != nil {
+					return shared.WrapError(err, "override tunnel config failed")
 				}
 
 				logger.Info("Initialized tunnel configuration at ./moley.yml")

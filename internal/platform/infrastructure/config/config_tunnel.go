@@ -30,6 +30,33 @@ func NewTunnelManager(path string) (*TunnelManager, error) {
 	return mgr, nil
 }
 
+func ExampleTunnelConfig() (*TunnelConfig, error) {
+	id := uuid.New().String()
+
+	tunnel, err := domain.NewTunnel(id)
+	if err != nil {
+		return nil, shared.WrapError(err, "create tunnel failed")
+	}
+
+	return &TunnelConfig{
+		Tunnel: tunnel,
+		Ingress: &domain.Ingress{
+			Zone: "moley.dev",
+			Apps: []domain.AppConfig{
+				{
+					Target: domain.TargetConfig{
+						Hostname: "localhost",
+						Port:     3000,
+					},
+					Expose: domain.ExposeConfig{
+						Subdomain: "api",
+					},
+				},
+			},
+		},
+	}, nil
+}
+
 func defaultTunnelConfig() (*TunnelConfig, error) {
 	id := uuid.New().String()
 
@@ -39,7 +66,11 @@ func defaultTunnelConfig() (*TunnelConfig, error) {
 	}
 
 	return &TunnelConfig{
-		Tunnel:  tunnel,
-		Ingress: domain.NewDefaultIngress(),
+		Tunnel: tunnel,
+		Ingress: &domain.Ingress{
+			Apps: []domain.AppConfig{
+				{},
+			},
+		},
 	}, nil
 }

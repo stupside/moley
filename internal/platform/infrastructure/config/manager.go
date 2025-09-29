@@ -51,8 +51,8 @@ func WithSources[T any](sources ...Source) Option[T] {
 	}
 }
 
-// Save persists configuration to file
-func (m *Manager[T]) Save() error {
+// save persists configuration to file
+func (m *Manager[T]) save() error {
 
 	// Validate before saving
 	if err := m.validator.Struct(m.Get()); err != nil {
@@ -78,7 +78,15 @@ func (m *Manager[T]) Save() error {
 func (m *Manager[T]) Update(fn func(*T)) error {
 	config := m.Get()
 	fn(config)
-	return m.Save()
+	return m.save()
+}
+
+// Override replaces the entire configuration and saves it
+func (m *Manager[T]) Override(config *T) error {
+	if err := m.k.Load(structs.Provider(config, "yaml"), nil); err != nil {
+		return shared.WrapError(err, "load config failed")
+	}
+	return m.save()
 }
 
 // Get returns the configuration

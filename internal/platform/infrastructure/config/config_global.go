@@ -46,8 +46,6 @@ func defaultGlobalConfig() *GlobalConfig {
 	return &GlobalConfig{
 		Cloudflare: struct {
 			Token string `yaml:"token" validate:"required"`
-		}{
-			Token: "<cloudflare_token>",
-		},
+		}{},
 	}
 }

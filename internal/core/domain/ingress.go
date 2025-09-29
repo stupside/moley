@@ -25,21 +25,3 @@ type Ingress struct {
 	Zone string      `mapstructure:"zone" yaml:"zone" json:"zone" validate:"required"`
 	Apps []AppConfig `mapstructure:"apps" yaml:"apps" json:"apps" validate:"required,dive"`
 }
-
-// NewDefaultIngress creates a default ingress configuration for examples/templates
-func NewDefaultIngress() *Ingress {
-	return &Ingress{
-		Zone: "example.com",
-		Apps: []AppConfig{
-			{
-				Target: TargetConfig{
-					Port:     8080,
-					Hostname: "localhost",
-				},
-				Expose: ExposeConfig{
-					Subdomain: "api",
-				},
-			},
-		},
-	}
-}
