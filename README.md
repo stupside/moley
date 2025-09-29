@@ -2,323 +2,155 @@
   <img src=".github/images/moley.png" alt="Moley Logo" width="200"/><br/>
 </p>
 
-<div style="display:flex;justify-content:center;gap:8px">
+<p align="center">
+  <a href="https://github.com/stupside/moley/releases/latest">
+    <img src="https://img.shields.io/github/v/release/stupside/moley?style=flat-square" alt="Latest Release">
+  </a>
   <a href="https://pkg.go.dev/github.com/stupside/moley">
-    <img src="https://pkg.go.dev/badge/github.com/stupside/moley.svg" alt="Go Reference">
+    <img src="https://img.shields.io/badge/Go-Reference-00ADD8?style=flat-square&logo=go" alt="Go Reference">
   </a>
   <a href="https://github.com/stupside/homebrew-tap/blob/main/Casks/moley.rb">
-    <img src="https://img.shields.io/badge/homebrew-install-brightgreen.svg" alt="Homebrew">
+    <img src="https://img.shields.io/badge/Homebrew-Available-FBB040?style=flat-square&logo=homebrew" alt="Homebrew">
   </a>
-</div>
+  <a href="https://github.com/stupside/moley/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/stupside/moley?style=flat-square" alt="License">
+  </a>
+  <a href="https://github.com/stupside/moley/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/stupside/moley/ci.yml?style=flat-square" alt="Build Status">
+  </a>
+</p>
 
 # Moley
 
-**Expose your local apps to the world—securely, instantly, and with zero hassle.**
+**Expose your localhost applications to the internet using Cloudflare Tunnels.**
 
-Moley is the easiest way to share your local development services using Cloudflare Tunnels and your own custom domains. Moley automates everything for you, so you can focus on building, not configuring.
+Moley is a powerful CLI tool that simplifies exposing your localhost applications to the internet using [Cloudflare Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/). With Moley, you can share your local development servers on your own custom domain without complex port forwarding or expensive tunnel services.
 
-## Why Choose Moley?
+## 💰 Why Cloudflare Tunnels?
 
-- **Zero Infra**: No reverse proxies, load balancers, or additional services needed
-- **Instant Setup**: Get your local app online in minutes with a single command
-- **Custom Domains**: Use your own domain names for a professional presentation
-- **Secure by Default**: Uses Cloudflare's enterprise-grade security and DDoS protection
-- **Automatic Recovery**: Robust state management with crash recovery and cleanup
+**Free Professional Infrastructure** - While other tunnel services charge $5-20+/month or offer limited free tiers, Cloudflare Tunnels are **completely free with full features**. Combined with a personal domain (~€10/year), you get professional-grade capabilities that would cost significantly more with alternatives:
 
----
+| Feature | Cloudflare Tunnels + Domain |
+|---------|----------------------------|
+| **Annual Cost** | ~€10/year (domain only) |
+| **Custom Domains** | ✅ Your own domain |
+| **DDoS Protection** | ✅ Robust protection included |
+| **Reliability** | ✅ Enterprise-grade uptime |
+| **Zero Trust Security** | ✅ Cloudflare Access |
+| **Bandwidth** | ✅ Unlimited |
+| **SSL/TLS** | ✅ Automatic certificates |
 
-### Key Benefits
+**Bottom line**: For less than €1/month, you get what other services charge €20+/month for. Cloudflare Tunnels combined with [Zero Trust features](https://developers.cloudflare.com/cloudflare-one/) provide enterprise-grade security and performance that would require multiple paid subscriptions elsewhere.
 
-**Automated Setup**: Moley handles tunnel creation, DNS configuration, and ingress routing automatically. **Streamlined Operations**: Single command deployment with automatic subdomain management. **Resource Management**: Proper cleanup on tunnel termination with crash recovery. **Multi-App Support**: Expose multiple local applications simultaneously. **Professional Presentation**: Use your own domain names for a polished appearance.
+## ✨ Key Benefits
 
-**Zero Additional Infrastructure**: No need for reverse proxies, load balancers, or additional services. **Centralized Configuration**: All settings managed through a single, validated configuration file. **Operational Clarity**: Structured logging provides clear operational insights and debugging information.
+### 💰 **Cost-Effective**
+No monthly subscriptions. Just your domain (~€10/year).
 
-Unlike traditional approaches that require setting up reverse proxies like Nginx Proxy Manager, Moley automatically creates and manages DNS records via the Cloudflare API. This means no additional infrastructure setup—just configure your local services and let Moley handle the rest.
+### 🔐 **Zero Trust Security**
+Built-in access control, authentication, and user management through Cloudflare's platform.
 
-| Approach                | Infrastructure Required | DNS Management      | Setup Complexity |
-|-------------------------|------------------------|---------------------|------------------|
-| **Moley**               | None                   | Automatic via API   | Single command   |
-| cloudflared + Nginx     | Nginx Proxy Manager    | Manual dashboard    | Multiple services|
-| Manual Cloudflare       | None                   | Manual dashboard    | Complex config   |
+### 🏢 **Enterprise Infrastructure**
+DDoS protection, automatic SSL certificates, and reliable uptime.
 
-Moley eliminates the need for reverse proxies while providing automated DNS management. Simplicity first.
+### ⚡ **Simple Setup**
+One command to expose localhost. No complex configuration or manual DNS management.
 
----
+## 📦 Installation
 
-## Quick Start
-
-### 1. Prerequisites
-
-- [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) installed and authenticated
-- A Cloudflare account with a custom domain
-- Go 1.23+ (for building from source)
-
-### 2. Installation
-
+### Homebrew (Recommended)
 ```bash
-# Install via Homebrew
 brew install --cask stupside/tap/moley
-
-# Or download from releases
-# Or build from source (see Development section)
 ```
 
-### 3. Authentication
-
+### Go Install
 ```bash
-# Authenticate with Cloudflare
-cloudflared tunnel login
-
-# Set your Cloudflare API token (creates ~/.moley/config.yml)
-moley config set --cloudflare.token="your-api-token"
-
-# Or use environment variable instead of config file
-export MOLEY_CLOUDFLARE_TOKEN="your-api-token"
+go install github.com/stupside/moley@latest
 ```
 
-This creates your global configuration file at `~/.moley/config.yml` containing sensitive data like API tokens. Alternatively, you can use environment variables which take precedence over file configuration.
+### Manual Download
+Download the latest binary from the [releases page](https://github.com/stupside/moley/releases/latest).
 
-### 4. Initialize Configuration
+## 🚀 Quick Start
 
-```bash
-# Create a new tunnel configuration (auto-generates moley.yml with defaults)
-moley tunnel init
-```
+1. **Authentication**
+   ```bash
+   # Authenticate cloudflared with your account
+   cloudflared tunnel login
 
-This automatically creates a `moley.yml` file with a unique tunnel ID and example configuration.
+   # Option 1: Set API token in config file
+   moley config set --cloudflare.token="your-api-token"
 
-### 5. Configure Your Apps
+   # Option 2: Use environment variable (recommended for CI/CD)
+   export MOLEY_CLOUDFLARE_TOKEN="your-api-token"
+   ```
 
-Edit the auto-generated `moley.yml` file to match your local services:
+2. **Initialize your project**
+   ```bash
+   moley tunnel init
+   ```
 
-```yaml
-tunnel:
-  id: "a-unique-tunnel-id"
+3. **Configure your apps**
+   ```bash
+   # Option 1: Edit the generated moley.yml file
+   # Option 2: Use environment variables (great for containers/CI)
+   export MOLEY_TUNNEL_INGRESS_ZONE="yourdomain.com"
+   export MOLEY_TUNNEL_INGRESS_APPS_0_TARGET_PORT="8080"
+   export MOLEY_TUNNEL_INGRESS_APPS_0_EXPOSE_SUBDOMAIN="api"
+   ```
 
-ingress:
-  zone: "yourdomain.com"
-  apps:
-    - target:
-        port: 8080
-        hostname: "localhost"
-      expose:
-        subdomain: "api"
-    - target:
-        port: 3000
-        hostname: "localhost"
-      expose:
-        subdomain: "web"
-```
+4. **Start tunneling**
+   ```bash
+   # Foreground mode
+   moley tunnel run
 
-### 6. Start Your Tunnel
+   # Background mode
+   moley tunnel run --detach
 
-```bash
-# Start the tunnel service in the foreground
-moley tunnel run
+   # Or run with everything configured via environment variables
+   MOLEY_CLOUDFLARE_TOKEN="token" MOLEY_TUNNEL_INGRESS_ZONE="yourdomain.com" moley tunnel run
+   ```
 
-# Or run in detached mode (background)
-moley tunnel run --detach
+Your app is now accessible at `https://api.yourdomain.com`! 🎉
 
-# Stop the tunnel (works for both foreground and detached)
-moley tunnel stop
+> 💡 **Pro tip**: Environment variables take precedence over config files and are perfect for CI/CD, Docker containers, and keeping secrets secure.
 
-# Test configuration without creating resources
-moley tunnel run --dry-run
+## 📚 Documentation
 
-# Use a custom configuration file
-moley tunnel run --config custom-config.yml
-```
+For complete documentation including configuration options, troubleshooting, and advanced usage, visit our [documentation site](https://stupside.github.io/moley).
 
-**Detached Mode**: When using `--detach`, the tunnel runs in the background and you get your terminal back immediately. The tunnel continues running even if you close your terminal. Use `moley tunnel stop` to stop it later.
+### Quick Links
 
-**Smart Stop**: The stop command intelligently cleans up all resources (tunnels, DNS records, processes). It first uses the `moley.lock` file to remove tracked resources, then uses your `moley.yml` configuration to detect and remove any orphaned resources, even if the lock file is missing or corrupted.
+- 📖 **[Installation Guide](https://stupside.github.io/moley/docs/installation/)** - Detailed installation instructions
+- ⚡ **[Quick Start](https://stupside.github.io/moley/docs/quick-start/)** - Get up and running in minutes
+- ⚙️ **[Configuration](https://stupside.github.io/moley/docs/configuration/)** - Advanced configuration options
+- 🔧 **[Troubleshooting](https://stupside.github.io/moley/docs/troubleshooting/)** - Common issues and solutions
 
-Your apps are now accessible at:
-- `https://api.yourdomain.com` → `localhost:8080`
-- `https://web.yourdomain.com` → `localhost:3000`
+## 🛠️ Development
 
-### 7. Additional Commands
+### Prerequisites
 
-```bash
-# View version and build information
-moley --version
-moley info
-
-# Debug with verbose logging
-moley --log-level=debug tunnel run
-
-# Use environment variables for configuration
-MOLEY_CLOUDFLARE_TOKEN="token" MOLEY_TUNNEL_INGRESS_ZONE="mydomain.com" moley tunnel run
-```
-
----
-
-## Configuration Reference
-
-### Configuration Files
-
-Moley uses two configuration files with environment variable override support:
-
-1. **Local Configuration** (`moley.yml`): Project-specific tunnel and ingress settings (auto-generated by `moley tunnel init`)
-   - Environment variables with `MOLEY_TUNNEL_` prefix override file values
-2. **Global Configuration** (`~/.moley/config.yml`): Contains sensitive data like API tokens
-   - Environment variables with `MOLEY_` prefix override file values
-
-### Configuration Schema
-
-| Field | Type | Description | Required | Validation |
-|-------|------|-------------|----------|------------|
-| `tunnel.id` | string | Unique identifier for the tunnel | Yes | Generated UUID |
-| `ingress.zone` | string | The DNS zone (your domain) to use for the tunnel | Yes | Valid domain format |
-| `ingress.apps` | array | Array of application configurations | Yes | At least one app |
-| `apps[].target.port` | integer | Local service port | Yes | 1-65535 |
-| `apps[].target.hostname` | string | Local hostname (typically `localhost`) | Yes | Valid hostname/IP |
-| `apps[].expose.subdomain` | string | Public subdomain (e.g., `api` becomes `api.yourdomain.com`) | Yes | Alphanumeric + hyphens |
-
-### Global Configuration (`~/.moley/config.yml`)
-
-```yaml
-cloudflare:
-  token: "your-cloudflare-api-token"
-```
-
-**Environment Variable Override:**
-You can override any global configuration value using environment variables with the `MOLEY_` prefix:
-
-```bash
-# Override Cloudflare token
-export MOLEY_CLOUDFLARE_TOKEN="your-api-token"
-```
-
-Environment variables take precedence over file configuration.
-
-### Local Configuration (`moley.yml`)
-
-Auto-generated by `moley tunnel init` with a unique tunnel ID:
-
-```yaml
-tunnel:
-  id: "1663c83d-8801-424f-b060-734882126071"  # Auto-generated UUID
-
-ingress:
-  zone: "example.com"  # Edit to match your domain
-  apps:
-    - target:
-        port: 8080
-        hostname: "localhost"
-      expose:
-        subdomain: "api"
-    - target:
-        port: 3000
-        hostname: "localhost"
-      expose:
-        subdomain: "web"
-```
-
-**Environment Variable Override:**
-You can override any tunnel configuration value using environment variables with the `MOLEY_TUNNEL_` prefix:
-
-```bash
-# Override tunnel zone
-export MOLEY_TUNNEL_INGRESS_ZONE="mydomain.com"
-
-# Override tunnel ID (useful for CI/CD)
-export MOLEY_TUNNEL_TUNNEL_ID="custom-tunnel-id"
-```
-
-Environment variables take precedence over file configuration, making them ideal for CI/CD pipelines or containerized deployments.
-
-### State Management
-
-Moley maintains state through a `moley.lock` file to enable intelligent resource management:
-
-**Why a lockfile?**
-- **Diff Detection**: Compare current state vs desired configuration to only update what changed
-- **Crash Recovery**: Resume operations after interruption without recreating existing resources
-- **Smart Cleanup**: Know exactly what resources to remove during `moley tunnel stop`
-- **Idempotent Operations**: Avoid duplicate resources by tracking what's already deployed
-- **Incremental Updates**: When you modify `moley.yml`, only deploy the differences
-
-**Lockfile Structure:**
-
-```json
-{
-  "entries": [
-    {
-      "handler_name": "tunnel-create",
-      "data": {
-        "config": { "tunnel": { "id": "..." } },
-        "state": { "tunnel": { "id": "..." } }
-      }
-    },
-    {
-      "handler_name": "tunnel-run",
-      "data": {
-        "config": { "tunnel": { "id": "..." } },
-        "state": { "pid": 31124, "tunnel": { "id": "..." } }
-      }
-    },
-    {
-      "handler_name": "dns-record",
-      "data": {
-        "config": { "subdomain": "api", "zone": "example.com" },
-        "state": { "record_id": "..." }
-      }
-    }
-  ]
-}
-```
-
-**Key Benefits:**
-- **Efficient**: Only creates/updates/removes resources that actually changed
-- **Reliable**: Survives crashes and interruptions without losing track of resources
-- **Safe**: Prevents accidental duplicate resources or orphaned infrastructure
-- **Transparent**: You can see exactly what Moley has deployed at any time
-
----
-
-## Development
+- Go 1.23+
+- [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) installed
 
 ### Building from Source
 
 ```bash
-# Clone the repository
 git clone https://github.com/stupside/moley.git
 cd moley
-
-# Install dependencies
 go mod download
-
-# Build the binary
 go build -o moley .
-
-# Or use Task for development workflows
-task go:build    # Build binary
 ```
 
-### Docker Development
+### Contributing
 
-```bash
-# Run moley in Docker
-task docker:moley -- tunnel run
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-# Run cloudflared commands in Docker
-task docker:cloudflared -- tunnel list
-```
-
----
-
-## Security
-
-- **API Token Management**: Never commit API tokens to version control
-- **Configuration Security**: Local configuration files contain sensitive data
-- **Network Security**: All traffic encrypted via Cloudflare tunnels
-- **Access Control**: Regular token rotation recommended
-
-See [SECURITY.md](SECURITY.md) for detailed security guidelines.
-
----
-
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Cloudflare](https://cloudflare.com) for providing the tunnel infrastructure
+- [Cloudflared](https://github.com/cloudflare/cloudflared) team for the tunnel client
