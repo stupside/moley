@@ -34,18 +34,20 @@ const sectionCount = traverseContent(page.content, (block) => {
 ---
 
 {(headings.length > 0 || uniqueLanguages.length > 0 || sectionCount > 0) && (
-  <div class="bg-gray-50 rounded-lg p-4 mb-6 text-sm text-gray-600">
-    <h3 class="font-medium text-gray-900 mb-2">Page Summary</h3>
-    <ul class="space-y-1">
-      {headings.length > 0 && (
-        <li>{headings.length} heading{headings.length !== 1 ? 's' : ''}</li>
-      )}
-      {sectionCount > 0 && (
-        <li>{sectionCount} section{sectionCount !== 1 ? 's' : ''}</li>
-      )}
-      {uniqueLanguages.length > 0 && (
-        <li>Code examples in: {uniqueLanguages.join(', ')}</li>
-      )}
-    </ul>
+  <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+    <div class="flex flex-col gap-2">
+      <h3 class="font-medium text-gray-900">Page Summary</h3>
+      <ul class="space-y-1">
+        {headings.length > 0 && (
+          <li>{headings.length} heading{headings.length !== 1 ? 's' : ''}</li>
+        )}
+        {sectionCount > 0 && (
+          <li>{sectionCount} section{sectionCount !== 1 ? 's' : ''}</li>
+        )}
+        {uniqueLanguages.length > 0 && (
+          <li>Code examples in: {uniqueLanguages.join(', ')}</li>
+        )}
+      </ul>
+    </div>
   </div>
 )}

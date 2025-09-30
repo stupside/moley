@@ -11,7 +11,7 @@ export const documentationPages: PageDefinition[] = [
 	// Landing page
 	{
 		meta: {
-			title: "Moley Documentation - Complete Guide to Localhost Tunneling",
+			title: "Guide to Localhost Tunneling",
 			menuTitle: "Documentation",
 			description:
 				"Complete guide to using Moley for secure localhost tunneling with Cloudflare. Learn installation, configuration, and troubleshooting for your custom domain setup.",
@@ -27,7 +27,7 @@ export const documentationPages: PageDefinition[] = [
 					children: [
 						{
 							type: "text",
-							text: "Moley is a powerful CLI tool that simplifies exposing your localhost applications to the internet using ",
+							text: "Moley simplifies exposing your localhost applications to the internet using ",
 						},
 						{
 							type: "link",
@@ -38,32 +38,32 @@ export const documentationPages: PageDefinition[] = [
 						},
 						{
 							type: "text",
-							text: ". With Moley, you can share your local development servers on your own custom domain without complex port forwarding or expensive tunnel services.",
+							text: ". Share your local development servers on your own custom domain with enterprise-grade features like DDoS protection, automatic SSL certificates, and ",
+						},
+						{
+							type: "link",
+							href: "https://developers.cloudflare.com/cloudflare-one/",
+							text: "Zero Trust security",
+							external: true,
+							rel: "nofollow noopener noreferrer",
+						},
+						{
+							type: "text",
+							text: ", all free with just your domain cost.",
 						},
 					],
 				},
 				{
 					type: "heading",
 					level: 2,
-					text: "What You'll Learn",
+					text: "Documentation",
 				},
 				{
 					type: "paragraph",
 					children: [
 						{
 							type: "text",
-							text: "This comprehensive documentation covers everything from basic installation to advanced troubleshooting. Whether you're a developer wanting to share work-in-progress applications or a DevOps engineer setting up secure tunnels, you'll find step-by-step guides and best practices. Learn more about ",
-						},
-						{
-							type: "link",
-							href: "https://developers.cloudflare.com/cloudflare-one/",
-							text: "Cloudflare Zero Trust",
-							external: true,
-							rel: "nofollow noopener noreferrer",
-						},
-						{
-							type: "text",
-							text: " for enterprise security features.",
+							text: "Complete guides covering installation, configuration, and troubleshooting. Whether you're sharing work-in-progress applications or setting up secure tunnels for your team, you'll find step-by-step instructions and best practices.",
 						},
 					],
 				},
@@ -115,7 +115,7 @@ export const documentationPages: PageDefinition[] = [
 	// Installation page
 	{
 		meta: {
-			title: "Install Moley - Cloudflare Tunnel Manager Setup Guide",
+			title: "Install - Cloudflare Tunnel Manager Setup Guide",
 			menuTitle: "Installation",
 			slug: "installation",
 			description:
@@ -331,7 +331,6 @@ export const documentationPages: PageDefinition[] = [
 					language: "text",
 					title: "Expected Output",
 					code: "Moley v1.0.0\nBuild: abc1234\nGo version: go1.23.0",
-					className: "mt-6",
 				},
 
 				{
@@ -681,7 +680,7 @@ ingress:
 	// Configuration page
 	{
 		meta: {
-			title: "Moley Configuration - Advanced Tunnel Setup Options",
+			title: "Configuration - Advanced Tunnel Setup Options",
 			menuTitle: "Configuration",
 			slug: "configuration",
 			description:
@@ -1076,7 +1075,7 @@ export MOLEY_TUNNEL_INGRESS_APPS_1_EXPOSE_SUBDOMAIN="api"`,
 	// Troubleshooting page
 	{
 		meta: {
-			title: "Moley Troubleshooting - Fix Common Tunnel Issues",
+			title: "Troubleshooting - Fix Common Tunnel Issues",
 			menuTitle: "Troubleshooting",
 			slug: "troubleshooting",
 			description:

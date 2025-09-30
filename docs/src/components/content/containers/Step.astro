@@ -1,35 +1,58 @@
 ---
 import type { StepBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
 import ContentRenderer from "../../ContentRenderer.astro";
 
 export interface Props {
-	content: StepBlock;
+  content: StepBlock;
 }
 
 const { content } = Astro.props;
 
 const stepNumber = content.number || 1;
 const stepId =
-	content.id ||
-	content.title
-		.toLowerCase()
-		.replace(/[^\w\s-]/g, "")
-		.replace(/\s+/g, "-");
+  content.id ||
+  content.title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
 ---
 
-<div class={`border-l-4 border-gray-200 pl-6 mb-8 ${content.className || ''}`} id={content.id}>
-  <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center" id={stepId}>
-    <span class="inline-flex items-center justify-center w-8 h-8 bg-gray-800 text-white rounded-full text-sm font-semibold mr-3">
-      {stepNumber}
-    </span>
-    {content.title}
-  </h3>
-
-  {content.description && (
-    <p class="text-gray-600 mb-4">{content.description}</p>
+<div
+  class={mergeClassName(
+    "relative bg-white border border-gray-200 rounded-xl p-6 shadow-sm",
+    content.className,
   )}
+  id={content.id}
+>
+  <div class="absolute -left-4 top-6">
+    <div
+      class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full text-sm font-bold shadow-lg ring-4 ring-white flex items-center justify-center"
+    >
+      {stepNumber}
+    </div>
+  </div>
 
-  {content.children?.map(child => (
-    <ContentRenderer content={child} />
-  ))}
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <h3 class="text-lg font-semibold text-gray-900" id={stepId}>
+        {content.title}
+      </h3>
+      {
+        content.description && (
+          <p class="text-gray-600 leading-relaxed">{content.description}</p>
+        )
+      }
+    </div>
+
+    {
+      content.children && content.children.length > 0 && (
+        <div class="flex flex-col gap-3">
+          {content.children.map((child) => (
+            <ContentRenderer content={child} />
+          ))}
+        </div>
+      )
+    }
+  </div>
 </div>

@@ -1,5 +1,6 @@
 ---
 import type { InlineCodeBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
 
 export interface Props {
 	content: InlineCodeBlock;
@@ -9,7 +10,7 @@ const { content } = Astro.props;
 ---
 
 <code
-  class={`inline px-1 py-0.5 bg-gray-100 text-gray-800 rounded text-sm font-mono ${content.className || ''}`}
+  class={mergeClassName("inline px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-mono border border-gray-200", content.className)}
   id={content.id}
 >
   {content.code}

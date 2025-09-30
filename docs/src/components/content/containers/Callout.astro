@@ -1,5 +1,7 @@
 ---
 import type { CalloutBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
+import { containerStyles } from "./shared.js";
 import ContentRenderer from "../../ContentRenderer.astro";
 
 export interface Props {
@@ -7,10 +9,11 @@ export interface Props {
 }
 
 const { content } = Astro.props;
+const style = content.style && content.style in containerStyles ? content.style : "note";
 ---
 
-<div class={`bg-gray-50 rounded-lg px-8 py-6 my-4 ${content.className || ''}`} id={content.id}>
-  <div class="space-y-3">
+<div class={mergeClassName(`${containerStyles[style]} border rounded-xl px-8 py-6 shadow-sm`, content.className)} id={content.id}>
+  <div class="flex flex-col gap-4">
     {content.children?.map(child => (
       <ContentRenderer content={child} />
     ))}

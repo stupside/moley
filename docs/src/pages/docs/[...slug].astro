@@ -9,7 +9,7 @@
 import ContentRenderer from "../../components/ContentRenderer.astro";
 import SearchEngines from "../../components/layout/SearchEngines.astro";
 import TableOfContents from "../../components/layout/TableOfContents.astro";
-import { config } from "../../config";
+import { config } from "../../config.js";
 import { documentationPages } from "../../content/pages.js";
 import DocsLayout from "../../layouts/DocsLayout.astro";
 import type { PageDefinition } from "../../types/content.js";
@@ -19,7 +19,7 @@ export async function getStaticPaths() {
     const slug = page.meta.href.replace("/docs/", "").replace(/\/$/, "");
 
     return {
-      params: { slug },
+      params: { slug: slug || undefined },
       props: { page },
     };
   });

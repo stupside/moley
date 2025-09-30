@@ -1,5 +1,6 @@
 ---
 import type { PageBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
 import ContentRenderer from "../../ContentRenderer.astro";
 
 export interface Props {
@@ -9,7 +10,7 @@ export interface Props {
 const { content } = Astro.props;
 ---
 
-<div class={content.className} id={content.id}>
+<div class={mergeClassName("flex flex-col gap-6", content.className)} id={content.id}>
   {content.children?.map(child => (
     <ContentRenderer content={child} />
   ))}

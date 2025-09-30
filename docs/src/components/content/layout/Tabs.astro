@@ -1,5 +1,6 @@
 ---
 import type { TabBlock, TabsBlock } from "../../../types/content.js";
+import { cn } from "../../../utils/classes.js";
 import { createSlug } from "../../../utils/content.js";
 import ContentRenderer from "../../ContentRenderer.astro";
 
@@ -11,27 +12,33 @@ const { content } = Astro.props;
 const tabs: TabBlock[] = content.children || [];
 const tabsId =
 	content.id || createSlug(`tabs-${tabs.map((t) => t.title).join("-")}`);
+
+// Tab button classes
+const BASE_CLASSES = "px-4 py-2 text-sm font-medium rounded-lg transition-colors border cursor-pointer";
+const ACTIVE_CLASSES = "bg-white text-orange-700 border-gray-200";
+const INACTIVE_CLASSES = "text-gray-600 hover:text-gray-900 hover:bg-white/50 border-transparent";
 ---
 
-<div class={`mb-6 ${content.className || ""}`} id={content.id} data-tabs-container={tabsId}>
-  <div class="flex border-b border-gray-200" role="tablist">
-    {tabs.map((tab, index) => (
-      <button
-        class={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-          index === 0
-            ? "border-gray-800 text-gray-800"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-        data-tab-index={index}
-        aria-selected={index === 0}
-        role="tab"
-      >
-        {tab.title}
-      </button>
-    ))}
+<div class={content.className} id={content.id} data-tabs={tabsId}>
+  <div class="border-b border-gray-200 pb-3 mb-3" role="tablist">
+    <div class="flex gap-1">
+      {tabs.map((tab, index) => (
+        <button
+          class={cn(
+            BASE_CLASSES,
+            index === 0 ? ACTIVE_CLASSES : INACTIVE_CLASSES
+          )}
+          data-tab-button={index}
+          aria-selected={index === 0}
+          role="tab"
+        >
+          {tab.title}
+        </button>
+      ))}
+    </div>
   </div>
 
-  <div class="mt-4">
+  <div>
     {tabs.map((tab, index) => (
       <div
         class={index === 0 ? "block" : "hidden"}
@@ -44,35 +51,73 @@ const tabsId =
   </div>
 </div>
 
-<script is:inline define:vars={{ tabs, tabsId }}>
-  const ACTIVE_TAB_CLASSES = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors border-gray-800 text-gray-800';
-  const INACTIVE_TAB_CLASSES = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors border-transparent text-gray-500 hover:text-gray-700';
+<script>
+  // Tab button classes (duplicated from frontmatter for script access)
+  const BASE_CLASSES = "px-4 py-2 text-sm font-medium rounded-lg transition-colors border cursor-pointer";
+  const ACTIVE_CLASSES = "bg-white text-orange-700 border-gray-200";
+  const INACTIVE_CLASSES = "text-gray-600 hover:text-gray-900 hover:bg-white/50 border-transparent";
 
-  function handleTabClick(event) {
-    const button = event.target;
-    if (!button?.hasAttribute('data-tab-index')) return;
-
-    const activeIndex = parseInt(button.getAttribute('data-tab-index'));
-    const container = document.querySelector(`[data-tabs-container="${tabsId}"]`);
-    if (!container) return;
-
-    // Update all tabs using data instead of DOM traversal
-    tabs.forEach((_, index) => {
-      const tabButton = container.querySelector(`[data-tab-index="${index}"]`);
-      const tabPanel = container.querySelector(`[data-tab-panel="${index}"]`);
-
-      if (tabButton && tabPanel) {
-        const isActive = index === activeIndex;
-
-        // Update button
-        tabButton.className = isActive ? ACTIVE_TAB_CLASSES : INACTIVE_TAB_CLASSES;
-        tabButton.setAttribute('aria-selected', String(isActive));
-
-        // Update panel
-        tabPanel.className = isActive ? 'block' : 'hidden';
-      }
-    });
+  interface TabSystem {
+    container: HTMLElement;
+    buttons: NodeListOf<HTMLButtonElement>;
+    panels: NodeListOf<HTMLElement>;
+    activeIndex: number;
   }
 
-  document.addEventListener('click', handleTabClick);
+  class TabController {
+    private tabs: TabSystem;
+
+    constructor(container: HTMLElement) {
+      this.tabs = {
+        container,
+        buttons: container.querySelectorAll('[data-tab-button]'),
+        panels: container.querySelectorAll('[data-tab-panel]'),
+        activeIndex: 0
+      };
+
+      this.init();
+    }
+
+    private init(): void {
+      this.tabs.buttons.forEach((button, index) => {
+        button.addEventListener('click', () => this.switchTab(index));
+      });
+    }
+
+    private switchTab(index: number): void {
+      if (index === this.tabs.activeIndex) return;
+
+      // Update buttons
+      this.updateButton(this.tabs.activeIndex, false);
+      this.updateButton(index, true);
+
+      // Update panels
+      this.updatePanel(this.tabs.activeIndex, false);
+      this.updatePanel(index, true);
+
+      this.tabs.activeIndex = index;
+    }
+
+    private updateButton(index: number, isActive: boolean): void {
+      const button = this.tabs.buttons[index];
+      if (!button) return;
+
+      button.className = [BASE_CLASSES, isActive ? ACTIVE_CLASSES : INACTIVE_CLASSES].join(' ');
+      button.setAttribute('aria-selected', isActive.toString());
+    }
+
+    private updatePanel(index: number, isActive: boolean): void {
+      const panel = this.tabs.panels[index];
+      if (!panel) return;
+
+      panel.className = isActive ? 'block' : 'hidden';
+    }
+  }
+
+  // Initialize all tab containers
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-tabs]').forEach((container) => {
+      new TabController(container as HTMLElement);
+    });
+  });
 </script>

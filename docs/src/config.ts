@@ -26,10 +26,6 @@ export const navigation = {
 		{ label: "Docs", href: "/docs/" },
 	] as const,
 
-	// Generate navigation items
-	getItems() {
-		return this.items;
-	},
 } as const;
 
 // Main configuration object

@@ -1,5 +1,6 @@
 ---
 import "../app.css";
+import { mergeClassName } from "../utils/classes.js";
 import Footer from "../components/layout/Footer.astro";
 import Header from "../components/layout/Header.astro";
 
@@ -20,19 +21,19 @@ const { class: className = "" } = Astro.props;
     <slot name="head" />
 
     <!-- View transition styles -->
-    <style define:vars={{ transitionDuration: "0.3s" }}>
+    <style>
       @view-transition {
         navigation: auto;
       }
 
       ::view-transition-old(root),
       ::view-transition-new(root) {
-        animation-duration: var(--transitionDuration);
+        animation-duration: 0.3s;
       }
     </style>
   </head>
 
-  <body class={`bg-white text-gray-900 font-sans antialiased ${className}`}>
+  <body class={mergeClassName("bg-white text-gray-900 font-sans antialiased", className)}>
     <Header currentPath={Astro.url.pathname} />
 
     <main class="relative">

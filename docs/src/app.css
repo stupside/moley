@@ -5,7 +5,7 @@
 }
 
 .astro-code {
-	@apply bg-gray-900 text-gray-100 p-4 text-sm leading-relaxed;
+	@apply p-4 text-sm leading-relaxed bg-white;
 }
 
 .astro-code pre,

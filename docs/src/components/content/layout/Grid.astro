@@ -1,5 +1,7 @@
 ---
 import type { GridBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
+import { gapClasses } from "./shared.js";
 import ContentRenderer from "../../ContentRenderer.astro";
 
 export interface Props {
@@ -7,13 +9,6 @@ export interface Props {
 }
 
 const { content } = Astro.props;
-
-const gapClasses = {
-	none: "gap-0",
-	small: "gap-2",
-	medium: "gap-6",
-	large: "gap-8",
-} as const;
 
 const colClasses: Record<number, string> = {
 	1: "md:grid-cols-1",
@@ -23,7 +18,7 @@ const colClasses: Record<number, string> = {
 };
 
 const gap = content.gap && content.gap in gapClasses ? content.gap : "medium";
-const gridClass = `grid grid-cols-1 ${colClasses[content.columns] || ""} ${gapClasses[gap]} mb-6 ${content.className || ""}`;
+const gridClass = mergeClassName(`grid grid-cols-1 ${colClasses[content.columns] || ""} ${gapClasses[gap]}`, content.className);
 ---
 
 <div class={gridClass} id={content.id} style={colClasses[content.columns] ? undefined : `grid-template-columns: repeat(${content.columns}, minmax(0, 1fr));`}>

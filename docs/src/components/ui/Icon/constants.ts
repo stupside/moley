@@ -3,24 +3,19 @@
  */
 
 import {
-	Check,
 	ChevronRight,
 	CloudDownload,
 	CodeXml,
 	Download,
 	Github,
 	Link,
-	SquarePen,
 	TriangleAlert,
-	X,
 	Zap,
 } from "@lucide/astro";
 
 import type { BaseComponentProps } from "../../../types/shared";
 
 export const iconMap = {
-	check: Check,
-	x: X,
 	download: Download,
 	zap: Zap,
 	"code-2": CodeXml,
@@ -29,12 +24,19 @@ export const iconMap = {
 	link: Link,
 	github: Github,
 	"cloud-download": CloudDownload,
-	edit: SquarePen,
 } as const;
 
 export type IconName = keyof typeof iconMap;
 
 export type IconSize = "xs" | "sm" | "md" | "lg" | "xl";
+
+export const sizeStyles = {
+	xs: "w-3 h-3",
+	sm: "w-4 h-4",
+	md: "w-5 h-5",
+	lg: "w-6 h-6",
+	xl: "w-8 h-8",
+} as const;
 
 export interface IconProps extends BaseComponentProps {
 	name: IconName;

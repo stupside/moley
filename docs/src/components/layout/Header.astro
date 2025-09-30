@@ -4,6 +4,7 @@
  */
 
 import { config } from "../../config.js";
+import { layoutClasses } from "./shared.js";
 import Icon from "../ui/Icon/Icon.astro";
 import Navigation from "./Navigation.astro";
 
@@ -13,11 +14,11 @@ export interface Props {
 
 const { currentPath } = Astro.props;
 
-const items = config.navigation.getItems();
+const items = config.navigation.items;
 ---
 
-<header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all duration-200">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all">
+  <div class={layoutClasses.container}>
     <div class="flex h-16 items-center justify-between">
       <!-- Logo -->
       <a href={`${import.meta.env.BASE_URL}`} class="transition-opacity hover:opacity-80">

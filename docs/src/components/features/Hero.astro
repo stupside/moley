@@ -3,6 +3,9 @@
  * Modern Hero component using atomic design
  */
 
+import { layoutClasses } from "../layout/shared.js";
+import { mergeClassName } from "../../utils/classes.js";
+
 // Inlined simple components to avoid over-engineering
 
 export interface Badge {
@@ -36,40 +39,40 @@ const {
 ---
 
 <section
-  class={`bg-white py-8 sm:py-12 relative overflow-hidden bg-gradient-to-br from-gray-50 to-white ${className}`}
+  class={mergeClassName("bg-gradient-to-br from-white to-gray-50/50 py-16 sm:py-20 relative overflow-hidden", className)}
 >
-  <div class="text-center">
-    <img
-      alt={logo.alt}
-      src={`${import.meta.env.BASE_URL}${logo.src}`}
-      width={logo.width}
-      height={logo.height}
-      class="mx-auto mb-6"
-    />
+  <div class={layoutClasses.container}>
+    <div class="text-center">
+      <div class="flex flex-col items-center gap-8">
+        <img
+          alt={logo.alt}
+          src={`${import.meta.env.BASE_URL}${logo.src}`}
+          width={logo.width}
+          height={logo.height}
+          class="mx-auto"
+        />
 
-    <h1
-      class="text-4xl sm:text-5xl lg:text-6xl text-gray-900 font-bold tracking-tight mb-4"
-    >
-      {title}
-      <span class="text-gray-600">{titleAccent}</span>
-    </h1>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl text-gray-900 font-bold tracking-tight">
+          {title}
+          <span class="bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">{titleAccent}</span>
+        </h1>
 
-    <p class="text-lg mx-auto max-w-2xl mb-6 text-gray-600">
-      {subtitle}
-    </p>
+        <p class="text-xl mx-auto max-w-3xl text-gray-600 leading-relaxed">
+          {subtitle}
+        </p>
 
-    {
-      badges.length > 0 && (
-        <div class="flex flex-wrap justify-center gap-3 text-sm font-medium">
-          {badges.map((badge) => (
-            <span class="rounded-full bg-gray-100 px-4 py-2 text-gray-700">
-              {badge.text}
-            </span>
-          ))}
-        </div>
-      )
-    }
+        {badges.length > 0 && (
+          <div class="flex flex-wrap justify-center gap-3 text-sm font-medium">
+            {badges.map((badge) => (
+              <span class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-orange-700 ring-1 ring-orange-600/20">
+                {badge.text}
+              </span>
+            ))}
+          </div>
+        )}
 
-    <slot />
+        <slot />
+      </div>
+    </div>
   </div>
 </section>

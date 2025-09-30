@@ -9,17 +9,17 @@ export interface Props {
 const { content } = Astro.props;
 ---
 
-<div class={`my-6 ${content.className || ''}`} id={content.id}>
+<div class={content.className} id={content.id}>
   {content.title && (
-    <div class="bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 border border-b-0 border-gray-200 rounded-t-lg">
+    <div class="bg-gray-50 px-4 py-2 text-xs text-gray-600 border border-gray-200 border-b border-gray-300 rounded-t-lg">
       {content.title}
     </div>
   )}
-  <div class={content.title ? "rounded-b-lg border border-gray-200 border-t-0 overflow-hidden" : "rounded-lg border border-gray-200 overflow-hidden"}>
+  <div class={`overflow-hidden border border-gray-200 ${content.title ? "rounded-b-lg border-t-0" : "rounded-lg"}`}>
     <Code
       code={content.code}
       lang={content.language}
-      theme="github-dark"
+      theme="github-light"
     />
   </div>
 </div>

@@ -1,5 +1,7 @@
 ---
 import type { LinkBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
+import { buildUrl } from "../../../utils/content.js";
 
 export interface Props {
 	content: LinkBlock;
@@ -13,12 +15,12 @@ const linkProps = content.external
 
 const href = content.external
 	? content.href
-	: `${import.meta.env.BASE_URL}${content.href.replace(/^\//, '')}`;
+	: buildUrl(content.href);
 ---
 
 <a
   href={href}
-  class={`text-gray-700 hover:text-gray-900 underline ${content.className || ''}`}
+  class={mergeClassName("text-orange-600 hover:text-orange-800 underline decoration-orange-600/30 hover:decoration-orange-800/50 underline-offset-4 transition-colors", content.className)}
   id={content.id}
   {...linkProps}
 >

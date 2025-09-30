@@ -1,5 +1,7 @@
 ---
 import { documentationPages } from "../content/pages.js";
+import { layoutClasses } from "../components/layout/shared.js";
+import { buildUrl } from "../utils/content.js";
 import BaseLayout from "./BaseLayout.astro";
 
 const { title } = Astro.props;
@@ -47,36 +49,34 @@ Object.values(nav).forEach((pages) => {
 <BaseLayout>
   <slot name="head" slot="head" />
   <div class="min-h-screen bg-gray-50" transition:persist>
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class={layoutClasses.container}>
       <div class="flex">
         <!-- Enhanced Left Sidebar with Categories -->
         <aside class="w-40 lg:w-48 flex-shrink-0" transition:persist="sidebar">
           <div class="sticky top-20 py-8">
-            <nav class="space-y-6">
+            <nav class="flex flex-col gap-6">
               <div>
-                <h2
-                  class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4"
-                >
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
                   Documentation
                 </h2>
 
-                {
-                  Object.entries(nav).map(([category, items]) => (
-                    <div class="mb-4">
-                      <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                <div class="flex flex-col gap-6">
+                  {Object.entries(nav).map(([category, items]) => (
+                    <div class="flex flex-col gap-3">
+                      <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">
                         {category}
                       </h3>
-                      <div class="space-y-1">
+                      <div class="flex flex-col gap-1">
                         {items.map((item) => {
                           const isActive = currentPath === item.href;
                           return (
                             <a
-                              href={`${import.meta.env.BASE_URL}${item.href.replace(/^\//, '')}`}
+                              href={buildUrl(item.href)}
                               class:list={[
-                                "block w-full px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                "block w-full py-2 px-1 text-sm font-medium transition-colors rounded-lg",
                                 {
-                                  "bg-gray-100 text-gray-900": isActive,
-                                  "text-gray-600 hover:bg-gray-100 hover:text-gray-900":
+                                  "text-orange-700 font-semibold": isActive,
+                                  "text-gray-600 hover:text-orange-600":
                                     !isActive,
                                 },
                               ]}
@@ -87,8 +87,8 @@ Object.values(nav).forEach((pages) => {
                         })}
                       </div>
                     </div>
-                  ))
-                }
+                  ))}
+                </div>
               </div>
 
               <!-- Action Slots -->
@@ -109,7 +109,7 @@ Object.values(nav).forEach((pages) => {
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <h1
-                        class="text-4xl font-bold text-gray-900 mb-2"
+                        class="text-4xl font-bold text-gray-900"
                         transition:name={`title-${title}`}
                       >
                         {title}
@@ -123,14 +123,10 @@ Object.values(nav).forEach((pages) => {
 
                 <!-- Content Section -->
                 <div class="px-8 py-8">
-                  <article class="prose prose-gray prose-lg max-w-none">
+                  <article class="max-w-none">
                     <slot />
                   </article>
 
-                  <!-- Footer Slot for things like "Edit on GitHub" -->
-                  <footer class="mt-12 pt-8 border-t border-gray-100">
-                    <slot name="content-footer" />
-                  </footer>
                 </div>
               </div>
             </div>

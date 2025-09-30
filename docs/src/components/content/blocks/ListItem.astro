@@ -1,5 +1,6 @@
 ---
 import type { ListItemBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
 import ContentRenderer from "../../ContentRenderer.astro";
 
 export interface Props {
@@ -9,7 +10,7 @@ export interface Props {
 const { content } = Astro.props;
 ---
 
-<li class={`mb-2 ${content.className || ''}`} id={content.id}>
+<li class={mergeClassName("leading-relaxed", content.className)} id={content.id}>
   {content.text}
   {content.children?.map(child => (
     <ContentRenderer content={child} />

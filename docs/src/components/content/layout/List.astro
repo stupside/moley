@@ -1,5 +1,6 @@
 ---
 import type { ListBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
 import ContentRenderer from "../../ContentRenderer.astro";
 
 export interface Props {
@@ -9,11 +10,11 @@ export interface Props {
 const { content } = Astro.props;
 
 const isOrdered = content.style === "ordered";
-const baseClasses = "list-inside text-gray-700 space-y-1 mb-4";
+const baseClasses = "list-inside text-gray-700 space-y-2 pl-1";
 const listClasses = isOrdered
 	? `list-decimal ${baseClasses}`
 	: `list-disc ${baseClasses}`;
-const finalClasses = `${listClasses} ${content.className || ""}`;
+const finalClasses = mergeClassName(listClasses, content.className);
 ---
 
 {isOrdered ? (

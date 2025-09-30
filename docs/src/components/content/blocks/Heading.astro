@@ -1,5 +1,6 @@
 ---
 import type { HeadingBlock } from "../../../types/content.js";
+import { mergeClassName } from "../../../utils/classes.js";
 import { createSlug } from "../../../utils/content.js";
 
 export interface Props {
@@ -9,17 +10,17 @@ export interface Props {
 const { content } = Astro.props;
 
 const headingClasses = {
-	1: "text-4xl font-bold text-gray-900 mb-6",
-	2: "text-3xl font-bold text-gray-900 mb-4 mt-8",
-	3: "text-2xl font-semibold text-gray-900 mb-3 mt-6",
-	4: "text-xl font-semibold text-gray-900 mb-2 mt-4",
-	5: "text-lg font-semibold text-gray-900 mb-2 mt-4",
-	6: "text-base font-semibold text-gray-900 mb-2 mt-4",
+	1: "text-4xl font-bold text-gray-900 tracking-tight",
+	2: "text-3xl font-bold text-gray-900 tracking-tight",
+	3: "text-2xl font-semibold text-gray-900 tracking-tight",
+	4: "text-xl font-semibold text-gray-900",
+	5: "text-lg font-semibold text-gray-900",
+	6: "text-base font-semibold text-gray-900",
 };
 
 const headingId =
 	content.id || (content.text ? createSlug(content.text) : undefined);
-const headingClass = `${headingClasses[content.level]} ${content.className || ""}`;
+const headingClass = mergeClassName(headingClasses[content.level], content.className);
 ---
 
 {content.level === 1 && <h1 class={headingClass} id={headingId}>{content.text}</h1>}

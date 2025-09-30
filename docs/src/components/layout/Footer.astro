@@ -1,5 +1,7 @@
 ---
 import { config } from "../../config.js";
+import { layoutClasses } from "./shared.js";
+import { mergeClassName, cn } from "../../utils/classes.js";
 import type { IconName } from "../ui/Icon/constants.js";
 import Icon from "../ui/Icon/Icon.astro";
 
@@ -30,25 +32,25 @@ const socialLinks = [
 ];
 ---
 
-<footer class={`border-t border-gray-200 bg-gray-50 ${className}`}>
-  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-    <div class="text-center">
+<footer class={mergeClassName("border-t border-gray-200 bg-gray-50", className)}>
+  <div class={cn(layoutClasses.container, "py-12")}>
+    <div class="text-center flex flex-col gap-4">
       <p class="text-sm text-gray-600">
         &copy; {currentYear}
         {config.site.author.name}. Built with{" "}
         <a
           href="https://astro.build"
-          class="font-medium text-gray-900 hover:underline"
+          class="font-medium text-orange-600 hover:text-orange-800 hover:underline transition-colors"
           rel="nofollow noopener noreferrer"
           target="_blank">Astro</a
         >.
       </p>
-      <div class="mt-4 flex justify-center space-x-6">
+      <div class="flex justify-center space-x-6">
         {
           socialLinks.map((link) => (
             <a
               href={link.href}
-              class="text-gray-400 hover:text-gray-500 transition-colors"
+              class="text-gray-400 hover:text-orange-600 transition-colors"
               aria-label={link.label}
               rel="nofollow noopener noreferrer"
               target="_blank"

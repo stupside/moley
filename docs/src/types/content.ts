@@ -14,14 +14,13 @@
 
 import type { CodeLanguage } from "astro";
 import type { IconName } from "../components/ui/Icon/constants";
+import type { GapSize } from "../components/content/layout/shared";
 
 // Code language types
 
 // Spacing and layout types
 export type SpacingSize = "none" | "small" | "medium" | "large";
-export type GapSize = "none" | "small" | "medium" | "large";
-export type InfoBoxStyle = "info" | "warning" | "error" | "tip" | "note";
-export type CalloutStyle = "default" | "info" | "highlight" | "box";
+export type ContainerStyle = "info" | "warning" | "error" | "success" | "tip" | "note";
 export type ListStyle = "ordered" | "unordered";
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -139,13 +138,13 @@ export interface StepBlock extends BaseContentBlock<"step"> {
 }
 
 export interface InfoBoxBlock extends BaseContentBlock<"infobox"> {
-	style?: InfoBoxStyle;
+	style?: ContainerStyle;
 	title?: string;
 	children: ContentBlock[];
 }
 
 export interface CalloutBlock extends BaseContentBlock<"callout"> {
-	style?: CalloutStyle;
+	style?: ContainerStyle;
 	children: ContentBlock[];
 }
 
