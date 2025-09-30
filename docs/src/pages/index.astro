@@ -9,7 +9,7 @@ const heroData = {
   title: "Turn localhost into ",
   titleAccent: "production URLs",
   subtitle:
-    "Share your local development server on your own domain with enterprise-grade infrastructure. One command, zero monthly fees.",
+    "Cloudflare Tunnels without the hassle. Automated tunnel creation, DNS routing, and cleanup. One command turns localhost into production URLs.",
   logo: {
     src: config.site.logo,
     alt: "Moley",
@@ -19,10 +19,10 @@ const heroData = {
 };
 
 const title =
-  "Moley – Expose Localhost with Cloudflare Tunnels & Custom Domains";
+  "Moley – Automated Cloudflare Tunnels for Custom Domains";
 
 const description =
-  "Expose your localhost instantly with Moley using Cloudflare Tunnels and custom domains. Secure, automated setup with zero extra infrastructure.";
+  "Free Cloudflare Tunnel automation tool. Turn localhost into production URLs with automated configuration, DNS routing, and SSL certificates.";
 ---
 
 <BaseLayout class="bg-gray-50">
@@ -41,10 +41,10 @@ const description =
     <div class={layoutClasses.container}>
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Why developers choose Moley
+          Enterprise tunneling, automated
         </h2>
         <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          Leverage Cloudflare's enterprise infrastructure for free. One command, your domain, enterprise features.
+          Cloudflare Tunnels are powerful and free, but complex setup drives developers to paid or free limited tools. Moley automates the entire configuration process. Skip the monthly fees.
         </p>
       </div>
 
@@ -55,8 +55,8 @@ const description =
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.467-.218-2.121-.659-1.172-.879-1.172-2.303 0-3.182C10.536 7.697 11.304 7.478 12 7.478c.725 0 1.467.218 2.121.659l.879-.659" />
             </svg>
           </div>
-          <h3 class="mt-6 text-lg font-semibold text-gray-900">~€10/year</h3>
-          <p class="mt-2 text-sm text-gray-600">Just your domain cost. No monthly subscriptions or hidden fees.</p>
+          <h3 class="mt-6 text-lg font-semibold text-gray-900">Domain Cost Only</h3>
+          <p class="mt-2 text-sm text-gray-600">Enterprise features for your domain cost. No monthly subscriptions.</p>
         </div>
 
         <div class="text-center">
@@ -66,7 +66,7 @@ const description =
             </svg>
           </div>
           <h3 class="mt-6 text-lg font-semibold text-gray-900">Zero Trust Security</h3>
-          <p class="mt-2 text-sm text-gray-600">Built-in access control with Cloudflare Access.</p>
+          <p class="mt-2 text-sm text-gray-600">Built-in access control and authentication via Cloudflare Access.</p>
         </div>
 
         <div class="text-center">
@@ -76,7 +76,7 @@ const description =
             </svg>
           </div>
           <h3 class="mt-6 text-lg font-semibold text-gray-900">Enterprise Infrastructure</h3>
-          <p class="mt-2 text-sm text-gray-600">DDoS protection, automatic SSL, and global reliability included.</p>
+          <p class="mt-2 text-sm text-gray-600">DDoS protection, automatic SSL certificates, and unlimited bandwidth.</p>
         </div>
 
         <div class="text-center">
@@ -85,8 +85,8 @@ const description =
               <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
             </svg>
           </div>
-          <h3 class="mt-6 text-lg font-semibold text-gray-900">One Command</h3>
-          <p class="mt-2 text-sm text-gray-600">Simple setup. No complex configuration or manual DNS management.</p>
+          <h3 class="mt-6 text-lg font-semibold text-gray-900">One Command Setup</h3>
+          <p class="mt-2 text-sm text-gray-600">Automated configuration, DNS routing, and cleanup. Zero manual work.</p>
         </div>
       </div>
     </div>
@@ -97,10 +97,10 @@ const description =
     <div class={layoutClasses.container}>
       <div class="text-center mb-16">
         <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          From localhost to live in seconds
+          Manual setup vs. automated deployment
         </h2>
         <p class="mt-4 text-lg text-gray-600">
-          Skip the complex setup. Moley automates everything for you.
+          See how Moley eliminates hours of configuration work.
         </p>
       </div>
 
@@ -119,24 +119,32 @@ const description =
             <div class="space-y-3 mb-6">
               <div class="flex items-start text-sm text-gray-600">
                 <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">1</span>
-                <span>Create tunnels manually for each project</span>
+                <span>Authenticate with Cloudflare</span>
               </div>
               <div class="flex items-start text-sm text-gray-600">
                 <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">2</span>
-                <span>Write and maintain YAML configuration files</span>
+                <span>Create tunnel manually</span>
               </div>
               <div class="flex items-start text-sm text-gray-600">
                 <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">3</span>
-                <span>Manage DNS records through dashboard</span>
+                <span>Configure YAML file with ingress rules</span>
               </div>
               <div class="flex items-start text-sm text-gray-600">
                 <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">4</span>
-                <span>Remember cleanup steps when done</span>
+                <span>Route DNS via CLI for each subdomain</span>
+              </div>
+              <div class="flex items-start text-sm text-gray-600">
+                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">5</span>
+                <span>Run tunnel</span>
+              </div>
+              <div class="flex items-start text-sm text-gray-600">
+                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">6</span>
+                <span>Manually delete tunnel and DNS from dashboard</span>
               </div>
             </div>
 
             <div class="bg-red-50 border border-red-200 rounded-lg p-4 ring-1 ring-red-600/10">
-              <p class="text-sm text-red-800"><strong>Result:</strong> Many developers choose paid alternatives for convenience.</p>
+              <p class="text-sm text-red-800"><strong>Result:</strong> Developers choose paid tools to avoid this complexity.</p>
             </div>
           </div>
         </div>
@@ -161,24 +169,42 @@ const description =
                 <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                 </svg>
-                <span>Single command handles the entire setup process</span>
+                <span><strong>Authenticates</strong> with Cloudflare API</span>
               </div>
               <div class="flex items-start text-sm text-gray-600">
                 <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                 </svg>
-                <span>Automatic DNS creates and manages records via API</span>
+                <span><strong>Creates tunnels</strong> programmatically</span>
               </div>
               <div class="flex items-start text-sm text-gray-600">
                 <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                 </svg>
-                <span>Intelligent cleanup removes all resources when stopping</span>
+                <span><strong>Generates config</strong> with ingress rules</span>
+              </div>
+              <div class="flex items-start text-sm text-gray-600">
+                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span><strong>Creates DNS records</strong> for all subdomains</span>
+              </div>
+              <div class="flex items-start text-sm text-gray-600">
+                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span><strong>Runs tunnel</strong> in foreground or background</span>
+              </div>
+              <div class="flex items-start text-sm text-gray-600">
+                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span><strong>Cleans up</strong> tunnels and DNS when stopping</span>
               </div>
             </div>
 
             <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 ring-1 ring-orange-600/10">
-              <p class="text-sm text-orange-800"><strong>Result:</strong> Localhost becomes accessible on your domain with minimal effort.</p>
+              <p class="text-sm text-orange-800"><strong>Result:</strong> Production-ready in seconds. Zero configuration.</p>
             </div>
           </div>
         </div>

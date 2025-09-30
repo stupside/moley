@@ -22,39 +22,55 @@
 
 # Moley
 
-**Expose your localhost applications to the internet using Cloudflare Tunnels.**
+**Turn localhost into production URLs with one command.**
 
-Moley is a powerful CLI tool that simplifies exposing your localhost applications to the internet using [Cloudflare Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/). With Moley, you can share your local development servers on your own custom domain without complex port forwarding or expensive tunnel services.
+[Cloudflare Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) are free, unlimited, and enterprise-grade but the manual setup (YAML editing, DNS commands for each subdomain and manual cleanup) is so tedious that developers turn to paid alternatives just to avoid the friction.
 
-## 💰 Why Cloudflare Tunnels?
+Moley automates everything so you get all the Cloudflare benefits on your custom domain without the manual work.
 
-**Free Professional Infrastructure** - While other tunnel services charge $5-20+/month or offer limited free tiers, Cloudflare Tunnels are **completely free with full features**. Combined with a personal domain (~€10/year), you get professional-grade capabilities that would cost significantly more with alternatives:
+## What Moley Does
 
-| Feature | Cloudflare Tunnels + Domain |
-|---------|----------------------------|
-| **Annual Cost** | ~€10/year (domain only) |
-| **Custom Domains** | ✅ Your own domain |
-| **DDoS Protection** | ✅ Robust protection included |
-| **Reliability** | ✅ Enterprise-grade uptime |
-| **Zero Trust Security** | ✅ Cloudflare Access |
-| **Bandwidth** | ✅ Unlimited |
-| **SSL/TLS** | ✅ Automatic certificates |
+### Without Moley (manual cloudflared setup)
 
-**Bottom line**: For less than €1/month, you get what other services charge €20+/month for. Cloudflare Tunnels combined with [Zero Trust features](https://developers.cloudflare.com/cloudflare-one/) provide enterprise-grade security and performance that would require multiple paid subscriptions elsewhere.
+```bash
+# 1. Authenticate with Cloudflare
+cloudflared tunnel login
 
-## ✨ Key Benefits
+# 2. Create tunnel manually
+cloudflared tunnel create my-tunnel
 
-### 💰 **Cost-Effective**
-No monthly subscriptions. Just your domain (~€10/year).
+# 3. Configure tunnel YAML file with ingress rules
+vim ~/.cloudflared/config.yml
+# (figure out tunnel ID, credentials path, hostnames, services, catch-all rule...)
 
-### 🔐 **Zero Trust Security**
-Built-in access control, authentication, and user management through Cloudflare's platform.
+# 4. Route DNS via CLI for each subdomain
+cloudflared tunnel route dns my-tunnel api.example.com
+cloudflared tunnel route dns my-tunnel app.example.com
+# (repeat for every subdomain... wait for DNS propagation...)
 
-### 🏢 **Enterprise Infrastructure**
-DDoS protection, automatic SSL certificates, and reliable uptime.
+# 5. Run tunnel
+cloudflared tunnel run my-tunnel
 
-### ⚡ **Simple Setup**
-One command to expose localhost. No complex configuration or manual DNS management.
+# 6. Manually delete tunnel and DNS records from dashboard when done
+# (or forget and accumulate zombie tunnels...)
+```
+
+### With Moley
+
+```bash
+moley tunnel run
+```
+
+**That's it.** Moley handles everything automatically:
+
+- ✅ **Authenticates** with Cloudflare API
+- ✅ **Creates tunnels** programmatically
+- ✅ **Generates config** with ingress rules (no YAML editing)
+- ✅ **Creates DNS records** for all subdomains (no CLI gymnastics)
+- ✅ **Runs tunnel** in foreground or background (`--detach`)
+- ✅ **Cleans up** tunnels and DNS when stopping (no zombie tunnels)
+
+One command. Multiple apps. Zero manual configuration.
 
 ## 📦 Installation
 
