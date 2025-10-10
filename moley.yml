@@ -5,6 +5,7 @@ ingress:
     apps:
         - target:
             port: 4321
+            protocol: http
             hostname: localhost
           expose:
             subdomain: doc

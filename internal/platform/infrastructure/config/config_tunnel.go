@@ -45,8 +45,9 @@ func ExampleTunnelConfig() (*TunnelConfig, error) {
 			Apps: []domain.AppConfig{
 				{
 					Target: domain.TargetConfig{
-						Hostname: "localhost",
 						Port:     3000,
+						Hostname: "localhost",
+						Protocol: domain.ProtocolHTTP,
 					},
 					Expose: domain.ExposeConfig{
 						Subdomain: "api",

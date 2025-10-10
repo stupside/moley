@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
@@ -14,5 +16,5 @@ func (f FileSource) Load(k *koanf.Koanf) error {
 }
 
 func (f FileSource) Name() string {
-	return "file:" + string(f)
+	return fmt.Sprintf("file(%s)", string(f))
 }

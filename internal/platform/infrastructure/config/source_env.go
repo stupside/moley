@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/knadh/koanf/providers/env"
@@ -19,5 +20,5 @@ func (e EnvSource) Load(k *koanf.Koanf) error {
 }
 
 func (e EnvSource) Name() string {
-	return "env:" + string(e)
+	return fmt.Sprintf("env(%s)", string(e))
 }
