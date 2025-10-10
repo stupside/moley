@@ -12,6 +12,10 @@ import (
 	"github.com/stupside/moley/v2/internal/shared"
 )
 
+const (
+	tag = "yaml"
+)
+
 // Manager manages configuration loading and persistence
 type Manager[T any] struct {
 	k         *koanf.Koanf
@@ -83,7 +87,7 @@ func (m *Manager[T]) Update(fn func(*T)) error {
 
 // Override replaces the entire configuration and saves it
 func (m *Manager[T]) Override(config *T) error {
-	if err := m.k.Load(structs.Provider(config, "yaml"), nil); err != nil {
+	if err := m.k.Load(structs.Provider(config, tag), nil); err != nil {
 		return shared.WrapError(err, "load config failed")
 	}
 	return m.save()
@@ -92,7 +96,9 @@ func (m *Manager[T]) Override(config *T) error {
 // Get returns the configuration
 func (m *Manager[T]) Get() *T {
 	config := new(T)
-	if err := m.k.Unmarshal("", config); err != nil {
+	if err := m.k.UnmarshalWithConf("", config, koanf.UnmarshalConf{
+		Tag: tag,
+	}); err != nil {
 		panic(shared.WrapError(err, "unmarshal failed"))
 	}
 	return config
