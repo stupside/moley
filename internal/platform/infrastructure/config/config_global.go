@@ -26,10 +26,13 @@ func NewGlobalManager(cmd *cli.Command) (*GlobalManager, error) {
 		return nil, shared.WrapError(err, "get global config path failed")
 	}
 
-	mgr := New(path, defaultGlobalConfig(),
+	mgr, err := New(path, defaultGlobalConfig(),
 		WithSources[GlobalConfig](FileSource(path)),
 		WithSources[GlobalConfig](EnvSource("MOLEY")),
 	)
+	if err != nil {
+		return nil, shared.WrapError(err, "create global config manager failed")
+	}
 
 	return mgr, nil
 }

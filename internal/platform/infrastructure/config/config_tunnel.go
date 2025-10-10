@@ -22,10 +22,13 @@ func NewTunnelManager(path string) (*TunnelManager, error) {
 		return nil, shared.WrapError(err, "create default tunnel config failed")
 	}
 
-	mgr := New(path, defaultConfig,
+	mgr, err := New(path, defaultConfig,
 		WithSources[TunnelConfig](FileSource(path)),
 		WithSources[TunnelConfig](EnvSource("MOLEY_TUNNEL")),
 	)
+	if err != nil {
+		return nil, shared.WrapError(err, "create tunnel config manager failed")
+	}
 
 	return mgr, nil
 }

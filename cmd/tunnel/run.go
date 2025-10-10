@@ -53,19 +53,28 @@ func execRun(ctx context.Context, cmd *cli.Command) error {
 		return shared.WrapError(err, "create global config manager failed")
 	}
 
+	// Extract global config for adapter setup
+	globalConfig, err := globalMgr.Get()
+	if err != nil {
+		return shared.WrapError(err, "get global config failed")
+	}
+
 	// Create framework config for dry-run support
 	frameworkConfig := &framework.Config{
 		DryRun: dryRun,
 	}
 
 	cfTunnel := cloudflare.NewTunnelService(frameworkConfig)
-	cfDNS, err := cloudflare.NewDNSService(globalMgr.Get().Cloudflare.Token, cfTunnel, frameworkConfig)
+	cfDNS, err := cloudflare.NewDNSService(globalConfig.Cloudflare.Token, cfTunnel, frameworkConfig)
 	if err != nil {
 		return shared.WrapError(err, "create Cloudflare DNS service failed")
 	}
 
 	// Extract tunnel and ingress from config
-	tunnelConfig := tunnelMgr.Get()
+	tunnelConfig, err := tunnelMgr.Get()
+	if err != nil {
+		return shared.WrapError(err, "get tunnel config failed")
+	}
 	tunnelService := tunnel.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel)
 
 	if detach {

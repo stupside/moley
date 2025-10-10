@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -13,7 +14,7 @@ import (
 )
 
 const (
-	tag = "yaml"
+	configTag = "yaml"
 )
 
 // Manager manages configuration loading and persistence
@@ -23,11 +24,11 @@ type Manager[T any] struct {
 	validator *validator.Validate
 }
 
-// Option configures a Manager
-type Option[T any] func(*Manager[T])
+// ConfigOption configures a Manager
+type ConfigOption[T any] func(*Manager[T]) error
 
 // New creates a new config manager with functional options
-func New[T any](path string, defaultConfig *T, opts ...Option[T]) *Manager[T] {
+func New[T any](path string, defaultConfig *T, opts ...ConfigOption[T]) (*Manager[T], error) {
 	m := &Manager[T]{
 		k:         koanf.New("."),
 		path:      path,
@@ -36,33 +37,52 @@ func New[T any](path string, defaultConfig *T, opts ...Option[T]) *Manager[T] {
 
 	// Initialize with default config
 	if err := m.k.Load(structs.Provider(defaultConfig, "yaml"), nil); err != nil {
-		panic(shared.WrapError(err, "load default config failed"))
+		return nil, shared.WrapError(err, "load default config failed")
 	}
 
+	// Apply options (sources like files, env vars)
 	for _, opt := range opts {
-		opt(m)
+		if err := opt(m); err != nil {
+			return nil, shared.WrapError(err, "apply config option failed")
+		}
 	}
 
-	return m
+	// Validate the final merged configuration
+	config, err := m.Get()
+	if err != nil {
+		return nil, shared.WrapError(err, "get final config failed")
+	}
+	if err := m.validate(config); err != nil {
+		return nil, shared.WrapError(err, "validate final config failed")
+	}
+
+	return m, nil
 }
 
 // WithSources adds configuration sources
-func WithSources[T any](sources ...Source) Option[T] {
-	return func(m *Manager[T]) {
+func WithSources[T any](sources ...Source) ConfigOption[T] {
+	return func(m *Manager[T]) error {
 		for _, source := range sources {
-			source.Load(m.k) // Ignore errors - sources might not exist
+			if err := source.Load(m.k); err != nil {
+				return shared.WrapError(err, fmt.Sprintf("load source %s failed", source.Name()))
+			}
 		}
+		return nil
 	}
 }
 
-// save persists configuration to file
-func (m *Manager[T]) save() error {
-
-	// Validate before saving
-	if err := m.validator.Struct(m.Get()); err != nil {
-		return shared.WrapError(err, "validation failed")
+// validate validates the configuration
+func (m *Manager[T]) validate(config *T) error {
+	if err := m.validator.Struct(config); err != nil {
+		return shared.WrapError(err, "validate config failed")
 	}
+	return nil
+}
 
+// save persists the current koanf state to file
+// This assumes the config has already been validated
+func (m *Manager[T]) save() error {
+	// Marshal to YAML and write to file
 	data, err := m.k.Marshal(yaml.Parser())
 	if err != nil {
 		return shared.WrapError(err, "marshal failed")
@@ -80,26 +100,52 @@ func (m *Manager[T]) save() error {
 
 // Update updates configuration and saves it
 func (m *Manager[T]) Update(fn func(*T)) error {
-	config := m.Get()
+	// Get current config to modify
+	config, err := m.Get()
+	if err != nil {
+		return shared.WrapError(err, "get config failed")
+	}
+
+	// Apply modifications
 	fn(config)
+
+	// Validate before loading into koanf
+	if err := m.validate(config); err != nil {
+		return err
+	}
+
+	// Load the modified config into koanf
+	if err := m.k.Load(structs.Provider(config, configTag), nil); err != nil {
+		return shared.WrapError(err, "load updated config failed")
+	}
+
+	// Persist to disk
 	return m.save()
 }
 
 // Override replaces the entire configuration and saves it
 func (m *Manager[T]) Override(config *T) error {
-	if err := m.k.Load(structs.Provider(config, tag), nil); err != nil {
+	// Validate before loading into koanf
+	if err := m.validate(config); err != nil {
+		return err
+	}
+
+	// Load the new config into koanf
+	if err := m.k.Load(structs.Provider(config, configTag), nil); err != nil {
 		return shared.WrapError(err, "load config failed")
 	}
+
+	// Persist to disk
 	return m.save()
 }
 
 // Get returns the configuration
-func (m *Manager[T]) Get() *T {
+func (m *Manager[T]) Get() (*T, error) {
 	config := new(T)
 	if err := m.k.UnmarshalWithConf("", config, koanf.UnmarshalConf{
-		Tag: tag,
+		Tag: configTag,
 	}); err != nil {
-		panic(shared.WrapError(err, "unmarshal failed"))
+		return nil, shared.WrapError(err, "unmarshal failed")
 	}
-	return config
+	return config, nil
 }
