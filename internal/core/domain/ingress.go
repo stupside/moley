@@ -21,16 +21,33 @@ func (t *TargetConfig) GetTargetURL() string {
 	return fmt.Sprintf("%s://%s:%d", t.Protocol, t.Hostname, t.Port)
 }
 
-type ExposeConfig struct {
-	Subdomain string `yaml:"subdomain" json:"subdomain" validate:"required"`
-}
-
 type AppConfig struct {
 	Target TargetConfig `yaml:"target" json:"target" validate:"required"`
 	Expose ExposeConfig `yaml:"expose" json:"expose" validate:"required"`
 }
 
+type ExposeConfig struct {
+	Subdomain string `yaml:"subdomain" json:"subdomain" validate:"required"`
+}
+
+type IngressMode string
+
+const (
+	// IngressModeWildcard creates a single *.zone DNS record.
+	// Cloudflared routes requests by hostname in ingress rules.
+	// Best for: development, frequently changing apps, faster iteration.
+	// DNS: *.example.com → tunnel (1 record)
+	IngressModeWildcard IngressMode = "wildcard"
+
+	// IngressModeSubdomain creates individual DNS records per app.
+	// Each app gets its own subdomain.domain DNS entry.
+	// Best for: production, explicit DNS control, stable apps.
+	// DNS: api.example.com → tunnel, app.example.com → tunnel (N records)
+	IngressModeSubdomain IngressMode = "subdomain"
+)
+
 type Ingress struct {
 	Zone string      `yaml:"zone" json:"zone" validate:"required"`
 	Apps []AppConfig `yaml:"apps" json:"apps" validate:"required,dive"`
+	Mode IngressMode `yaml:"mode" json:"mode" validate:"required,oneof=wildcard subdomain"`
 }

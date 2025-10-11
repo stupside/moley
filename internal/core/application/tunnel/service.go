@@ -30,8 +30,8 @@ func NewService(tunnel *domain.Tunnel, ingress *domain.Ingress, dnsService ports
 
 func (s *Service) Start(ctx context.Context) error {
 	logger.Infof("Starting tunnel service", map[string]any{
-		"tunnelID": s.tunnel.ID,
 		"zone":     s.ingress.Zone,
+		"tunnelID": s.tunnel.ID,
 	})
 
 	rm, err := s.createResourceManager(ctx)
@@ -50,8 +50,8 @@ func (s *Service) Start(ctx context.Context) error {
 
 func (s *Service) Stop(ctx context.Context) error {
 	logger.Infof("Stopping tunnel service", map[string]any{
-		"tunnelID": s.tunnel.ID,
 		"zone":     s.ingress.Zone,
+		"tunnelID": s.tunnel.ID,
 	})
 
 	rm, err := s.createResourceManager(ctx)

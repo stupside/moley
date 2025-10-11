@@ -1,6 +1,7 @@
 tunnel:
     id: 17ba4975-e8f2-41c4-af61-c45fd4d6a91c
 ingress:
+    mode: wildcard
     zone: xonery.dev
     apps:
         - target:

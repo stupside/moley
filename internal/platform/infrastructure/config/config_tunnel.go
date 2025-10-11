@@ -45,6 +45,7 @@ func ExampleTunnelConfig() (*TunnelConfig, error) {
 		Tunnel: tunnel,
 		Ingress: &domain.Ingress{
 			Zone: "moley.dev",
+			Mode: domain.IngressModeSubdomain,
 			Apps: []domain.AppConfig{
 				{
 					Target: domain.TargetConfig{
@@ -72,6 +73,7 @@ func defaultTunnelConfig() (*TunnelConfig, error) {
 	return &TunnelConfig{
 		Tunnel: tunnel,
 		Ingress: &domain.Ingress{
+			Mode: domain.IngressModeSubdomain,
 			Apps: []domain.AppConfig{
 				{},
 			},
