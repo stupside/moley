@@ -37,8 +37,12 @@ var Cmd = &cli.Command{
 			Name:  "init",
 			Usage: "Initialize a new tunnel configuration file",
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				// Load (or create) tunnel config; creation writes default if file doesn't exist
-				mgr, err := config.NewTunnelManager("moley.yml")
+
+				logger.Info("Initializing new tunnel configuration")
+
+				configPath := cmd.String(configPathFlag)
+
+				mgr, err := config.NewTunnelManager(configPath)
 				if err != nil {
 					return shared.WrapError(err, "initialize tunnel config failed")
 				}
@@ -52,7 +56,9 @@ var Cmd = &cli.Command{
 					return shared.WrapError(err, "override tunnel config failed")
 				}
 
-				logger.Info("Initialized tunnel configuration at ./moley.yml")
+				logger.Infof("Tunnel configuration initialized", map[string]any{
+					"config": configPath,
+				})
 				return nil
 			},
 		},
