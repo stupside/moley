@@ -7,6 +7,7 @@ import (
 	"github.com/stupside/moley/v2/cmd/config"
 	"github.com/stupside/moley/v2/cmd/tunnel"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
+	"github.com/stupside/moley/v2/internal/shared"
 	"github.com/stupside/moley/v2/internal/version"
 
 	"github.com/rs/zerolog"
@@ -28,6 +29,14 @@ var app = &cli.Command{
 			Value: zerolog.LevelInfoValue,
 			Usage: "Log level (trace, debug, info, warn, error, fatal, panic, disabled)",
 		},
+	},
+	Before: func(ctx context.Context, c *cli.Command) (context.Context, error) {
+		level, err := zerolog.ParseLevel(c.String(logLevelFlag))
+		if err != nil {
+			return ctx, shared.WrapError(err, "invalid log level")
+		}
+		logger.InitLogger(level)
+		return ctx, nil
 	},
 }
 
