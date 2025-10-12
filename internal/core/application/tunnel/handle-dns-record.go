@@ -53,11 +53,7 @@ func (h *DNSRecordHandler) Create(ctx context.Context, config DNSRecordConfig) (
 		return DNSRecordState{}, shared.WrapError(err, fmt.Sprintf("failed to create DNS record for subdomain %s", config.Subdomain))
 	}
 
-	state := DNSRecordState{
-		Zone:      config.Zone,
-		Tunnel:    config.Tunnel,
-		Subdomain: config.Subdomain,
-	}
+	state := DNSRecordState(config)
 
 	logger.Infof("DNS record created", map[string]any{
 		"subdomain": config.Subdomain,
@@ -86,7 +82,7 @@ func (h *DNSRecordHandler) Destroy(ctx context.Context, state DNSRecordState) er
 func (h *DNSRecordHandler) CheckFromState(ctx context.Context, state DNSRecordState) (domain.State, error) {
 	exists, err := h.dnsService.RecordExists(ctx, state.Tunnel, state.Zone, state.Subdomain)
 	if err != nil {
-		return domain.StateDown, shared.WrapError(err, "failed to check DNS record existence")
+		return domain.StateUnknown, shared.WrapError(err, "failed to check DNS record existence")
 	}
 
 	if exists {
@@ -105,14 +101,10 @@ func (h *DNSRecordHandler) Equals(a, b DNSRecordConfig) bool {
 func (h *DNSRecordHandler) CheckFromConfig(ctx context.Context, config DNSRecordConfig) (DNSRecordState, domain.State, error) {
 	exists, err := h.dnsService.RecordExists(ctx, config.Tunnel, config.Zone, config.Subdomain)
 	if err != nil {
-		return DNSRecordState{}, domain.StateDown, shared.WrapError(err, "failed to check DNS record existence")
+		return DNSRecordState{}, domain.StateUnknown, shared.WrapError(err, "failed to check DNS record existence")
 	}
 
-	state := DNSRecordState{
-		Zone:      config.Zone,
-		Tunnel:    config.Tunnel,
-		Subdomain: config.Subdomain,
-	}
+	state := DNSRecordState(config)
 
 	if exists {
 		return state, domain.StateUp, nil

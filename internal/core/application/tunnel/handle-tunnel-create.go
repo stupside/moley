@@ -46,15 +46,18 @@ func (h *TunnelCreateHandler) Create(ctx context.Context, config TunnelCreateCon
 		return TunnelCreateState{}, shared.WrapError(err, "cloudflared tunnel create failed")
 	}
 
-	state := TunnelCreateState{
-		Tunnel: config.Tunnel,
-	}
+	state := TunnelCreateState(config)
 
 	logger.Info("Tunnel created")
 	return state, nil
 }
 
 func (h *TunnelCreateHandler) Destroy(ctx context.Context, state TunnelCreateState) error {
+	if state.Tunnel.Persistent {
+		logger.Info("Tunnel is persistent, skipping deletion")
+		return nil
+	}
+
 	logger.Debug("Deleting tunnel")
 
 	if err := h.tunnelService.DeleteTunnel(ctx, state.Tunnel); err != nil {
@@ -68,7 +71,7 @@ func (h *TunnelCreateHandler) Destroy(ctx context.Context, state TunnelCreateSta
 func (h *TunnelCreateHandler) CheckFromState(ctx context.Context, state TunnelCreateState) (domain.State, error) {
 	exists, err := h.tunnelService.TunnelExists(ctx, state.Tunnel)
 	if err != nil {
-		return domain.StateDown, shared.WrapError(err, "failed to check tunnel existence")
+		return domain.StateUnknown, shared.WrapError(err, "failed to check tunnel existence")
 	}
 
 	if exists {
@@ -85,12 +88,10 @@ func (h *TunnelCreateHandler) Equals(a, b TunnelCreateConfig) bool {
 func (h *TunnelCreateHandler) CheckFromConfig(ctx context.Context, config TunnelCreateConfig) (TunnelCreateState, domain.State, error) {
 	exists, err := h.tunnelService.TunnelExists(ctx, config.Tunnel)
 	if err != nil {
-		return TunnelCreateState{}, domain.StateDown, shared.WrapError(err, "failed to check tunnel existence")
+		return TunnelCreateState{}, domain.StateUnknown, shared.WrapError(err, "failed to check tunnel existence")
 	}
 
-	state := TunnelCreateState{
-		Tunnel: config.Tunnel,
-	}
+	state := TunnelCreateState(config)
 
 	if exists {
 		return state, domain.StateUp, nil

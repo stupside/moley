@@ -7,12 +7,14 @@ import "fmt"
 type State string
 
 const (
-	StateUp   State = "up"
-	StateDown State = "down"
+	StateUp      State = "up"
+	StateDown    State = "down"
+	StateUnknown State = "unknown" // Unable to determine state (e.g., error during check)
 )
 
 type Tunnel struct {
-	ID string `yaml:"id" json:"id" validate:"required"`
+	ID         string `yaml:"id" json:"id" validate:"required"`
+	Persistent bool   `yaml:"persistent" json:"persistent" validate:"-"`
 }
 
 func (t *Tunnel) GetName() string {
@@ -20,5 +22,8 @@ func (t *Tunnel) GetName() string {
 }
 
 func NewTunnel(id string) (*Tunnel, error) {
-	return &Tunnel{ID: id}, nil
+	return &Tunnel{
+		ID:         id,
+		Persistent: false,
+	}, nil
 }

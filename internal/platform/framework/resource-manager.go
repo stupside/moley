@@ -80,13 +80,11 @@ func (rm *ResourceManager[TConfig, TState]) getCurrentRecords() []ResourceRecord
 
 // unmarshalData converts interface{} data back to typed struct using JSON marshaling
 func (rm *ResourceManager[TConfig, TState]) unmarshalData(data any, target *ResourceRecord[TConfig, TState]) error {
-	// Marshal the data to JSON bytes
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		return shared.WrapError(err, "failed to marshal data to JSON")
 	}
 
-	// Unmarshal back to typed struct
 	if err := json.Unmarshal(jsonBytes, target); err != nil {
 		return shared.WrapError(err, "failed to unmarshal JSON to typed struct")
 	}
@@ -155,6 +153,32 @@ func (rm *ResourceManager[TConfig, TState]) getConfigKey(config TConfig) string 
 	return string(data)
 }
 
+// createAndVerify creates a resource and verifies it's in StateUp
+func (rm *ResourceManager[TConfig, TState]) createAndVerify(ctx context.Context, config TConfig) (TState, error) {
+	state, err := rm.handler.Create(ctx, config)
+	if err != nil {
+		return state, shared.WrapError(err, "failed to create resource")
+	}
+
+	if err := rm.errorIfNotUp(ctx, state); err != nil {
+		return state, shared.WrapError(err, "failed to verify created resource")
+	}
+
+	return state, nil
+}
+
+// errorIfNotUp checks if a resource is in StateUp and returns an error if not
+func (rm *ResourceManager[TConfig, TState]) errorIfNotUp(ctx context.Context, state TState) error {
+	status, err := rm.handler.CheckFromState(ctx, state)
+	if err != nil {
+		return shared.WrapError(err, "failed to verify resource status")
+	}
+	if status != domain.StateUp {
+		return shared.WrapError(nil, "resource not in up state")
+	}
+	return nil
+}
+
 // removeResources removes the specified resources
 func (rm *ResourceManager[TConfig, TState]) removeResources(
 	ctx context.Context,
@@ -187,27 +211,47 @@ func (rm *ResourceManager[TConfig, TState]) addResources(
 			"handler": rm.handlerName,
 		})
 
-		state, err := rm.handler.Create(ctx, config)
-		if err != nil {
-			return shared.WrapError(err, "failed to create resource")
-		}
+		// Check if resource already exists (important for persistent resources)
+		existingState, status, err := rm.handler.CheckFromConfig(ctx, config)
 
-		// Verify it's actually up
-		status, err := rm.handler.CheckFromState(ctx, state)
-		if err != nil {
-			return shared.WrapError(err, "failed to verify resource status")
-		}
+		var state TState
 
-		if status != domain.StateUp {
-			return shared.WrapError(nil, "resource created but not in up state")
+		if status == domain.StateUp {
+			// Resource already exists, reuse it
+			logger.Infof("Resource already exists, reusing", map[string]any{
+				"handler": rm.handlerName,
+			})
+			state = existingState
+
+			// Verify the existing state is still valid
+			if err := rm.errorIfNotUp(ctx, state); err != nil {
+				// Resource was detected but is no longer up, recreate it
+				logger.Warnf("Existing resource is stale, recreating", map[string]any{
+					"handler": rm.handlerName,
+				})
+				if state, err = rm.createAndVerify(ctx, config); err != nil {
+					return err
+				}
+			}
+		} else {
+			// Resource doesn't exist or state is unknown - create it
+			if status == domain.StateUnknown {
+				logger.Warnf("Unable to check if resource exists, attempting creation", map[string]any{
+					"handler": rm.handlerName,
+					"error":   err,
+				})
+			}
+
+			if state, err = rm.createAndVerify(ctx, config); err != nil {
+				return err
+			}
 		}
 
 		// Add to persistent storage
-		record := ResourceRecord[TConfig, TState]{
+		if err := rm.addToRegistry(ResourceRecord[TConfig, TState]{
 			State:  state,
 			Config: config,
-		}
-		if err := rm.addToRegistry(record); err != nil {
+		}); err != nil {
 			return shared.WrapError(err, "failed to add to registry")
 		}
 	}
@@ -232,20 +276,10 @@ func (rm *ResourceManager[TConfig, TState]) updateResources(
 			return shared.WrapError(err, "failed to destroy old resource during update")
 		}
 
-		// Create new resource
-		newState, err := rm.handler.Create(ctx, update.new)
+		// Create and verify new resource
+		newState, err := rm.createAndVerify(ctx, update.new)
 		if err != nil {
-			return shared.WrapError(err, "failed to create new resource during update")
-		}
-
-		// Verify it's up
-		status, err := rm.handler.CheckFromState(ctx, newState)
-		if err != nil {
-			return shared.WrapError(err, "failed to verify updated resource status")
-		}
-
-		if status != domain.StateUp {
-			return shared.WrapError(nil, "updated resource not in up state")
+			return shared.WrapError(err, "failed to create updated resource")
 		}
 
 		// Update persistent storage
@@ -253,11 +287,10 @@ func (rm *ResourceManager[TConfig, TState]) updateResources(
 			return shared.WrapError(err, "failed to remove old record from registry")
 		}
 
-		newRecord := ResourceRecord[TConfig, TState]{
+		if err := rm.addToRegistry(ResourceRecord[TConfig, TState]{
 			Config: update.new,
 			State:  newState,
-		}
-		if err := rm.addToRegistry(newRecord); err != nil {
+		}); err != nil {
 			return shared.WrapError(err, "failed to add updated record to registry")
 		}
 	}
@@ -272,22 +305,18 @@ type ResourceRecord[TConfig any, TState any] struct {
 
 // addToRegistry adds a resource record to persistent storage
 func (rm *ResourceManager[TConfig, TState]) addToRegistry(record ResourceRecord[TConfig, TState]) error {
-	persistentEntry := PersistentResourceEntry{
+	return rm.registry.Add(PersistentResourceEntry{
 		HandlerName: rm.handlerName,
 		Data:        record,
-	}
-
-	return rm.registry.Add(persistentEntry)
+	})
 }
 
 // removeFromRegistry removes a resource record from persistent storage
 func (rm *ResourceManager[TConfig, TState]) removeFromRegistry(record ResourceRecord[TConfig, TState]) error {
-	persistentEntry := PersistentResourceEntry{
+	return rm.registry.Remove(PersistentResourceEntry{
 		HandlerName: rm.handlerName,
 		Data:        record,
-	}
-
-	return rm.registry.Remove(persistentEntry)
+	})
 }
 
 // Stop removes all resources managed by this typed manager (tracked + detected)
@@ -315,22 +344,31 @@ func (rm *ResourceManager[TConfig, TState]) Stop(ctx context.Context, configs []
 		}
 
 		// Try to check untracked resource directly from config
-		if state, status, err := rm.handler.CheckFromConfig(ctx, config); err == nil && status == domain.StateUp {
+		state, status, err := rm.handler.CheckFromConfig(ctx, config)
+
+		switch status {
+		case domain.StateUp:
+			// Resource is running and untracked, add it to removal list
 			logger.Infof("Found untracked running resource", map[string]any{
 				"handler": rm.handlerName,
 			})
-
-			record := ResourceRecord[TConfig, TState]{
-				Config: config,
+			allResourcesToRemove = append(allResourcesToRemove, ResourceRecord[TConfig, TState]{
 				State:  state,
-			}
-			allResourcesToRemove = append(allResourcesToRemove, record)
+				Config: config,
+			})
+
+		case domain.StateUnknown:
+			// Unable to determine state, skip for safety
+			logger.Warnf("Unable to determine untracked resource state, skipping", map[string]any{
+				"handler": rm.handlerName,
+				"error":   err,
+			})
 		}
 	}
 
-	logger.Debugf("Stop found total resources", map[string]any{
-		"handler": rm.handlerName,
-		"count":   len(allResourcesToRemove),
+	logger.Debugf("Total resources to remove", map[string]any{
+		"handler":      rm.handlerName,
+		"remove_count": len(allResourcesToRemove),
 	})
 
 	return rm.removeResources(ctx, allResourcesToRemove)

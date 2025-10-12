@@ -85,7 +85,7 @@ func (h *TunnelConfigHandler) CheckFromState(ctx context.Context, state TunnelCo
 		if os.IsNotExist(err) {
 			return domain.StateDown, nil
 		}
-		return domain.StateDown, shared.WrapError(err, "failed to check configuration file")
+		return domain.StateUnknown, shared.WrapError(err, "failed to check configuration file")
 	}
 
 	return domain.StateUp, nil
@@ -100,7 +100,7 @@ func (h *TunnelConfigHandler) Equals(a, b TunnelConfigConfig) bool {
 func (h *TunnelConfigHandler) CheckFromConfig(ctx context.Context, config TunnelConfigConfig) (TunnelConfigState, domain.State, error) {
 	configPath, err := h.tunnelService.GetConfigurationPath(ctx, config.Tunnel)
 	if err != nil {
-		return TunnelConfigState{}, domain.StateDown, shared.WrapError(err, "failed to get configuration path")
+		return TunnelConfigState{}, domain.StateUnknown, shared.WrapError(err, "failed to get configuration path")
 	}
 
 	// Check if config file exists
@@ -108,7 +108,7 @@ func (h *TunnelConfigHandler) CheckFromConfig(ctx context.Context, config Tunnel
 		if os.IsNotExist(err) {
 			return TunnelConfigState{}, domain.StateDown, nil
 		}
-		return TunnelConfigState{}, domain.StateDown, shared.WrapError(err, "failed to check configuration file")
+		return TunnelConfigState{}, domain.StateUnknown, shared.WrapError(err, "failed to check configuration file")
 	}
 
 	// Convert config to state

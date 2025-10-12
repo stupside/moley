@@ -100,14 +100,12 @@ func (h *TunnelRunHandler) CheckFromState(ctx context.Context, state TunnelRunSt
 
 // CheckFromConfig finds existing tunnel process from config and returns state + status
 func (h *TunnelRunHandler) CheckFromConfig(ctx context.Context, config TunnelRunConfig) (TunnelRunState, domain.State, error) {
-	pid := 0 // TODO: Implement a way to retrieve the PID of the running tunnel process if needed
-
 	state := TunnelRunState{
-		PID:    pid,
+		PID:    0, // TODO: Implement a way to find existing PID if needed
 		Tunnel: config.Tunnel,
 	}
 
-	return state, domain.StateUp, nil
+	return state, domain.StateDown, nil
 }
 
 func (h *TunnelRunHandler) Equals(a, b TunnelRunConfig) bool {
