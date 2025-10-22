@@ -16,7 +16,7 @@
 		"@astrojs/sitemap": "^3.6.0",
 		"@lucide/astro": "^0.544.0",
 		"@tailwindcss/vite": "^4.1.13",
-		"astro": "^5.13.10",
+		"astro": "^5.14.3",
 		"tailwindcss": "^4.1.13",
 		"zod": "^4.1.11"
 	},
