@@ -54,7 +54,7 @@ func execRun(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	// Extract global config for adapter setup
-	globalConfig, err := globalMgr.Get()
+	globalConfig, err := globalMgr.Get(true)
 	if err != nil {
 		return shared.WrapError(err, "get global config failed")
 	}
@@ -71,10 +71,11 @@ func execRun(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	// Extract tunnel and ingress from config
-	tunnelConfig, err := tunnelMgr.Get()
+	tunnelConfig, err := tunnelMgr.Get(true)
 	if err != nil {
 		return shared.WrapError(err, "get tunnel config failed")
 	}
+
 	tunnelService := tunnel.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel)
 
 	if detach {

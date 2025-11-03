@@ -65,14 +65,6 @@ func WithSources[T any](sources ...Source) ConfigOption[T] {
 	}
 }
 
-// validate validates the configuration
-func (m *Manager[T]) validate(config *T) error {
-	if err := m.validator.Struct(config); err != nil {
-		return shared.WrapError(err, "validate config failed")
-	}
-	return nil
-}
-
 // save persists the current koanf state to file
 // This assumes the config has already been validated
 func (m *Manager[T]) save() error {
@@ -93,10 +85,36 @@ func (m *Manager[T]) save() error {
 	return nil
 }
 
+// validate validates the configuration
+func (m *Manager[T]) validate(config *T) error {
+	if err := m.validator.Struct(config); err != nil {
+		return shared.WrapError(err, "validate config failed")
+	}
+	return nil
+}
+
+// Get returns the configuration
+func (m *Manager[T]) Get(validate bool) (*T, error) {
+	config := new(T)
+	if err := m.k.UnmarshalWithConf("", config, koanf.UnmarshalConf{
+		Tag: configTag,
+	}); err != nil {
+		return nil, shared.WrapError(err, "unmarshal failed")
+	}
+
+	if validate {
+		if err := m.validate(config); err != nil {
+			return nil, err
+		}
+	}
+
+	return config, nil
+}
+
 // Update updates configuration and saves it
 func (m *Manager[T]) Update(fn func(*T)) error {
 	// Get current config to modify
-	config, err := m.Get()
+	config, err := m.Get(false)
 	if err != nil {
 		return shared.WrapError(err, "get config failed")
 	}
@@ -132,21 +150,4 @@ func (m *Manager[T]) Override(config *T) error {
 
 	// Persist to disk
 	return m.save()
-}
-
-// Get returns the configuration
-func (m *Manager[T]) Get() (*T, error) {
-	config := new(T)
-	if err := m.k.UnmarshalWithConf("", config, koanf.UnmarshalConf{
-		Tag: configTag,
-	}); err != nil {
-		return nil, shared.WrapError(err, "unmarshal failed")
-	}
-
-	// Validate before returning
-	if err := m.validate(config); err != nil {
-		return nil, fmt.Errorf("invalid config: %w", err)
-	}
-
-	return config, nil
 }

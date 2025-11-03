@@ -40,7 +40,7 @@ func execStop(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	// Extract global config for adapter setup
-	globalConfig, err := globalMgr.Get()
+	globalConfig, err := globalMgr.Get(true)
 	if err != nil {
 		return shared.WrapError(err, "get global config failed")
 	}
@@ -57,7 +57,7 @@ func execStop(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	// Extract tunnel and ingress from config
-	tunnelConfig, err := tunnelMgr.Get()
+	tunnelConfig, err := tunnelMgr.Get(true)
 	if err != nil {
 		return shared.WrapError(err, "get tunnel config failed")
 	}
