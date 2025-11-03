@@ -92,10 +92,11 @@ func (m *Manager[T]) save() error {
 		return shared.WrapError(err, "create dir failed")
 	}
 
-	return shared.WrapError(
-		os.WriteFile(m.path, data, 0600),
-		"write file failed",
-	)
+	if err := os.WriteFile(m.path, data, 0600); err != nil {
+		return shared.WrapError(err, "write file failed")
+	}
+
+	return nil
 }
 
 // Update updates configuration and saves it
