@@ -10,6 +10,7 @@ import (
 	"github.com/knadh/koanf/providers/structs"
 	"github.com/knadh/koanf/v2"
 
+	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
 )
 
@@ -43,17 +44,10 @@ func New[T any](path string, defaultConfig *T, opts ...ConfigOption[T]) (*Manage
 	// Apply options (sources like files, env vars)
 	for _, opt := range opts {
 		if err := opt(m); err != nil {
-			return nil, shared.WrapError(err, "apply config option failed")
+			logger.Debugf("Config option failed", map[string]any{
+				"error": err.Error(),
+			})
 		}
-	}
-
-	// Validate the final merged configuration
-	config, err := m.Get()
-	if err != nil {
-		return nil, shared.WrapError(err, "get final config failed")
-	}
-	if err := m.validate(config); err != nil {
-		return nil, shared.WrapError(err, "validate final config failed")
 	}
 
 	return m, nil
@@ -148,5 +142,11 @@ func (m *Manager[T]) Get() (*T, error) {
 	}); err != nil {
 		return nil, shared.WrapError(err, "unmarshal failed")
 	}
+
+	// Validate before returning
+	if err := m.validate(config); err != nil {
+		return nil, fmt.Errorf("invalid config: %w", err)
+	}
+
 	return config, nil
 }

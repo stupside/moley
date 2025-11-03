@@ -74,9 +74,7 @@ func defaultTunnelConfig() (*TunnelConfig, error) {
 		Tunnel: tunnel,
 		Ingress: &domain.Ingress{
 			Mode: domain.IngressModeSubdomain,
-			Apps: []domain.AppConfig{
-				{},
-			},
+			Apps: []domain.AppConfig{},
 		},
 	}, nil
 }

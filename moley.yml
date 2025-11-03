@@ -1,13 +1,13 @@
-tunnel:
-    id: 17ba4975-e8f2-41c4-af61-c45fd4d6a91c
-    persistent: true
 ingress:
-    mode: wildcard
-    zone: xonery.dev
     apps:
-        - target:
-            port: 4321
-            protocol: http
+        - expose:
+            subdomain: api
+          target:
             hostname: localhost
-          expose:
-            subdomain: doc
+            port: 3000
+            protocol: http
+    mode: subdomain
+    zone: moley.dev
+tunnel:
+    id: 5976fdb5-9c2a-4424-9978-81980cd20457
+    persistent: false
