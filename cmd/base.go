@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
+	"fmt"
 	"github.com/stupside/moley/v2/cmd/config"
 	"github.com/stupside/moley/v2/cmd/tunnel"
-	"fmt"
 
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/version"

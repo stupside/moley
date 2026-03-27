@@ -39,7 +39,7 @@ func newTestHandler(name string) *testHandler {
 }
 
 func (h *testHandler) Name() string           { return h.handlerName }
-func (h *testHandler) Key(i testInput) string  { return i.Name }
+func (h *testHandler) Key(i testInput) string { return i.Name }
 
 func (h *testHandler) Create(_ context.Context, input testInput) (testOutput, error) {
 	out := testOutput{Name: input.Name, Created: true}
@@ -241,7 +241,7 @@ type orderTracker struct {
 	destroyOrder *[]string
 }
 
-func (h *orderTracker) Name() string          { return h.name }
+func (h *orderTracker) Name() string           { return h.name }
 func (h *orderTracker) Key(_ testInput) string { return "single" }
 
 func (h *orderTracker) Create(_ context.Context, input testInput) (testOutput, error) {

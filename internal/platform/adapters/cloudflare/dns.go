@@ -16,19 +16,18 @@ import (
 )
 
 type dnsService struct {
-	client   *cfgo.Client
+	client        *cfgo.Client
 	tunnelService ports.TunnelService
 	config        *Config
 	// zoneIDCache caches zone name → zone ID lookups within this service instance
 	zoneIDCache map[string]string
 }
 
-
 func NewDNSService(client *cfgo.Client, tunnelService ports.TunnelService, config *Config) *dnsService {
 	return &dnsService{
 		tunnelService: tunnelService,
 		config:        config,
-		client:   client,
+		client:        client,
 		zoneIDCache:   make(map[string]string),
 	}
 }

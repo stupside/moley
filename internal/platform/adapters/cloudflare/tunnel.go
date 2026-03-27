@@ -28,7 +28,6 @@ type tunnelService struct {
 	tunnelIDCache map[string]string
 }
 
-
 func NewTunnelService(ctx context.Context, client *cfgo.Client, zoneName string, config *Config) (*tunnelService, error) {
 	svc := &tunnelService{
 		client:        client,
