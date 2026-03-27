@@ -1,12 +1,12 @@
 package config
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/urfave/cli/v3"
 
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/paths"
-	"github.com/stupside/moley/v2/internal/shared"
 )
 
 // GlobalConfig represents the global application configuration
@@ -16,14 +16,11 @@ type GlobalConfig struct {
 	} `yaml:"cloudflare"`
 }
 
-// GlobalManager manages global configuration
-type GlobalManager = Manager[GlobalConfig]
-
 // NewGlobalManager creates a new global configuration manager
-func NewGlobalManager(cmd *cli.Command) (*GlobalManager, error) {
+func NewGlobalManager(cmd *cli.Command) (*Manager[GlobalConfig], error) {
 	path, err := globalConfigPath()
 	if err != nil {
-		return nil, shared.WrapError(err, "get global config path failed")
+		return nil, fmt.Errorf("get global config path failed: %w", err)
 	}
 
 	mgr, err := New(path, defaultGlobalConfig(),
@@ -31,7 +28,7 @@ func NewGlobalManager(cmd *cli.Command) (*GlobalManager, error) {
 		WithSources[GlobalConfig](EnvSource("MOLEY")),
 	)
 	if err != nil {
-		return nil, shared.WrapError(err, "create global config manager failed")
+		return nil, fmt.Errorf("create global config manager failed: %w", err)
 	}
 
 	return mgr, nil
@@ -40,7 +37,7 @@ func NewGlobalManager(cmd *cli.Command) (*GlobalManager, error) {
 func globalConfigPath() (string, error) {
 	userFolderPath, err := paths.GetUserFolderPath()
 	if err != nil {
-		return "", shared.WrapError(err, "get user folder path failed")
+		return "", fmt.Errorf("get user folder path failed: %w", err)
 	}
 	return filepath.Join(userFolderPath, "config.yml"), nil
 }

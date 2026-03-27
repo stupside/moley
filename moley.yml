@@ -1,13 +1,13 @@
 ingress:
     apps:
         - expose:
-            subdomain: api
+            subdomain: test
           target:
             hostname: localhost
             port: 3000
             protocol: http
     mode: subdomain
-    zone: moley.dev
+    zone: xonery.dev
 tunnel:
-    id: 5976fdb5-9c2a-4424-9978-81980cd20457
+    name: demo
     persistent: false

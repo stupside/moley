@@ -4,10 +4,9 @@
 package paths
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/stupside/moley/v2/internal/shared"
 )
 
 const (
@@ -18,11 +17,11 @@ const (
 func GetUserFolderPath() (string, error) {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		return "", shared.WrapError(err, "failed to get user home directory")
+		return "", fmt.Errorf("failed to get user home directory: %w", err)
 	}
 	folderPath := filepath.Join(homedir, userFolderPath)
 	if err := os.MkdirAll(folderPath, 0755); err != nil {
-		return "", shared.WrapError(err, "failed to create config folder")
+		return "", fmt.Errorf("failed to create config folder: %w", err)
 	}
 	return folderPath, nil
 }

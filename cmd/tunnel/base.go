@@ -2,10 +2,10 @@ package tunnel
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
-	"github.com/stupside/moley/v2/internal/shared"
 
 	"github.com/urfave/cli/v3"
 )
@@ -44,16 +44,16 @@ var Cmd = &cli.Command{
 
 				mgr, err := config.NewTunnelManager(configPath)
 				if err != nil {
-					return shared.WrapError(err, "initialize tunnel config failed")
+					return fmt.Errorf("initialize tunnel config failed: %w", err)
 				}
 
 				example, err := config.ExampleTunnelConfig()
 				if err != nil {
-					return shared.WrapError(err, "create example tunnel config failed")
+					return fmt.Errorf("create example tunnel config failed: %w", err)
 				}
 
 				if err := mgr.Override(example); err != nil {
-					return shared.WrapError(err, "override tunnel config failed")
+					return fmt.Errorf("override tunnel config failed: %w", err)
 				}
 
 				logger.Infof("Tunnel configuration initialized", map[string]any{

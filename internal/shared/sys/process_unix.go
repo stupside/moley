@@ -8,22 +8,17 @@ import (
 	"syscall"
 )
 
-// TerminateProcess sends SIGTERM to a process on Unix systems
-func TerminateProcess(process *os.Process) error {
-	if err := process.Signal(syscall.SIGTERM); err != nil {
-		return fmt.Errorf("failed to send SIGTERM to process %d: %w", process.Pid, err)
+// TerminateProcess sends SIGTERM to a process on Unix systems.
+func TerminateProcess(p *os.Process) error {
+	if err := p.Signal(syscall.SIGTERM); err != nil {
+		return fmt.Errorf("failed to send SIGTERM to process %d: %w", p.Pid, err)
 	}
 	return nil
 }
 
-// CheckProcessExists checks if a process exists on Unix systems
-func CheckProcessExists(process *os.Process) error {
-	return process.Signal(syscall.Signal(0))
-}
-
-// GetProcessAttributes returns process attributes for Unix systems
+// GetProcessAttributes returns process attributes for Unix systems.
 func GetProcessAttributes() *syscall.SysProcAttr {
 	return &syscall.SysProcAttr{
-		Setsid: true, // Create new session
+		Setsid: true,
 	}
 }

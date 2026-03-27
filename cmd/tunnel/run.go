@@ -2,11 +2,8 @@ package tunnel
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/stupside/moley/v2/internal/core/application/tunnel"
-	"github.com/stupside/moley/v2/internal/platform/adapters/cloudflare"
-	"github.com/stupside/moley/v2/internal/platform/framework"
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/shared"
 
@@ -33,58 +30,25 @@ var runCmd = &cli.Command{
 
 func execRun(ctx context.Context, cmd *cli.Command) error {
 	detach := cmd.Bool(detachFlag)
-	dryRun := cmd.Bool(dryRunFlag)
-	configPath := cmd.String(configPathFlag)
 
 	logger.Infof("Starting tunnel", map[string]any{
-		"dry":    dryRun,
+		"dry":    cmd.Bool(dryRunFlag),
 		"detach": detach,
-		"config": configPath,
+		"config": cmd.String(configPathFlag),
 	})
 
-	tunnelMgr, err := config.NewTunnelManager(configPath)
+	tunnelService, err := buildTunnelService(ctx, cmd)
 	if err != nil {
-		return shared.WrapError(err, "create tunnel config manager failed")
+		return fmt.Errorf("failed to build tunnel service: %w", err)
 	}
-
-	// Build adapters (Cloudflare) implementing ports
-	globalMgr, err := config.NewGlobalManager(cmd)
-	if err != nil {
-		return shared.WrapError(err, "create global config manager failed")
-	}
-
-	// Extract global config for adapter setup
-	globalConfig, err := globalMgr.Get(true)
-	if err != nil {
-		return shared.WrapError(err, "get global config failed")
-	}
-
-	// Create framework config for dry-run support
-	frameworkConfig := &framework.Config{
-		DryRun: dryRun,
-	}
-
-	cfTunnel := cloudflare.NewTunnelService(frameworkConfig)
-	cfDNS, err := cloudflare.NewDNSService(globalConfig.Cloudflare.Token, cfTunnel, frameworkConfig)
-	if err != nil {
-		return shared.WrapError(err, "create Cloudflare DNS service failed")
-	}
-
-	// Extract tunnel and ingress from config
-	tunnelConfig, err := tunnelMgr.Get(true)
-	if err != nil {
-		return shared.WrapError(err, "get tunnel config failed")
-	}
-
-	tunnelService := tunnel.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel)
 
 	if detach {
 		if err := tunnelService.Start(ctx); err != nil {
-			return shared.WrapError(err, "failed to run tunnel service")
+			return fmt.Errorf("failed to run tunnel service: %w", err)
 		}
 	} else {
 		if err := shared.StartManaged(ctx, tunnelService); err != nil {
-			return shared.WrapError(err, "failed to start tunnel service")
+			return fmt.Errorf("failed to start tunnel service: %w", err)
 		}
 	}
 

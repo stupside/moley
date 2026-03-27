@@ -1,9 +1,10 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/stupside/moley/v2/internal/core/domain"
-	"github.com/stupside/moley/v2/internal/shared"
 )
 
 // TunnelConfig represents tunnel-specific configuration
@@ -12,14 +13,11 @@ type TunnelConfig struct {
 	Ingress *domain.Ingress `yaml:"ingress" validate:"required"`
 }
 
-// TunnelManager manages tunnel configuration
-type TunnelManager = Manager[TunnelConfig]
-
 // NewTunnelManager creates a new tunnel configuration manager
-func NewTunnelManager(path string) (*TunnelManager, error) {
+func NewTunnelManager(path string) (*Manager[TunnelConfig], error) {
 	defaultConfig, err := defaultTunnelConfig()
 	if err != nil {
-		return nil, shared.WrapError(err, "create default tunnel config failed")
+		return nil, fmt.Errorf("create default tunnel config failed: %w", err)
 	}
 
 	mgr, err := New(path, defaultConfig,
@@ -27,7 +25,7 @@ func NewTunnelManager(path string) (*TunnelManager, error) {
 		WithSources[TunnelConfig](EnvSource("MOLEY_TUNNEL")),
 	)
 	if err != nil {
-		return nil, shared.WrapError(err, "create tunnel config manager failed")
+		return nil, fmt.Errorf("create tunnel config manager failed: %w", err)
 	}
 
 	return mgr, nil
@@ -38,7 +36,7 @@ func ExampleTunnelConfig() (*TunnelConfig, error) {
 
 	tunnel, err := domain.NewTunnel(id)
 	if err != nil {
-		return nil, shared.WrapError(err, "create tunnel failed")
+		return nil, fmt.Errorf("create tunnel failed: %w", err)
 	}
 
 	return &TunnelConfig{
@@ -67,7 +65,7 @@ func defaultTunnelConfig() (*TunnelConfig, error) {
 
 	tunnel, err := domain.NewTunnel(id)
 	if err != nil {
-		return nil, shared.WrapError(err, "create tunnel failed")
+		return nil, fmt.Errorf("create tunnel failed: %w", err)
 	}
 
 	return &TunnelConfig{

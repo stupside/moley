@@ -3,27 +3,18 @@ package domain
 
 import "fmt"
 
-// State represents the operational state of a resource.
-type State string
-
-const (
-	StateUp      State = "up"
-	StateDown    State = "down"
-	StateUnknown State = "unknown" // Unable to determine state (e.g., error during check)
-)
-
 type Tunnel struct {
-	ID         string `yaml:"id" json:"id" validate:"required"`
+	Name       string `yaml:"name" json:"name" validate:"required"`
 	Persistent bool   `yaml:"persistent" json:"persistent" validate:"-"`
 }
 
 func (t *Tunnel) GetName() string {
-	return fmt.Sprintf("moley-%s", t.ID)
+	return fmt.Sprintf("moley-%s", t.Name)
 }
 
-func NewTunnel(id string) (*Tunnel, error) {
+func NewTunnel(name string) (*Tunnel, error) {
 	return &Tunnel{
-		ID:         id,
+		Name:       name,
 		Persistent: false,
 	}, nil
 }

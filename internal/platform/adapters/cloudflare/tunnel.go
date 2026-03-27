@@ -3,199 +3,278 @@ package cloudflare
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	cfgo "github.com/cloudflare/cloudflare-go/v3"
+	"github.com/cloudflare/cloudflare-go/v3/zero_trust"
+	"github.com/cloudflare/cloudflare-go/v3/zones"
+
 	"github.com/stupside/moley/v2/internal/core/domain"
-	"github.com/stupside/moley/v2/internal/platform/framework"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/paths"
-	"github.com/stupside/moley/v2/internal/shared"
 	"go.yaml.in/yaml/v3"
 )
 
 type tunnelService struct {
-	config *framework.Config
+	client    *cfgo.Client
+	accountID string
+	config    *Config
+	// tunnelIDCache caches tunnel name → UUID lookups within this service instance
+	tunnelIDCache map[string]string
 }
 
-func NewTunnelService(config *framework.Config) *tunnelService {
-	return &tunnelService{
-		config: config,
+
+func NewTunnelService(ctx context.Context, client *cfgo.Client, zoneName string, config *Config) (*tunnelService, error) {
+	svc := &tunnelService{
+		client:        client,
+		config:        config,
+		tunnelIDCache: make(map[string]string),
 	}
+
+	if svc.config.IsDryRun() {
+		svc.accountID = "dry-run-account"
+		return svc, nil
+	}
+
+	accountID, err := svc.resolveAccountID(ctx, zoneName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve account ID from zone %s: %w", zoneName, err)
+	}
+	svc.accountID = accountID
+
+	return svc, nil
+}
+
+func (c *tunnelService) resolveAccountID(ctx context.Context, zoneName string) (string, error) {
+	result, err := c.client.Zones.List(ctx, zones.ZoneListParams{
+		Name: cfgo.F(zoneName),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to look up zone: %w", err)
+	}
+	if len(result.Result) == 0 {
+		return "", fmt.Errorf("zone %q not found — check your token has Zone > Zone > Read permission", zoneName)
+	}
+	return result.Result[0].Account.ID, nil
 }
 
 func (c *tunnelService) Run(ctx context.Context, tunnel *domain.Tunnel) (int, error) {
-	configPath, err := c.GetConfigurationPath(ctx, tunnel)
-	if err != nil {
-		return 0, shared.WrapError(err, "failed to get tunnel configuration path")
+	if c.config.IsDryRun() {
+		logger.Debug("Dry run: skipping tunnel process start")
+		return 0, nil
 	}
 
-	cfCommand := NewCommand(ctx, "tunnel", "--config", configPath, "run", tunnel.GetName())
-	if pid, err := cfCommand.ExecAsync(); err != nil {
-		return 0, shared.WrapError(err, "failed to run tunnel")
-	} else {
-		return pid, nil
+	configPath, err := c.GetConfigurationPath(ctx, tunnel)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get tunnel configuration path: %w", err)
 	}
+
+	cfCommand := newCommand(ctx, "tunnel", "--config", configPath, "run", tunnel.GetName())
+	pid, err := cfCommand.execAsync()
+	if err != nil {
+		return 0, fmt.Errorf("failed to run tunnel: %w", err)
+	}
+	return pid, nil
+}
+
+// findTunnel looks up a tunnel by name and returns its UUID, or empty string if not found.
+// Results are cached within this service instance.
+func (c *tunnelService) findTunnel(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
+	name := tunnel.GetName()
+	if id, ok := c.tunnelIDCache[name]; ok {
+		return id, nil
+	}
+
+	result, err := c.client.ZeroTrust.Tunnels.List(ctx, zero_trust.TunnelListParams{
+		AccountID: cfgo.F(c.accountID),
+		Name:      cfgo.F(name),
+		IsDeleted: cfgo.F(false),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to list tunnels: %w", err)
+	}
+	for _, t := range result.Result {
+		if t.Name == name {
+			c.tunnelIDCache[name] = t.ID
+			return t.ID, nil
+		}
+	}
+	return "", nil
 }
 
 func (c *tunnelService) GetID(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
-	token, err := c.GetToken(ctx, tunnel)
-	if err != nil {
-		return "", shared.WrapError(err, "failed to get tunnel token")
+	if c.config.IsDryRun() {
+		return tunnel.GetName(), nil
 	}
 
-	return token.TunnelID, nil
+	tunnelID, err := c.findTunnel(ctx, tunnel)
+	if err != nil {
+		return "", err
+	}
+	if tunnelID == "" {
+		return "", fmt.Errorf("tunnel %s not found", tunnel.GetName())
+	}
+	return tunnelID, nil
 }
 
-func (c *tunnelService) GetAccountID(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
-	token, err := c.GetToken(ctx, tunnel)
-	if err != nil {
-		return "", shared.WrapError(err, "failed to get tunnel token")
-	}
-	return token.AccountID, nil
-}
-
-func (c *tunnelService) GetToken(ctx context.Context, tunnel *domain.Tunnel) (*struct {
-	TunnelID  string
-	AccountID string
-}, error) {
-	output, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
-		cfCommand := NewCommand(ctx, "tunnel", "token", tunnel.GetName())
-		out, err := cfCommand.ExecSync()
-		if err != nil {
-			return "", shared.WrapError(err, "failed to get tunnel token")
-		}
-		return out, nil
-	}, base64.StdEncoding.EncodeToString(fmt.Appendf([]byte{}, `{"t":"%s","a":"%s"}`, tunnel.GetName(), tunnel.GetName())))
-	if err != nil {
-		return nil, shared.WrapError(err, "failed to get tunnel token")
-	}
-
-	rawJson, err := base64.StdEncoding.DecodeString(output)
-	if err != nil {
-		return nil, shared.WrapError(err, "failed to decode tunnel token")
-	}
-
-	var info struct {
-		TunnelID  string `json:"t"`
-		AccountID string `json:"a"`
-	}
-	if err := json.Unmarshal(rawJson, &info); err != nil {
-		return nil, shared.WrapError(err, "failed to parse tunnel token JSON")
-	}
-
-	return &struct {
-		TunnelID  string
-		AccountID string
-	}{
-		TunnelID:  info.TunnelID,
-		AccountID: info.AccountID,
-	}, nil
-}
-
-func (c *tunnelService) CreateTunnel(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
+func (c *tunnelService) Create(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
 	logger.Info("Creating Cloudflare tunnel")
 
-	if _, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
-		cfCommand := NewCommand(ctx, "tunnel", "create", tunnel.GetName())
-		out, err := cfCommand.ExecSync()
-		if err != nil {
-			return "", shared.WrapError(err, "failed to create tunnel")
-		}
-		return out, nil
-	}, ""); err != nil {
-		return "", shared.WrapError(err, "failed to create tunnel")
+	if c.config.IsDryRun() {
+		logger.Debug("Dry run: skipping tunnel creation")
+		return tunnel.GetName(), nil
 	}
 
-	tokenInfo, err := c.GetToken(ctx, tunnel)
-	if err != nil {
-		return "", shared.WrapError(err, "failed to get tunnel token after creation")
+	// Generate a random 32-byte tunnel secret
+	secret := make([]byte, 32)
+	if _, err := rand.Read(secret); err != nil {
+		return "", fmt.Errorf("failed to generate tunnel secret: %w", err)
 	}
+	tunnelSecret := base64.StdEncoding.EncodeToString(secret)
+
+	result, err := c.client.ZeroTrust.Tunnels.New(ctx, zero_trust.TunnelNewParams{
+		AccountID:    cfgo.F(c.accountID),
+		Name:         cfgo.F(tunnel.GetName()),
+		ConfigSrc:    cfgo.F(zero_trust.TunnelNewParamsConfigSrcLocal),
+		TunnelSecret: cfgo.F(tunnelSecret),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to create tunnel: %w", err)
+	}
+
+	// Save credentials file so cloudflared can use it for `tunnel run`
+	if err := c.saveCredentials(result.ID, result.AccountTag, tunnelSecret, tunnel.GetName()); err != nil {
+		return "", fmt.Errorf("failed to save tunnel credentials: %w", err)
+	}
+
+	// Cache the newly created tunnel's ID
+	c.tunnelIDCache[tunnel.GetName()] = result.ID
 
 	logger.Debugf("Tunnel created successfully", map[string]any{
 		"name":     tunnel.GetName(),
-		"tunnelID": tokenInfo.TunnelID,
-		"account":  tokenInfo.AccountID,
+		"tunnelID": result.ID,
+		"account":  result.AccountTag,
 	})
-	return tokenInfo.TunnelID, nil
+	return result.ID, nil
 }
 
-func (c *tunnelService) DeleteTunnel(ctx context.Context, tunnel *domain.Tunnel) error {
+// tunnelCredentials is the format cloudflared expects in ~/.cloudflared/{tunnelID}.json.
+type tunnelCredentials struct {
+	AccountTag   string `json:"AccountTag"`
+	TunnelSecret string `json:"TunnelSecret"`
+	TunnelID     string `json:"TunnelID"`
+	TunnelName   string `json:"TunnelName"`
+}
+
+// saveCredentials writes the credentials file that cloudflared needs to run the tunnel.
+func (c *tunnelService) saveCredentials(tunnelID, accountTag, tunnelSecret, tunnelName string) error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	credDir := filepath.Join(homeDir, ".cloudflared")
+	if err := os.MkdirAll(credDir, 0700); err != nil {
+		return fmt.Errorf("failed to create credentials directory: %w", err)
+	}
+
+	creds := tunnelCredentials{
+		AccountTag:   accountTag,
+		TunnelSecret: tunnelSecret,
+		TunnelID:     tunnelID,
+		TunnelName:   tunnelName,
+	}
+
+	data, err := json.Marshal(creds)
+	if err != nil {
+		return fmt.Errorf("failed to marshal credentials: %w", err)
+	}
+
+	credPath := filepath.Join(credDir, tunnelID+".json")
+	if err := os.WriteFile(credPath, data, 0600); err != nil {
+		return fmt.Errorf("failed to write credentials file: %w", err)
+	}
+
+	logger.Debugf("Credentials saved", map[string]any{
+		"path": credPath,
+	})
+	return nil
+}
+
+func (c *tunnelService) Delete(ctx context.Context, tunnel *domain.Tunnel) error {
 	logger.Info("Deleting Cloudflare tunnel")
 
-	if _, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
-		cfCommand := NewCommand(ctx, "tunnel", "cleanup", tunnel.GetName())
-		out, err := cfCommand.ExecSync()
-		if err != nil {
-			return "", shared.WrapError(err, "failed to cleanup tunnel")
-		}
-		return out, nil
-	}, ""); err != nil {
-		logger.Warn(fmt.Sprintf("Tunnel cleanup before deletion failed: %s", err.Error()))
-		return shared.WrapError(err, "failed to cleanup tunnel")
+	if c.config.IsDryRun() {
+		logger.Debug("Dry run: skipping tunnel deletion")
+		return nil
 	}
 
-	if _, err := framework.RunWithDryRunGuard(c.config, func() (string, error) {
-		cfCommand := NewCommand(ctx, "tunnel", "delete", tunnel.GetName())
-		out, err := cfCommand.ExecSync()
-		if err != nil {
-			return "", shared.WrapError(err, "failed to delete tunnel")
-		}
-		return out, nil
-	}, ""); err != nil {
-		return shared.WrapError(err, "failed to delete tunnel")
+	tunnelID, err := c.findTunnel(ctx, tunnel)
+	if err != nil {
+		return fmt.Errorf("failed to find tunnel for deletion: %w", err)
 	}
+	if tunnelID == "" {
+		logger.Debug("Tunnel does not exist, skipping deletion")
+		return nil
+	}
+
+	// Clean up connections first (best effort)
+	_, err = c.client.ZeroTrust.Tunnels.Connections.Delete(ctx, tunnelID, zero_trust.TunnelConnectionDeleteParams{
+		AccountID: cfgo.F(c.accountID),
+	})
+	if err != nil {
+		logger.Warnf("Tunnel cleanup before deletion failed", map[string]any{
+			"error": err.Error(),
+		})
+	}
+
+	// Delete tunnel
+	_, err = c.client.ZeroTrust.Tunnels.Delete(ctx, tunnelID, zero_trust.TunnelDeleteParams{
+		AccountID: cfgo.F(c.accountID),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete tunnel: %w", err)
+	}
+
+	// Invalidate cache
+	delete(c.tunnelIDCache, tunnel.GetName())
 
 	logger.Debug("Cloudflare tunnel deleted successfully")
 	return nil
 }
 
-func (c *tunnelService) GetCredentialsPath(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
-	logger.Debug("Getting tunnel credentials file path")
-
+func (c *tunnelService) getCredentialsPath(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return "", shared.WrapError(err, "failed to get user home directory")
+		return "", fmt.Errorf("failed to get user home directory: %w", err)
 	}
 
 	tunnelID, err := c.GetID(ctx, tunnel)
 	if err != nil {
-		return "", shared.WrapError(err, "failed to get tunnel ID")
+		return "", fmt.Errorf("failed to get tunnel ID: %w", err)
 	}
 
-	credentialsFile, _ := framework.RunWithDryRunGuard(c.config, func() (string, error) {
-		return filepath.Join(homeDir, fmt.Sprintf(".cloudflared/%s.json", tunnelID)), nil
-	}, "path-placeholder")
-	if !(c.config != nil && c.config.DryRun) {
-		if _, err := os.Stat(credentialsFile); os.IsNotExist(err) {
-			return "", shared.WrapError(err, "credentials file does not exist")
-		} else if err != nil {
-			return "", shared.WrapError(err, "failed to access credentials file")
-		}
-	}
-
-	logger.Debugf("Tunnel credentials file path", map[string]any{
-		"path": credentialsFile,
-	})
-	return credentialsFile, nil
+	return filepath.Join(homeDir, ".cloudflared", tunnelID+".json"), nil
 }
 
 func (c *tunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tunnel, ingress *domain.Ingress) error {
 	logger.Info("Saving Cloudflare configuration")
 
-	credentialsFile, err := c.GetCredentialsPath(ctx, tunnel)
+	credentialsFile, err := c.getCredentialsPath(ctx, tunnel)
 	if err != nil {
-		return shared.WrapError(err, "failed to get credentials file path")
+		return fmt.Errorf("failed to get credentials file path: %w", err)
 	}
 
 	logger.Debugf("Using credentials file", map[string]any{
 		"path": credentialsFile,
 	})
 
-	config := &CloudflaredConfig{
+	config := &runConfig{
 		Tunnel:          tunnel.GetName(),
 		Logfile:         "cloudflared.log",
 		Ingress:         nil,
@@ -208,32 +287,30 @@ func (c *tunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tu
 		"zone": ingress.Zone,
 	})
 	for _, app := range ingress.Apps {
-		config.Ingress = append(config.Ingress, CloudflaredIngressConfig{
+		config.Ingress = append(config.Ingress, ingressRule{
 			Service:  app.Target.GetTargetURL(),
-			Hostname: fmt.Sprintf("%s.%s", app.Expose.Subdomain, ingress.Zone),
+			Hostname: app.Expose.Subdomain + "." + ingress.Zone,
 		})
 	}
 
 	logger.Info("Adding catch-all ingress rule")
-	config.Ingress = append(config.Ingress, CloudflaredIngressConfig{
+	config.Ingress = append(config.Ingress, ingressRule{
 		Service:  "http_status:404",
 		Hostname: "*",
 	})
 
 	bytes, err := yaml.Marshal(config)
 	if err != nil {
-		return shared.WrapError(err, "failed to marshal configuration")
+		return fmt.Errorf("failed to marshal configuration: %w", err)
 	}
 
 	path, err := c.GetConfigurationPath(ctx, tunnel)
 	if err != nil {
-		return shared.WrapError(err, "failed to get tunnel configuration path")
+		return fmt.Errorf("failed to get tunnel configuration path: %w", err)
 	}
 
-	if !(c.config != nil && c.config.DryRun) {
-		if err := os.WriteFile(path, bytes, 0600); err != nil {
-			return shared.WrapError(err, "failed to save tunnel configuration")
-		}
+	if err := os.WriteFile(path, bytes, 0600); err != nil {
+		return fmt.Errorf("failed to save tunnel configuration: %w", err)
 	}
 
 	logger.Debug("Configuration saved")
@@ -245,61 +322,36 @@ func (c *tunnelService) DeleteConfiguration(ctx context.Context, tunnel *domain.
 
 	path, err := c.GetConfigurationPath(ctx, tunnel)
 	if err != nil {
-		return shared.WrapError(err, "failed to get tunnel configuration path")
+		return fmt.Errorf("failed to get tunnel configuration path: %w", err)
 	}
 
-	if !(c.config != nil && c.config.DryRun) {
-		if err := os.Remove(path); err != nil {
-			return shared.WrapError(err, "failed to delete tunnel configuration")
+	if err := os.Remove(path); err != nil {
+		if os.IsNotExist(err) {
+			logger.Debug("Configuration file does not exist, skipping deletion")
+			return nil
 		}
+		return fmt.Errorf("failed to delete tunnel configuration: %w", err)
 	}
 
 	logger.Debug("Configuration deleted")
 	return nil
 }
 
-func (c *tunnelService) TunnelExists(ctx context.Context, tunnel *domain.Tunnel) (bool, error) {
+func (c *tunnelService) Exists(ctx context.Context, tunnel *domain.Tunnel) (bool, error) {
 	logger.Debugf("Checking if tunnel exists", map[string]any{
 		"tunnelName": tunnel.GetName(),
 	})
 
-	exists, err := framework.RunWithDryRunGuard(c.config, func() (bool, error) {
-		cfCommand := NewCommand(ctx, "tunnel", "list", "--output", "json")
-		output, err := cfCommand.ExecSync()
-		if err != nil {
-			return false, shared.WrapError(err, "failed to list tunnels")
-		}
-
-		// Handle case where cloudflared returns "null" for empty lists
-		if output == "null" {
-			logger.Debug("No tunnels found (null output)")
-			return false, nil
-		}
-
-		var tunnels []struct {
-			Name string `json:"name"`
-		}
-		if err := json.Unmarshal([]byte(output), &tunnels); err != nil {
-			return false, shared.WrapError(err, "failed to unmarshal tunnel list")
-		}
-
-		for _, t := range tunnels {
-			if t.Name == tunnel.GetName() {
-				logger.Debugf("Tunnel found", map[string]any{
-					"tunnelName": tunnel.GetName(),
-				})
-				return true, nil
-			}
-		}
-		logger.Debugf("Tunnel not found in list", map[string]any{
-			"tunnelName":  tunnel.GetName(),
-			"tunnelCount": len(tunnels),
-		})
-		return false, nil
-	}, false)
-	if err != nil {
-		return false, shared.WrapError(err, "failed to check if tunnel exists")
+	if c.config.IsDryRun() {
+		return true, nil
 	}
+
+	tunnelID, err := c.findTunnel(ctx, tunnel)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if tunnel exists: %w", err)
+	}
+
+	exists := tunnelID != ""
 	logger.Debugf("Tunnel exists check result", map[string]any{
 		"tunnelName": tunnel.GetName(),
 		"exists":     exists,
@@ -312,15 +364,15 @@ func (c *tunnelService) GetConfigurationPath(ctx context.Context, tunnel *domain
 
 	base, err := paths.GetUserFolderPath()
 	if err != nil {
-		return "", shared.WrapError(err, "failed to get user folder path")
+		return "", fmt.Errorf("failed to get user folder path: %w", err)
 	}
 
 	tunnelsFolder := filepath.Join(base, "tunnels")
 	if err := os.MkdirAll(tunnelsFolder, 0755); err != nil {
-		return "", shared.WrapError(err, "failed to create tunnels directory")
+		return "", fmt.Errorf("failed to create tunnels directory: %w", err)
 	}
 
-	tunnelFile := filepath.Join(tunnelsFolder, fmt.Sprintf("%s.yml", tunnel.GetName()))
+	tunnelFile := filepath.Join(tunnelsFolder, tunnel.GetName()+".yml")
 
 	logger.Debugf("Tunnel configuration path", map[string]any{
 		"path": tunnelFile,

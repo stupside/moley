@@ -3,6 +3,7 @@ package tunnel
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stupside/moley/v2/internal/core/domain"
 	"github.com/stupside/moley/v2/internal/core/ports"
@@ -30,37 +31,36 @@ func NewService(tunnel *domain.Tunnel, ingress *domain.Ingress, dnsService ports
 
 func (s *Service) Start(ctx context.Context) error {
 	logger.Infof("Starting tunnel service", map[string]any{
-		"zone":     s.ingress.Zone,
-		"tunnelID": s.tunnel.ID,
+		"zone":   s.ingress.Zone,
+		"tunnel": s.tunnel.Name,
 	})
 
-	rm, err := s.createResourceManager(ctx)
+	orch, err := s.createOrchestrator(ctx)
 	if err != nil {
-		return shared.WrapError(err, "failed to create resource manager")
+		return fmt.Errorf("failed to create orchestrator: %w", err)
 	}
 
-	if err := rm.Start(ctx); err != nil {
-		return shared.WrapError(err, "failed to start resources")
+	if err := orch.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start resources: %w", err)
 	}
 
 	logger.Info("Tunnel service started")
-
-	return ctx.Err()
+	return nil
 }
 
 func (s *Service) Stop(ctx context.Context) error {
 	logger.Infof("Stopping tunnel service", map[string]any{
-		"zone":     s.ingress.Zone,
-		"tunnelID": s.tunnel.ID,
+		"zone":   s.ingress.Zone,
+		"tunnel": s.tunnel.Name,
 	})
 
-	rm, err := s.createResourceManager(ctx)
+	orch, err := s.createOrchestrator(ctx)
 	if err != nil {
-		return shared.WrapError(err, "failed to create resource manager")
+		return fmt.Errorf("failed to create orchestrator: %w", err)
 	}
 
-	if err := rm.Stop(ctx); err != nil {
-		return shared.WrapError(err, "failed to stop resources")
+	if err := orch.Stop(ctx); err != nil {
+		return fmt.Errorf("failed to stop resources: %w", err)
 	}
 
 	logger.Info("Tunnel service stopped")

@@ -8,8 +8,6 @@ import (
 )
 
 type DNSService interface {
-	GetZoneID(ctx context.Context, zoneName string) (string, error)
-	GetContent(ctx context.Context, tunnel *domain.Tunnel) (string, error)
 	DeleteRecord(ctx context.Context, tunnel *domain.Tunnel, zoneName string, subdomain string) error
 	RouteRecord(ctx context.Context, tunnel *domain.Tunnel, zoneName string, subdomain string) error
 	RecordExists(ctx context.Context, tunnel *domain.Tunnel, zoneName string, subdomain string) (bool, error)
