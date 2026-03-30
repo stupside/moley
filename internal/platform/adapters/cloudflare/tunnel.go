@@ -23,7 +23,7 @@ import (
 type tunnelService struct {
 	client    *cfgo.Client
 	accountID string
-	config *Config
+	config    *Config
 }
 
 func NewTunnelService(ctx context.Context, client *cfgo.Client, zoneName string, config *Config) (*tunnelService, error) {
