@@ -19,8 +19,6 @@ type dnsService struct {
 	client        *cfgo.Client
 	tunnelService ports.TunnelService
 	config        *Config
-	// zoneIDCache caches zone name → zone ID lookups within this service instance
-	zoneIDCache map[string]string
 }
 
 func NewDNSService(client *cfgo.Client, tunnelService ports.TunnelService, config *Config) *dnsService {
@@ -28,7 +26,6 @@ func NewDNSService(client *cfgo.Client, tunnelService ports.TunnelService, confi
 		tunnelService: tunnelService,
 		config:        config,
 		client:        client,
-		zoneIDCache:   make(map[string]string),
 	}
 }
 
@@ -38,6 +35,10 @@ func (c *dnsService) getContent(ctx context.Context, tunnel *domain.Tunnel) (str
 		return "", fmt.Errorf("failed to get tunnel ID: %w", err)
 	}
 	return tunnelID + ".cfargotunnel.com", nil
+}
+
+func recordName(subdomain, zoneName string) string {
+	return subdomain + "." + zoneName
 }
 
 func (c *dnsService) RouteRecord(ctx context.Context, tunnel *domain.Tunnel, zoneName string, subdomain string) error {
@@ -56,12 +57,26 @@ func (c *dnsService) RouteRecord(ctx context.Context, tunnel *domain.Tunnel, zon
 		return fmt.Errorf("failed to get DNS content: %w", err)
 	}
 
-	recordName := subdomain + "." + zoneName
+	name := recordName(subdomain, zoneName)
+
+	records, err := c.listRecords(ctx, zoneID, dnsContent)
+	if err != nil {
+		return fmt.Errorf("failed to check existing DNS records: %w", err)
+	}
+	for _, r := range records {
+		if r.Name == name {
+			logger.Debugf("DNS record already exists, skipping creation", map[string]any{
+				"subdomain": subdomain,
+				"zone":      zoneName,
+			})
+			return nil
+		}
+	}
 
 	_, err = c.client.DNS.Records.New(ctx, dns.RecordNewParams{
 		ZoneID: cfgo.F(zoneID),
 		Record: dns.RecordParam{
-			Name:    cfgo.F(recordName),
+			Name:    cfgo.F(name),
 			Proxied: cfgo.F(true),
 			TTL:     cfgo.F(dns.TTL1), // automatic
 		},
@@ -76,44 +91,44 @@ func (c *dnsService) RouteRecord(ctx context.Context, tunnel *domain.Tunnel, zon
 }
 
 func (c *dnsService) getZoneID(ctx context.Context, zoneName string) (string, error) {
-	if id, ok := c.zoneIDCache[zoneName]; ok {
-		return id, nil
-	}
-
-	z, err := c.client.Zones.List(ctx, zones.ZoneListParams{
+	pager := c.client.Zones.ListAutoPaging(ctx, zones.ZoneListParams{
 		Name: cfgo.F(zoneName),
 	})
-	if err != nil {
+
+	var found bool
+	var zoneID string
+	for pager.Next() {
+		if found {
+			return "", fmt.Errorf("multiple zones found for %s", zoneName)
+		}
+		zoneID = pager.Current().ID
+		found = true
+	}
+	if err := pager.Err(); err != nil {
 		return "", fmt.Errorf("failed to list zones: %w", err)
 	}
-	if len(z.Result) == 0 {
+	if !found {
 		return "", fmt.Errorf("zone %s not found", zoneName)
 	}
-	if len(z.Result) > 1 {
-		return "", fmt.Errorf("multiple zones found for %s", zoneName)
-	}
 
-	c.zoneIDCache[zoneName] = z.Result[0].ID
-	return z.Result[0].ID, nil
+	return zoneID, nil
 }
 
-func (c *dnsService) getRecords(ctx context.Context, tunnel *domain.Tunnel, zoneName string) ([]dns.RecordListResponse, error) {
-	zoneID, err := c.getZoneID(ctx, zoneName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get zone ID: %w", err)
-	}
-	dnsContent, err := c.getContent(ctx, tunnel)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get DNS content: %w", err)
-	}
-	records, err := c.client.DNS.Records.List(ctx, dns.RecordListParams{
+func (c *dnsService) listRecords(ctx context.Context, zoneID, content string) ([]dns.RecordListResponse, error) {
+	pager := c.client.DNS.Records.ListAutoPaging(ctx, dns.RecordListParams{
 		ZoneID:  cfgo.F(zoneID),
-		Content: cfgo.F(dnsContent),
+		Content: cfgo.F(content),
 	})
-	if err != nil {
+
+	var records []dns.RecordListResponse
+	for pager.Next() {
+		records = append(records, pager.Current())
+	}
+	if err := pager.Err(); err != nil {
 		return nil, fmt.Errorf("failed to list DNS records: %w", err)
 	}
-	return records.Result, nil
+
+	return records, nil
 }
 
 func (c *dnsService) DeleteRecord(ctx context.Context, tunnel *domain.Tunnel, zoneName string, subdomain string) error {
@@ -122,19 +137,24 @@ func (c *dnsService) DeleteRecord(ctx context.Context, tunnel *domain.Tunnel, zo
 		return nil
 	}
 
-	records, err := c.getRecords(ctx, tunnel, zoneName)
+	zoneID, err := c.getZoneID(ctx, zoneName)
+	if err != nil {
+		return fmt.Errorf("failed to get zone ID for zone %s: %w", zoneName, err)
+	}
+
+	dnsContent, err := c.getContent(ctx, tunnel)
+	if err != nil {
+		return fmt.Errorf("failed to get DNS content: %w", err)
+	}
+
+	records, err := c.listRecords(ctx, zoneID, dnsContent)
 	if err != nil {
 		return fmt.Errorf("failed to get DNS records for tunnel %s in zone %s: %w", tunnel.GetName(), zoneName, err)
 	}
 
-	zoneID, err := c.getZoneID(ctx, zoneName)
-	if err != nil {
-		return fmt.Errorf("failed to get zone ID for deletion: %w", err)
-	}
-
-	expectedName := subdomain + "." + zoneName
+	name := recordName(subdomain, zoneName)
 	for _, record := range records {
-		if record.Name == expectedName {
+		if record.Name == name {
 			_, err := c.client.DNS.Records.Delete(ctx, record.ID, dns.RecordDeleteParams{
 				ZoneID: cfgo.F(zoneID),
 			})
@@ -156,13 +176,24 @@ func (c *dnsService) RecordExists(ctx context.Context, tunnel *domain.Tunnel, zo
 		return true, nil
 	}
 
-	records, err := c.getRecords(ctx, tunnel, zoneName)
+	zoneID, err := c.getZoneID(ctx, zoneName)
+	if err != nil {
+		return false, fmt.Errorf("failed to get zone ID: %w", err)
+	}
+
+	dnsContent, err := c.getContent(ctx, tunnel)
+	if err != nil {
+		return false, fmt.Errorf("failed to get DNS content: %w", err)
+	}
+
+	records, err := c.listRecords(ctx, zoneID, dnsContent)
 	if err != nil {
 		return false, err
 	}
-	expected := subdomain + "." + zoneName
+
+	name := recordName(subdomain, zoneName)
 	for _, r := range records {
-		if r.Name == expected {
+		if r.Name == name {
 			return true, nil
 		}
 	}

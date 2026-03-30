@@ -23,5 +23,5 @@ type runConfig struct {
 // ingressRule maps a hostname to a local service in the cloudflared config.
 type ingressRule struct {
 	Service  string `yaml:"service" validate:"required"`
-	Hostname string `yaml:"hostname" validate:"required"`
+	Hostname string `yaml:"hostname,omitempty"`
 }
