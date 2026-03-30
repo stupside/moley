@@ -4,7 +4,7 @@ import { config } from "../config.js";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout class="bg-gray-50">
+<BaseLayout>
   <SearchEngines
     slot="head"
     image={config.site.logo}
@@ -12,17 +12,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     description="The page you're looking for doesn't exist."
   />
 
-  <section class="py-16 sm:py-24 min-h-screen flex items-center">
-    <div class="text-center w-full">
-      <h1
-        class="text-4xl sm:text-5xl lg:text-6xl text-gray-900 font-bold tracking-tight mb-4"
+  <section class="pt-32 pb-24 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <span class="font-mono text-8xl font-black text-neutral-700/50">404</span>
+      <h1 class="text-2xl font-bold text-neutral-100 mt-6">Page not found</h1>
+      <p class="text-neutral-400 mt-2">This page doesn't exist or has been moved.</p>
+      <a
+        href={`${import.meta.env.BASE_URL}`}
+        class="inline-block mt-6 text-sm text-orange-500 hover:text-neutral-100 transition-colors font-mono"
       >
-        404 <span class="text-gray-600">Not Found</span>
-      </h1>
-
-      <p class="text-lg mx-auto max-w-2xl mb-8 text-gray-600">
-        The page you're looking for doesn't exist.
-      </p>
+        cd ~
+      </a>
     </div>
   </section>
 </BaseLayout>

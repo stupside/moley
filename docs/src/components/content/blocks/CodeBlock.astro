@@ -11,15 +11,15 @@ const { content } = Astro.props;
 
 <div class={content.className} id={content.id}>
   {content.title && (
-    <div class="bg-gray-50 px-4 py-2 text-xs text-gray-600 border border-gray-200 border-b border-gray-300 rounded-t-lg">
+    <div class="px-5 py-2 text-[11px] font-mono text-neutral-400 bg-neutral-800 border-b border-neutral-700">
       {content.title}
     </div>
   )}
-  <div class={`overflow-hidden border border-gray-200 ${content.title ? "rounded-b-lg border-t-0" : "rounded-lg"}`}>
+  <div class="overflow-hidden">
     <Code
       code={content.code}
       lang={content.language}
-      theme="github-light"
+      theme="github-dark"
     />
   </div>
 </div>

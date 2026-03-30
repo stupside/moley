@@ -5,22 +5,23 @@ import Footer from "../components/layout/Footer.astro";
 import Header from "../components/layout/Header.astro";
 
 export interface Props {
-  class?: string;
+	class?: string;
 }
 
 const { class: className = "" } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" class="scroll-pt-20">
+<html lang="en" class="scroll-pt-16">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-    <!-- SEO and head content managed by pages -->
     <slot name="head" />
 
-    <!-- View transition styles -->
     <style>
       @view-transition {
         navigation: auto;
@@ -28,12 +29,12 @@ const { class: className = "" } = Astro.props;
 
       ::view-transition-old(root),
       ::view-transition-new(root) {
-        animation-duration: 0.3s;
+        animation-duration: 0.2s;
       }
     </style>
   </head>
 
-  <body class={mergeClassName("bg-white text-gray-900 font-sans antialiased", className)}>
+  <body class={mergeClassName("bg-neutral-950 text-neutral-300 font-sans antialiased", className)}>
     <Header currentPath={Astro.url.pathname} />
 
     <main class="relative">

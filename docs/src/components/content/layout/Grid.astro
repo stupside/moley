@@ -18,7 +18,10 @@ const colClasses: Record<number, string> = {
 };
 
 const gap = content.gap && content.gap in gapClasses ? content.gap : "medium";
-const gridClass = mergeClassName(`grid grid-cols-1 ${colClasses[content.columns] || ""} ${gapClasses[gap]}`, content.className);
+const gridClass = mergeClassName(
+	`grid grid-cols-1 ${colClasses[content.columns] || ""} ${gapClasses[gap]}`,
+	content.className,
+);
 ---
 
 <div class={gridClass} id={content.id} style={colClasses[content.columns] ? undefined : `grid-template-columns: repeat(${content.columns}, minmax(0, 1fr));`}>

@@ -9,5 +9,5 @@ ingress:
     mode: subdomain
     zone: xonery.dev
 tunnel:
-    name: demo
+    id: demo
     persistent: false

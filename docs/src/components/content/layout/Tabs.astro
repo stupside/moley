@@ -13,15 +13,16 @@ const tabs: TabBlock[] = content.children || [];
 const tabsId =
 	content.id || createSlug(`tabs-${tabs.map((t) => t.title).join("-")}`);
 
-// Tab button classes
-const BASE_CLASSES = "px-4 py-2 text-sm font-medium rounded-lg transition-colors border cursor-pointer";
-const ACTIVE_CLASSES = "bg-white text-orange-700 border-gray-200";
-const INACTIVE_CLASSES = "text-gray-600 hover:text-gray-900 hover:bg-white/50 border-transparent";
+const BASE_CLASSES =
+	"px-3 py-1.5 text-sm font-mono transition-colors duration-150 cursor-pointer border-b-2 -mb-px";
+const ACTIVE_CLASSES = "text-orange-400 border-orange-500";
+const INACTIVE_CLASSES =
+	"text-neutral-500 hover:text-neutral-300 border-transparent";
 ---
 
 <div class={content.className} id={content.id} data-tabs={tabsId}>
-  <div class="border-b border-gray-200 pb-3 mb-3" role="tablist">
-    <div class="flex gap-1">
+  <div class="border-b border-neutral-800 mb-4" role="tablist">
+    <div class="flex gap-0">
       {tabs.map((tab, index) => (
         <button
           class={cn(
@@ -52,10 +53,9 @@ const INACTIVE_CLASSES = "text-gray-600 hover:text-gray-900 hover:bg-white/50 bo
 </div>
 
 <script>
-  // Tab button classes (duplicated from frontmatter for script access)
-  const BASE_CLASSES = "px-4 py-2 text-sm font-medium rounded-lg transition-colors border cursor-pointer";
-  const ACTIVE_CLASSES = "bg-white text-orange-700 border-gray-200";
-  const INACTIVE_CLASSES = "text-gray-600 hover:text-gray-900 hover:bg-white/50 border-transparent";
+  const BASE_CLASSES = "px-3 py-1.5 text-sm font-mono transition-colors duration-150 cursor-pointer border-b-2 -mb-px";
+  const ACTIVE_CLASSES = "text-orange-400 border-orange-500";
+  const INACTIVE_CLASSES = "text-neutral-500 hover:text-neutral-300 border-transparent";
 
   interface TabSystem {
     container: HTMLElement;
@@ -87,11 +87,9 @@ const INACTIVE_CLASSES = "text-gray-600 hover:text-gray-900 hover:bg-white/50 bo
     private switchTab(index: number): void {
       if (index === this.tabs.activeIndex) return;
 
-      // Update buttons
       this.updateButton(this.tabs.activeIndex, false);
       this.updateButton(index, true);
 
-      // Update panels
       this.updatePanel(this.tabs.activeIndex, false);
       this.updatePanel(index, true);
 
@@ -114,7 +112,6 @@ const INACTIVE_CLASSES = "text-gray-600 hover:text-gray-900 hover:bg-white/50 bo
     }
   }
 
-  // Initialize all tab containers
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-tabs]').forEach((container) => {
       new TabController(container as HTMLElement);

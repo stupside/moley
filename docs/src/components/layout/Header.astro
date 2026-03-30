@@ -1,8 +1,4 @@
 ---
-/**
- * Modern Header component with atomic design
- */
-
 import { config } from "../../config.js";
 import { layoutClasses } from "./shared.js";
 import Icon from "../ui/Icon/Icon.astro";
@@ -13,31 +9,25 @@ export interface Props {
 }
 
 const { currentPath } = Astro.props;
-
 const items = config.navigation.items;
 ---
 
-<header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all">
+<header class="sticky top-0 z-50 w-full bg-neutral-950/90 backdrop-blur-sm">
   <div class={layoutClasses.container}>
-    <div class="flex h-16 items-center justify-between">
-      <!-- Logo -->
-      <a href={`${import.meta.env.BASE_URL}`} class="transition-opacity hover:opacity-80">
-        <span class="font-bold text-gray-900">{config.site.name}</span>
+    <div class="flex h-14 items-center justify-between border-b border-neutral-800">
+      <a href={`${import.meta.env.BASE_URL}`} class="font-mono text-sm text-neutral-100 hover:text-orange-500 transition-colors">
+        {config.site.name}
       </a>
 
-      <!-- Navigation -->
-      <div class="flex items-center space-x-2 sm:space-x-4">
+      <div class="flex items-center gap-4">
         <Navigation items={items} currentPath={currentPath} />
-
-        <!-- GitHub button -->
         <a
           href={config.site.repo.url}
           target="_blank"
           rel="noopener noreferrer nofollow"
-          class="inline-flex items-center space-x-1 sm:space-x-2 rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 hover:shadow-md"
+          class="text-neutral-600 hover:text-neutral-100 transition-colors"
         >
           <Icon name="github" size="sm" />
-          <span class="hidden sm:inline">GitHub</span>
         </a>
       </div>
     </div>

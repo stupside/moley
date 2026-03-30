@@ -6,26 +6,24 @@ import { config } from "../config.js";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const heroData = {
-  title: "Turn localhost into ",
-  titleAccent: "production URLs",
-  subtitle:
-    "Cloudflare Tunnels without the hassle. Automated tunnel creation, DNS routing, and cleanup. One command turns localhost into production URLs.",
-  logo: {
-    src: config.site.logo,
-    alt: "Moley",
-    width: 160,
-    height: 160,
-  },
+	title: "Turn localhost into ",
+	titleAccent: "production URLs.",
+	subtitle:
+		"Cloudflare Tunnels are free and powerful but painful to configure. Moley handles tunnel creation, DNS routing, and cleanup so you don't have to.",
+	logo: {
+		src: config.site.logo,
+		alt: "Moley",
+		width: 160,
+		height: 160,
+	},
 };
 
-const title =
-  "Moley – Automated Cloudflare Tunnels for Custom Domains";
-
+const title = "Moley – Automated Cloudflare Tunnels for Custom Domains";
 const description =
-  "Free Cloudflare Tunnel automation tool. Turn localhost into production URLs with automated configuration, DNS routing, and SSL certificates.";
+	"Cloudflare Tunnel automation for developers. Turn localhost into production URLs with one command. Automated config, DNS routing, and cleanup.";
 ---
 
-<BaseLayout class="bg-gray-50">
+<BaseLayout>
   <SearchEngines
     slot="head"
     image={config.site.logo}
@@ -36,179 +34,29 @@ const description =
 
   <Hero {...heroData} />
 
-  <!-- Key Features -->
-  <section class="py-12 bg-white">
+  <section class="border-t border-neutral-800 py-24">
     <div class={layoutClasses.container}>
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Enterprise tunneling, automated
-        </h2>
-        <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          Cloudflare Tunnels are powerful and free, but complex setup drives developers to paid or free limited tools. Moley automates the entire configuration process. Skip the monthly fees.
-        </p>
+      <h2 class="text-3xl font-black text-neutral-100 tracking-tight">
+        Without Moley
+      </h2>
+      <div class="mt-8 mb-20 space-y-1 font-mono text-sm text-neutral-400">
+        <div><span class="text-neutral-600">1</span>  Authenticate with Cloudflare</div>
+        <div><span class="text-neutral-600">2</span>  Create tunnel manually</div>
+        <div><span class="text-neutral-600">3</span>  Write YAML config with ingress rules</div>
+        <div><span class="text-neutral-600">4</span>  Route DNS for each subdomain</div>
+        <div><span class="text-neutral-600">5</span>  Run the tunnel</div>
+        <div><span class="text-neutral-600">6</span>  Manually delete tunnel + DNS records when done</div>
       </div>
 
-      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-        <div class="text-center">
-          <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-lg bg-orange-100">
-            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.467-.218-2.121-.659-1.172-.879-1.172-2.303 0-3.182C10.536 7.697 11.304 7.478 12 7.478c.725 0 1.467.218 2.121.659l.879-.659" />
-            </svg>
-          </div>
-          <h3 class="mt-6 text-lg font-semibold text-gray-900">Domain Cost Only</h3>
-          <p class="mt-2 text-sm text-gray-600">Enterprise features for your domain cost. No monthly subscriptions.</p>
-        </div>
-
-        <div class="text-center">
-          <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-lg bg-orange-100">
-            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-            </svg>
-          </div>
-          <h3 class="mt-6 text-lg font-semibold text-gray-900">Zero Trust Security</h3>
-          <p class="mt-2 text-sm text-gray-600">Built-in access control and authentication via Cloudflare Access.</p>
-        </div>
-
-        <div class="text-center">
-          <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-lg bg-orange-100">
-            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
-            </svg>
-          </div>
-          <h3 class="mt-6 text-lg font-semibold text-gray-900">Enterprise Infrastructure</h3>
-          <p class="mt-2 text-sm text-gray-600">DDoS protection, automatic SSL certificates, and unlimited bandwidth.</p>
-        </div>
-
-        <div class="text-center">
-          <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-lg bg-orange-100">
-            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-            </svg>
-          </div>
-          <h3 class="mt-6 text-lg font-semibold text-gray-900">One Command Setup</h3>
-          <p class="mt-2 text-sm text-gray-600">Automated configuration, DNS routing, and cleanup. Zero manual work.</p>
-        </div>
+      <h2 class="text-3xl font-black text-orange-500 tracking-tight">
+        With Moley
+      </h2>
+      <div class="mt-8 font-mono text-sm">
+        <span class="text-neutral-500">$</span> <span class="text-orange-500">moley tunnel run</span>
       </div>
-    </div>
-  </section>
-
-  <!-- How it works -->
-  <section class="py-16 bg-gray-50">
-    <div class={layoutClasses.container}>
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Manual setup vs. automated deployment
-        </h2>
-        <p class="mt-4 text-lg text-gray-600">
-          See how Moley eliminates hours of configuration work.
-        </p>
-      </div>
-
-      <div class="grid gap-8 lg:grid-cols-2 items-start">
-        <!-- Before -->
-        <div class="relative bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <div class="absolute -left-4 top-6">
-            <div class="flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-full text-sm font-bold shadow-lg ring-4 ring-white">
-              ✗
-            </div>
-          </div>
-
-          <div class="ml-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Manual Setup</h3>
-
-            <div class="space-y-3 mb-6">
-              <div class="flex items-start text-sm text-gray-600">
-                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">1</span>
-                <span>Authenticate with Cloudflare</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">2</span>
-                <span>Create tunnel manually</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">3</span>
-                <span>Configure YAML file with ingress rules</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">4</span>
-                <span>Route DNS via CLI for each subdomain</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">5</span>
-                <span>Run tunnel</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-medium mr-3 mt-0.5 flex-shrink-0">6</span>
-                <span>Manually delete tunnel and DNS from dashboard</span>
-              </div>
-            </div>
-
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4 ring-1 ring-red-600/10">
-              <p class="text-sm text-red-800"><strong>Result:</strong> Developers choose paid tools to avoid this complexity.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- After -->
-        <div class="relative bg-white border border-orange-200 rounded-xl p-6 shadow-sm">
-          <div class="absolute -left-4 top-6">
-            <div class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full text-sm font-bold shadow-lg ring-4 ring-white">
-              ✓
-            </div>
-          </div>
-
-          <div class="ml-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">With Moley</h3>
-
-            <div class="bg-gray-50 border border-orange-200 rounded-lg p-4 mb-6">
-              <code class="text-sm font-mono text-orange-700">moley tunnel run</code>
-            </div>
-
-            <div class="space-y-3 mb-6">
-              <div class="flex items-start text-sm text-gray-600">
-                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-                <span><strong>Authenticates</strong> with Cloudflare API</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-                <span><strong>Creates tunnels</strong> programmatically</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-                <span><strong>Generates config</strong> with ingress rules</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-                <span><strong>Creates DNS records</strong> for all subdomains</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-                <span><strong>Runs tunnel</strong> in foreground or background</span>
-              </div>
-              <div class="flex items-start text-sm text-gray-600">
-                <svg class="w-4 h-4 text-orange-500 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-                <span><strong>Cleans up</strong> tunnels and DNS when stopping</span>
-              </div>
-            </div>
-
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 ring-1 ring-orange-600/10">
-              <p class="text-sm text-orange-800"><strong>Result:</strong> Production-ready in seconds. Zero configuration.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <p class="mt-6 text-neutral-300 text-sm max-w-md">
+        Creates the tunnel, generates config, sets up DNS, runs it, and cleans up when you stop. That's it.
+      </p>
     </div>
   </section>
 

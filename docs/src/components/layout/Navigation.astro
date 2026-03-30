@@ -15,26 +15,23 @@ export interface Props {
 }
 
 const { items, currentPath, class: className = "" } = Astro.props;
-
-const getLinkClasses = (href: string) => {
-	const baseClasses = "rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-orange-50";
-	const activeClasses = currentPath === href
-		? "bg-orange-100 text-orange-700 border border-orange-200"
-		: "text-gray-600 hover:text-orange-700";
-
-	return cn(baseClasses, activeClasses);
-};
 ---
 
-<nav class={mergeClassName("flex items-center space-x-1", className)}>
-  {items.map((item) => (
-    <a
-      href={buildUrl(item.href)}
-      class={getLinkClasses(item.href)}
-      target={item.external ? '_blank' : undefined}
-      rel={item.external ? 'noopener noreferrer' : undefined}
-    >
-      {item.label}
-    </a>
-  ))}
+<nav class={mergeClassName("flex items-center gap-5", className)}>
+  {items.map((item) => {
+    const isActive = currentPath === item.href;
+    return (
+      <a
+        href={buildUrl(item.href)}
+        class={cn(
+          "text-sm transition-colors",
+          isActive ? "text-orange-500" : "text-neutral-500 hover:text-neutral-100",
+        )}
+        target={item.external ? '_blank' : undefined}
+        rel={item.external ? 'noopener noreferrer' : undefined}
+      >
+        {item.label}
+      </a>
+    );
+  })}
 </nav>

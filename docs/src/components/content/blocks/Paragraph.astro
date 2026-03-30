@@ -10,7 +10,7 @@ export interface Props {
 const { content } = Astro.props;
 ---
 
-<p class={mergeClassName("text-gray-700 leading-relaxed", content.className)} id={content.id}>
+<p class={mergeClassName("text-neutral-300 leading-relaxed", content.className)} id={content.id}>
   {content.text}
   {content.children?.map(child => (
     <ContentRenderer content={child} />

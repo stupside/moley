@@ -15,18 +15,18 @@ import DocsLayout from "../../layouts/DocsLayout.astro";
 import type { PageDefinition } from "../../types/content.js";
 
 export async function getStaticPaths() {
-  return documentationPages.map((page) => {
-    const slug = page.meta.href.replace("/docs/", "").replace(/\/$/, "");
+	return documentationPages.map((page) => {
+		const slug = page.meta.href.replace("/docs/", "").replace(/\/$/, "");
 
-    return {
-      params: { slug: slug || undefined },
-      props: { page },
-    };
-  });
+		return {
+			params: { slug: slug || undefined },
+			props: { page },
+		};
+	});
 }
 
 export interface Props {
-  page: PageDefinition;
+	page: PageDefinition;
 }
 
 const { page } = Astro.props;

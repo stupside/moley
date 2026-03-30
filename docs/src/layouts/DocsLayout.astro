@@ -48,93 +48,62 @@ Object.values(nav).forEach((pages) => {
 
 <BaseLayout>
   <slot name="head" slot="head" />
-  <div class="min-h-screen bg-gray-50" transition:persist>
+  <div class="min-h-screen" transition:persist>
     <div class={layoutClasses.container}>
       <div class="flex">
-        <!-- Enhanced Left Sidebar with Categories -->
-        <aside class="w-40 lg:w-48 flex-shrink-0" transition:persist="sidebar">
-          <div class="sticky top-20 py-8">
-            <nav class="flex flex-col gap-6">
-              <div>
-                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
-                  Documentation
-                </h2>
-
-                <div class="flex flex-col gap-6">
-                  {Object.entries(nav).map(([category, items]) => (
-                    <div class="flex flex-col gap-3">
-                      <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        {category}
-                      </h3>
-                      <div class="flex flex-col gap-1">
-                        {items.map((item) => {
-                          const isActive = currentPath === item.href;
-                          return (
-                            <a
-                              href={buildUrl(item.href)}
-                              class:list={[
-                                "block w-full py-2 px-1 text-sm font-medium transition-colors rounded-lg",
-                                {
-                                  "text-orange-700 font-semibold": isActive,
-                                  "text-gray-600 hover:text-orange-600":
-                                    !isActive,
-                                },
-                              ]}
-                            >
-                              {item.title}
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
+        <aside class="w-52 flex-shrink-0 hidden md:block" transition:persist="sidebar">
+          <div class="sticky top-14 pt-10 pb-12 pr-6 border-r border-neutral-800">
+            <nav class="flex flex-col gap-10">
+              {Object.entries(nav).map(([category, items]) => (
+                <div>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.15em] text-neutral-600 mb-4">{category}</div>
+                  <div class="flex flex-col">
+                    {items.map((item) => {
+                      const isActive = currentPath === item.href;
+                      return (
+                        <a
+                          href={buildUrl(item.href)}
+                          class:list={[
+                            "py-1.5 text-[13px] transition-colors border-r -mr-6 pr-6",
+                            {
+                              "text-orange-500 border-orange-500 font-medium": isActive,
+                              "text-neutral-500 hover:text-neutral-100 border-transparent": !isActive,
+                            },
+                          ]}
+                        >
+                          {item.title}
+                        </a>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-
-              <!-- Action Slots -->
+              ))}
               <slot name="sidebar-actions" />
             </nav>
           </div>
         </aside>
 
-        <!-- Main Content with Enhanced Layout -->
-        <main class="flex-1 min-w-0 py-8 pl-8 pr-8">
-          <div class="flex gap-8">
-            <div class="flex-1 min-w-0">
-              <div
-                class="bg-white rounded-lg shadow-sm border border-gray-200 min-h-full"
-              >
-                <!-- Header Section -->
-                <header class="px-8 py-6 border-b border-gray-100">
-                  <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                      <h1
-                        class="text-4xl font-bold text-gray-900"
-                        transition:name={`title-${title}`}
-                      >
-                        {title}
-                      </h1>
-                    </div>
+        <div class="flex-1 min-w-0 pt-10 pb-16 md:pl-16">
+          <div class="flex gap-16">
+            <div class="flex-1 min-w-0 max-w-2xl">
+              <header class="mb-12">
+                <h1
+                  class="text-4xl font-extrabold text-neutral-100 tracking-tight leading-tight"
+                  transition:name={`title-${title}`}
+                >
+                  {title}
+                </h1>
+                <slot name="header-actions" />
+              </header>
 
-                    <!-- Header Actions Slot -->
-                    <slot name="header-actions" />
-                  </div>
-                </header>
-
-                <!-- Content Section -->
-                <div class="px-8 py-8">
-                  <article class="max-w-none">
-                    <slot />
-                  </article>
-
-                </div>
-              </div>
+              <article class="max-w-none">
+                <slot />
+              </article>
             </div>
 
-            <!-- Right Sidebar Slot for TOC -->
             <slot name="right-sidebar" />
           </div>
-        </main>
+        </div>
       </div>
     </div>
   </div>

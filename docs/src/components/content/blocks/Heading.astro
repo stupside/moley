@@ -10,17 +10,20 @@ export interface Props {
 const { content } = Astro.props;
 
 const headingClasses = {
-	1: "text-4xl font-bold text-gray-900 tracking-tight",
-	2: "text-3xl font-bold text-gray-900 tracking-tight",
-	3: "text-2xl font-semibold text-gray-900 tracking-tight",
-	4: "text-xl font-semibold text-gray-900",
-	5: "text-lg font-semibold text-gray-900",
-	6: "text-base font-semibold text-gray-900",
+	1: "text-3xl font-bold text-neutral-100 tracking-tight",
+	2: "text-2xl font-bold text-neutral-100 tracking-tight",
+	3: "text-lg font-semibold text-neutral-200",
+	4: "text-base font-semibold text-neutral-200",
+	5: "text-sm font-semibold text-neutral-300",
+	6: "text-sm font-medium text-neutral-400",
 };
 
 const headingId =
 	content.id || (content.text ? createSlug(content.text) : undefined);
-const headingClass = mergeClassName(headingClasses[content.level], content.className);
+const headingClass = mergeClassName(
+	headingClasses[content.level],
+	content.className,
+);
 ---
 
 {content.level === 1 && <h1 class={headingClass} id={headingId}>{content.text}</h1>}

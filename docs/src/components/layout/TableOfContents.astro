@@ -1,6 +1,6 @@
 ---
 import type { PageDefinition } from "../../types/content.js";
-import { extractTocItems, getTocLinkClasses } from "../../utils/content.js";
+import { extractTocItems } from "../../utils/content.js";
 
 export interface Props {
 	page: PageDefinition;
@@ -12,69 +12,28 @@ const items = extractTocItems(page.content);
 
 {
   items.length > 0 && (
-    <nav class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto w-64">
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div class="flex flex-col gap-4">
-          <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2">
-            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
-            </svg>
-            On this page
-          </h3>
-          <div class="space-y-1 text-sm">
-            {items.filter(item => item.level === 2 && item.id && item.title).map((item) => (
-              <a
-                href={`#${item.id}`}
-                class={getTocLinkClasses(2)}
-                data-toc-link={item.id}
-              >
-                {item.title}
-              </a>
-            ))}
+    <nav class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto w-44 hidden lg:block">
+      <div class="font-mono text-[10px] uppercase tracking-[0.15em] text-neutral-600 mb-4">On this page</div>
+      <div class="flex flex-col">
+        {items.filter(item => item.level === 2 && item.id && item.title).map((item) => (
+          <a
+            href={`#${item.id}`}
+            class="py-1 text-[13px] text-neutral-600 hover:text-neutral-100 transition-colors"
+            data-toc-link={item.id}
+          >
+            {item.title}
+          </a>
+        ))}
 
-            {items.filter(item => item.level >= 3).length > 0 && (
-              <div class="ml-3 border-l-2 border-orange-100 pl-3 space-y-1">
-                {items.filter(item => item.level === 3 && item.id && item.title).map((item) => (
-                  <a
-                    href={`#${item.id}`}
-                    class={getTocLinkClasses(3)}
-                    data-toc-link={item.id}
-                  >
-                    {item.title}
-                  </a>
-                ))}
-
-                {items.filter(item => item.level >= 4).length > 0 && (
-                  <div class="ml-2 border-l border-orange-50 pl-2 space-y-1">
-                    {items.filter(item => item.level === 4 && item.id && item.title).map((item) => (
-                      <a
-                        href={`#${item.id}`}
-                        class={getTocLinkClasses(4)}
-                        data-toc-link={item.id}
-                      >
-                        {item.title}
-                      </a>
-                    ))}
-
-                    {items.filter(item => item.level >= 5).length > 0 && (
-                      <div class="ml-2 pl-2 space-y-1">
-                        {items.filter(item => item.level >= 5 && item.id && item.title).map((item) => (
-                          <a
-                            href={`#${item.id}`}
-                            class={getTocLinkClasses(item.level)}
-                            data-toc-link={item.id}
-                          >
-                            {item.title}
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        {items.filter(item => item.level === 3 && item.id && item.title).map((item) => (
+          <a
+            href={`#${item.id}`}
+            class="py-0.5 pl-3 text-xs text-neutral-700 hover:text-neutral-100 transition-colors"
+            data-toc-link={item.id}
+          >
+            {item.title}
+          </a>
+        ))}
       </div>
     </nav>
   )
@@ -83,48 +42,38 @@ const items = extractTocItems(page.content);
 <script is:inline define:vars={{ tocItems: items }}>
   const SCROLL_OFFSET = 100;
 
-  const getActiveClasses = (level) => {
-    const base = "block transition-colors font-semibold bg-orange-100 text-orange-800";
-    if (level === 2) return `${base} py-2 px-3 rounded-lg`;
-    if (level === 3) return `${base} py-1.5 px-2 text-sm rounded-md`;
-    if (level === 4) return `${base} py-1 px-2 text-xs rounded`;
-    return `${base} py-1 px-1 text-xs rounded`;
-  };
-
-  // TOC link styling (matches the utility function from utils/content.js)
-  const getInactiveClasses = (level) => {
-    const base = "block transition-colors";
-    if (level === 2) return `${base} py-2 px-3 text-gray-700 font-medium hover:text-orange-700 hover:bg-orange-50 rounded-lg`;
-    if (level === 3) return `${base} py-1.5 px-2 text-gray-600 text-sm hover:text-orange-600 hover:bg-orange-50 rounded-md`;
-    if (level === 4) return `${base} py-1 px-2 text-gray-500 text-xs hover:text-orange-500 hover:bg-orange-25 rounded`;
-    return `${base} py-1 px-1 text-gray-400 text-xs hover:text-orange-400 rounded`;
-  };
-
   const findActiveHeading = () => {
     const scrollY = window.scrollY + SCROLL_OFFSET;
-    const active = [];
+    let lastActive = null;
 
     for (const item of tocItems) {
       const element = document.getElementById(item.id);
       if (element && element.offsetTop <= scrollY) {
-        active.push(item.id);
+        lastActive = item.id;
       }
     }
-    return active.length ? active[active.length - 1] : null;
+    return lastActive;
   };
 
   const updateActiveLink = () => {
     const links = document.querySelectorAll("[data-toc-link]");
+    const activeId = findActiveHeading();
 
     links.forEach((link) => {
-      const activeId = findActiveHeading();
-      const isActive = link.getAttribute("data-toc-link") === activeId;
+      const id = link.getAttribute("data-toc-link");
+      const isActive = id === activeId;
+      const item = tocItems.find(i => i.id === id);
+      const isH3 = item && item.level === 3;
 
-      // Find the level for this link's item
-      const item = tocItems.find(item => item.id === link.getAttribute("data-toc-link"));
-      const level = item ? item.level : 2;
-
-      link.className = isActive ? getActiveClasses(level) : getInactiveClasses(level);
+      if (isActive) {
+        link.className = isH3
+          ? "py-0.5 pl-3 text-xs text-orange-500 transition-colors"
+          : "py-1 text-[13px] text-orange-500 transition-colors";
+      } else {
+        link.className = isH3
+          ? "py-0.5 pl-3 text-xs text-neutral-700 hover:text-neutral-100 transition-colors"
+          : "py-1 text-[13px] text-neutral-600 hover:text-neutral-100 transition-colors";
+      }
     });
   };
 

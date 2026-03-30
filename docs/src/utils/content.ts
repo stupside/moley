@@ -30,18 +30,20 @@ export function traverseContent<T>(
 
 // URL utility function
 export function buildUrl(href: string): string {
-	return `${import.meta.env.BASE_URL}${href.replace(/^\//, '')}`;
+	return `${import.meta.env.BASE_URL}${href.replace(/^\//, "")}`;
 }
 
 // Navigation styling utilities
 export function getTocLinkClasses(level: number): string {
-	const base = "block transition-colors";
-	if (level === 2) return `${base} py-2 px-3 text-gray-700 font-medium hover:text-orange-700 hover:bg-orange-50 rounded-lg`;
-	if (level === 3) return `${base} py-1.5 px-2 text-gray-600 text-sm hover:text-orange-600 hover:bg-orange-50 rounded-md`;
-	if (level === 4) return `${base} py-1 px-2 text-gray-500 text-xs hover:text-orange-500 hover:bg-orange-25 rounded`;
-	return `${base} py-1 px-1 text-gray-400 text-xs hover:text-orange-400 rounded`;
+	const base = "block transition-colors duration-150";
+	if (level === 2)
+		return `${base} py-1.5 text-sm text-neutral-500 hover:text-orange-400`;
+	if (level === 3)
+		return `${base} py-1 text-sm text-neutral-600 hover:text-orange-400`;
+	if (level === 4)
+		return `${base} py-1 text-xs text-neutral-600 hover:text-orange-400`;
+	return `${base} py-0.5 text-xs text-neutral-700 hover:text-orange-400`;
 }
-
 
 export interface TocItem {
 	id: string;

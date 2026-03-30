@@ -20,7 +20,13 @@ import type { GapSize } from "../components/content/layout/shared";
 
 // Spacing and layout types
 export type SpacingSize = "none" | "small" | "medium" | "large";
-export type ContainerStyle = "info" | "warning" | "error" | "success" | "tip" | "note";
+export type ContainerStyle =
+	| "info"
+	| "warning"
+	| "error"
+	| "success"
+	| "tip"
+	| "note";
 export type ListStyle = "ordered" | "unordered";
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 

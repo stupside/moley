@@ -10,7 +10,7 @@ export interface Props {
 const { content } = Astro.props;
 
 const isOrdered = content.style === "ordered";
-const baseClasses = "list-inside text-gray-700 space-y-2 pl-1";
+const baseClasses = "list-inside text-neutral-300 space-y-2 pl-1";
 const listClasses = isOrdered
 	? `list-decimal ${baseClasses}`
 	: `list-disc ${baseClasses}`;

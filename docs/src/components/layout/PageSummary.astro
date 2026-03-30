@@ -8,7 +8,6 @@ export interface Props {
 
 const { page } = Astro.props;
 
-// Use traverseContent utility to find all headings
 const headings = traverseContent(page.content, (block) => {
 	if (block.type === "heading" && "depth" in block) {
 		return block.depth;
@@ -16,7 +15,6 @@ const headings = traverseContent(page.content, (block) => {
 	return null;
 });
 
-// Use traverseContent utility to find all code blocks
 const codeBlocks = traverseContent(page.content, (block) => {
 	if (block.type === "codeblock" && "language" in block) {
 		return block.language;
@@ -24,20 +22,18 @@ const codeBlocks = traverseContent(page.content, (block) => {
 	return null;
 });
 
-// Get unique languages
 const uniqueLanguages = [...new Set(codeBlocks)];
 
-// Count sections
 const sectionCount = traverseContent(page.content, (block) => {
 	return block.type === "section" ? 1 : null;
 }).length;
 ---
 
 {(headings.length > 0 || uniqueLanguages.length > 0 || sectionCount > 0) && (
-  <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+  <div class="border border-neutral-800 p-4 text-sm text-neutral-500">
     <div class="flex flex-col gap-2">
-      <h3 class="font-medium text-gray-900">Page Summary</h3>
-      <ul class="space-y-1">
+      <h3 class="font-mono text-xs text-neutral-400 uppercase tracking-wider">Page Summary</h3>
+      <ul class="space-y-1 text-sm">
         {headings.length > 0 && (
           <li>{headings.length} heading{headings.length !== 1 ? 's' : ''}</li>
         )}
@@ -45,7 +41,7 @@ const sectionCount = traverseContent(page.content, (block) => {
           <li>{sectionCount} section{sectionCount !== 1 ? 's' : ''}</li>
         )}
         {uniqueLanguages.length > 0 && (
-          <li>Code examples in: {uniqueLanguages.join(', ')}</li>
+          <li>Code: {uniqueLanguages.join(', ')}</li>
         )}
       </ul>
     </div>

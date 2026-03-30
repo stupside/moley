@@ -10,7 +10,7 @@ const { content } = Astro.props;
 ---
 
 <code
-  class={mergeClassName("inline px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-mono border border-gray-200", content.className)}
+  class={mergeClassName("inline-block mx-0.5 px-1.5 py-0.5 bg-neutral-800/80 text-orange-400 rounded-sm text-sm font-mono border border-neutral-700/40 leading-none align-baseline", content.className)}
   id={content.id}
 >
   {content.code}

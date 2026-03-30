@@ -6,7 +6,7 @@ import type { IconName } from "../ui/Icon/constants.js";
 import Icon from "../ui/Icon/Icon.astro";
 
 export interface Props {
-  class?: string;
+	class?: string;
 }
 
 const { class: className = "" } = Astro.props;
@@ -14,48 +14,39 @@ const { class: className = "" } = Astro.props;
 const currentYear = new Date().getFullYear();
 
 const socialLinks = [
-  {
-    href: `${config.site.repo.url}`,
-    label: "GitHub",
-    icon: "code-2" as IconName,
-  },
-  {
-    href: config.site.repo.issues(),
-    label: "Issues",
-    icon: "alert-triangle" as IconName,
-  },
-  {
-    href: config.site.repo.releases(),
-    label: "Releases",
-    icon: "cloud-download" as IconName,
-  },
+	{
+		href: `${config.site.repo.url}`,
+		label: "GitHub",
+		icon: "code-2" as IconName,
+	},
+	{
+		href: config.site.repo.issues(),
+		label: "Issues",
+		icon: "alert-triangle" as IconName,
+	},
+	{
+		href: config.site.repo.releases(),
+		label: "Releases",
+		icon: "cloud-download" as IconName,
+	},
 ];
 ---
 
-<footer class={mergeClassName("border-t border-gray-200 bg-gray-50", className)}>
-  <div class={cn(layoutClasses.container, "py-12")}>
-    <div class="text-center flex flex-col gap-4">
-      <p class="text-sm text-gray-600">
-        &copy; {currentYear}
-        {config.site.author.name}. Built with{" "}
-        <a
-          href="https://astro.build"
-          class="font-medium text-orange-600 hover:text-orange-800 hover:underline transition-colors"
-          rel="nofollow noopener noreferrer"
-          target="_blank">Astro</a
-        >.
-      </p>
-      <div class="flex justify-center space-x-6">
+<footer class={mergeClassName("mt-24", className)}>
+  <div class={cn(layoutClasses.container, "py-8 border-t border-neutral-800")}>
+    <div class="flex items-center justify-between text-xs text-neutral-700">
+      <span>&copy; {currentYear} {config.site.author.name}</span>
+      <div class="flex items-center gap-4">
         {
           socialLinks.map((link) => (
             <a
               href={link.href}
-              class="text-gray-400 hover:text-orange-600 transition-colors"
+              class="hover:text-neutral-400 transition-colors"
               aria-label={link.label}
               rel="nofollow noopener noreferrer"
               target="_blank"
             >
-              <Icon name={link.icon} size="md" class="h-6 w-6" />
+              <Icon name={link.icon} size="sm" />
             </a>
           ))
         }

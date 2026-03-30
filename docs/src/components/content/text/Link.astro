@@ -13,14 +13,12 @@ const linkProps = content.external
 	? { target: "_blank", rel: content.rel || "noopener noreferrer nofollow" }
 	: {};
 
-const href = content.external
-	? content.href
-	: buildUrl(content.href);
+const href = content.external ? content.href : buildUrl(content.href);
 ---
 
 <a
   href={href}
-  class={mergeClassName("text-orange-600 hover:text-orange-800 underline decoration-orange-600/30 hover:decoration-orange-800/50 underline-offset-4 transition-colors", content.className)}
+  class={mergeClassName("text-orange-500 hover:text-neutral-100 transition-colors", content.className)}
   id={content.id}
   {...linkProps}
 >

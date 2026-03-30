@@ -25,7 +25,6 @@ export const navigation = {
 		{ label: "Home", href: "/" },
 		{ label: "Docs", href: "/docs/" },
 	] as const,
-
 } as const;
 
 // Main configuration object
