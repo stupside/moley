@@ -46,6 +46,10 @@ func LoadLockFile() (*LockFile, error) {
 		return nil, fmt.Errorf("failed to read lock file: %w", err)
 	}
 
+	if len(data) == 0 {
+		return &LockFile{flock: fl}, nil
+	}
+
 	lf := &LockFile{flock: fl}
 	if err := json.Unmarshal(data, lf); err != nil {
 		logger.Warnf("Lock file is corrupt, starting fresh (resources will be rediscovered)", map[string]any{
