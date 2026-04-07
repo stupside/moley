@@ -37,10 +37,6 @@ func (c *dnsService) getContent(ctx context.Context, tunnel *domain.Tunnel) (str
 	return tunnelID + ".cfargotunnel.com", nil
 }
 
-func recordName(subdomain, zoneName string) string {
-	return subdomain + "." + zoneName
-}
-
 func (c *dnsService) RouteRecord(ctx context.Context, tunnel *domain.Tunnel, zoneName string, subdomain string) error {
 	if c.config.IsDryRun() {
 		logger.Debug("Dry run: skipping DNS record creation")
@@ -57,7 +53,7 @@ func (c *dnsService) RouteRecord(ctx context.Context, tunnel *domain.Tunnel, zon
 		return fmt.Errorf("failed to get DNS content: %w", err)
 	}
 
-	name := recordName(subdomain, zoneName)
+	name := domain.FQDN(subdomain, zoneName)
 
 	records, err := c.listRecords(ctx, zoneID, dnsContent)
 	if err != nil {
@@ -152,7 +148,7 @@ func (c *dnsService) DeleteRecord(ctx context.Context, tunnel *domain.Tunnel, zo
 		return fmt.Errorf("failed to get DNS records for tunnel %s in zone %s: %w", tunnel.GetName(), zoneName, err)
 	}
 
-	name := recordName(subdomain, zoneName)
+	name := domain.FQDN(subdomain, zoneName)
 	for _, record := range records {
 		if record.Name == name {
 			_, err := c.client.DNS.Records.Delete(ctx, record.ID, dns.RecordDeleteParams{
@@ -191,7 +187,7 @@ func (c *dnsService) RecordExists(ctx context.Context, tunnel *domain.Tunnel, zo
 		return false, err
 	}
 
-	name := recordName(subdomain, zoneName)
+	name := domain.FQDN(subdomain, zoneName)
 	for _, r := range records {
 		if r.Name == name {
 			return true, nil

@@ -10,12 +10,14 @@ import (
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 )
 
+const CreateHandlerName = "tunnel-create"
+
 type CreateInput struct {
 	Name       string `json:"name"`
 	Persistent bool   `json:"persistent"`
 }
 
-func (i CreateInput) Tunnel() *domain.Tunnel {
+func (i CreateInput) tunnel() *domain.Tunnel {
 	return &domain.Tunnel{Name: i.Name, Persistent: i.Persistent}
 }
 
@@ -25,34 +27,34 @@ type CreateOutput struct {
 	TunnelUUID string `json:"tunnel_uuid"`
 }
 
-func (o CreateOutput) Tunnel() *domain.Tunnel {
+func (o CreateOutput) tunnel() *domain.Tunnel {
 	return &domain.Tunnel{Name: o.Name, Persistent: o.Persistent}
 }
 
-type CreateHandler struct {
+type createHandler struct {
 	tunnelService ports.TunnelService
 }
 
-var _ framework.Lifecycle[CreateInput, CreateOutput] = (*CreateHandler)(nil)
+var _ framework.Lifecycle[CreateInput, CreateOutput] = (*createHandler)(nil)
 
-func newCreateHandler(tunnelService ports.TunnelService) *CreateHandler {
-	return &CreateHandler{
+func NewCreateHandler(tunnelService ports.TunnelService) *createHandler {
+	return &createHandler{
 		tunnelService: tunnelService,
 	}
 }
 
-func (h *CreateHandler) Name() string {
-	return HandlerTunnelCreate
+func (h *createHandler) Name() string {
+	return CreateHandlerName
 }
 
-func (h *CreateHandler) Key(input CreateInput) string {
+func (h *createHandler) Key(input CreateInput) string {
 	return input.Name
 }
 
-func (h *CreateHandler) Create(ctx context.Context, input CreateInput) (CreateOutput, error) {
+func (h *createHandler) Create(ctx context.Context, input CreateInput) (CreateOutput, error) {
 	logger.Debug("Creating tunnel")
 
-	tunnelUUID, err := h.tunnelService.Create(ctx, input.Tunnel())
+	tunnelUUID, err := h.tunnelService.Create(ctx, input.tunnel())
 	if err != nil {
 		return CreateOutput{}, fmt.Errorf("tunnel create failed: %w", err)
 	}
@@ -65,7 +67,7 @@ func (h *CreateHandler) Create(ctx context.Context, input CreateInput) (CreateOu
 	}, nil
 }
 
-func (h *CreateHandler) Destroy(ctx context.Context, output CreateOutput) error {
+func (h *createHandler) Destroy(ctx context.Context, output CreateOutput) error {
 	if output.Persistent {
 		logger.Info("Tunnel is persistent, skipping deletion")
 		return nil
@@ -73,7 +75,7 @@ func (h *CreateHandler) Destroy(ctx context.Context, output CreateOutput) error 
 
 	logger.Debug("Deleting tunnel")
 
-	if err := h.tunnelService.Delete(ctx, output.Tunnel()); err != nil {
+	if err := h.tunnelService.Delete(ctx, output.tunnel()); err != nil {
 		return fmt.Errorf("tunnel delete failed: %w", err)
 	}
 
@@ -81,12 +83,12 @@ func (h *CreateHandler) Destroy(ctx context.Context, output CreateOutput) error 
 	return nil
 }
 
-func (h *CreateHandler) Check(ctx context.Context, output CreateOutput) (framework.Status, error) {
-	return h.checkExists(ctx, output.Tunnel())
+func (h *createHandler) Check(ctx context.Context, output CreateOutput) (framework.Status, error) {
+	return h.checkExists(ctx, output.tunnel())
 }
 
-func (h *CreateHandler) Recover(ctx context.Context, input CreateInput) (CreateOutput, framework.Status, error) {
-	tunnel := input.Tunnel()
+func (h *createHandler) Recover(ctx context.Context, input CreateInput) (CreateOutput, framework.Status, error) {
+	tunnel := input.tunnel()
 
 	status, err := h.checkExists(ctx, tunnel)
 	if status != framework.StatusUp {
@@ -105,7 +107,7 @@ func (h *CreateHandler) Recover(ctx context.Context, input CreateInput) (CreateO
 	}, framework.StatusUp, nil
 }
 
-func (h *CreateHandler) checkExists(ctx context.Context, tunnel *domain.Tunnel) (framework.Status, error) {
+func (h *createHandler) checkExists(ctx context.Context, tunnel *domain.Tunnel) (framework.Status, error) {
 	exists, err := h.tunnelService.Exists(ctx, tunnel)
 	if err != nil {
 		return framework.StatusUnknown, fmt.Errorf("failed to check tunnel existence: %w", err)

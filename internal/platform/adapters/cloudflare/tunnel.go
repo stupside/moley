@@ -59,6 +59,10 @@ func (c *tunnelService) resolveAccountID(ctx context.Context, zoneName string) (
 	return "", fmt.Errorf("zone %q not found — check your token has Zone > Zone > Read permission", zoneName)
 }
 
+func (c *tunnelService) AccountID() string {
+	return c.accountID
+}
+
 func (c *tunnelService) Run(ctx context.Context, tunnel *domain.Tunnel) (int, error) {
 	if c.config.IsDryRun() {
 		logger.Debug("Dry run: skipping tunnel process start")

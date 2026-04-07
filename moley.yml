@@ -6,6 +6,16 @@ ingress:
             hostname: localhost
             port: 3000
             protocol: http
+          access:
+            session_duration: "24h"
+            identity_providers:
+              - github
+              - onetimepin
+            policy:
+              decision: allow
+              include:
+                emails:
+                  - kilian@xonery.dev
     mode: subdomain
     zone: xonery.dev
 tunnel:

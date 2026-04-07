@@ -14,6 +14,8 @@ import (
 	"github.com/stupside/moley/v2/internal/shared/sys"
 )
 
+const RunHandlerName = "tunnel-run"
+
 type RunInput struct {
 	TunnelName  string `json:"tunnel_name"`
 	ConfigPath  string `json:"config_path"`  // included for hash-based change detection
@@ -22,36 +24,36 @@ type RunInput struct {
 
 type RunOutput struct {
 	TunnelName string          `json:"tunnel_name"`
-	Process    ProcessIdentity `json:"process"`
+	Process    processIdentity `json:"process"`
 }
 
-// ProcessIdentity tracks a process by both PID and command name to detect PID reuse.
-type ProcessIdentity struct {
+// processIdentity tracks a process by both PID and command name to detect PID reuse.
+type processIdentity struct {
 	PID     int    `json:"pid"`
 	Command string `json:"command"`
 }
 
-type RunHandler struct {
+type runHandler struct {
 	tunnelService ports.TunnelService
 }
 
-var _ framework.Lifecycle[RunInput, RunOutput] = (*RunHandler)(nil)
+var _ framework.Lifecycle[RunInput, RunOutput] = (*runHandler)(nil)
 
-func newRunHandler(tunnelService ports.TunnelService) *RunHandler {
-	return &RunHandler{
+func NewRunHandler(tunnelService ports.TunnelService) *runHandler {
+	return &runHandler{
 		tunnelService: tunnelService,
 	}
 }
 
-func (h *RunHandler) Name() string {
-	return HandlerTunnelRun
+func (h *runHandler) Name() string {
+	return RunHandlerName
 }
 
-func (h *RunHandler) Key(input RunInput) string {
+func (h *runHandler) Key(input RunInput) string {
 	return input.TunnelName
 }
 
-func (h *RunHandler) Create(ctx context.Context, input RunInput) (RunOutput, error) {
+func (h *runHandler) Create(ctx context.Context, input RunInput) (RunOutput, error) {
 	logger.Debug("Starting tunnel process")
 
 	pid, err := h.tunnelService.Run(ctx, &domain.Tunnel{Name: input.TunnelName})
@@ -61,7 +63,7 @@ func (h *RunHandler) Create(ctx context.Context, input RunInput) (RunOutput, err
 
 	output := RunOutput{
 		TunnelName: input.TunnelName,
-		Process: ProcessIdentity{
+		Process: processIdentity{
 			PID:     pid,
 			Command: sys.GetProcessCommand(pid),
 		},
@@ -71,7 +73,7 @@ func (h *RunHandler) Create(ctx context.Context, input RunInput) (RunOutput, err
 	return output, nil
 }
 
-func (h *RunHandler) Destroy(ctx context.Context, output RunOutput) error {
+func (h *runHandler) Destroy(ctx context.Context, output RunOutput) error {
 	if output.Process.PID == 0 {
 		return nil // dry-run: no real process
 	}
@@ -107,7 +109,7 @@ func isProcessNotFoundError(err error) bool {
 	return false
 }
 
-func (h *RunHandler) Check(ctx context.Context, output RunOutput) (framework.Status, error) {
+func (h *runHandler) Check(ctx context.Context, output RunOutput) (framework.Status, error) {
 	if output.Process.PID == 0 {
 		return framework.StatusUp, nil // dry-run: no real process
 	}
@@ -117,6 +119,6 @@ func (h *RunHandler) Check(ctx context.Context, output RunOutput) (framework.Sta
 	return framework.StatusUp, nil
 }
 
-func (h *RunHandler) Recover(ctx context.Context, input RunInput) (RunOutput, framework.Status, error) {
+func (h *runHandler) Recover(ctx context.Context, input RunInput) (RunOutput, framework.Status, error) {
 	return RunOutput{TunnelName: input.TunnelName}, framework.StatusDown, nil
 }

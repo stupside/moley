@@ -13,6 +13,8 @@ import (
 	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
 )
 
+const ConfigHandlerName = "tunnel-config"
+
 type ConfigInput struct {
 	TunnelName string          `json:"tunnel_name"`
 	TunnelUUID string          `json:"tunnel_uuid"`
@@ -20,7 +22,7 @@ type ConfigInput struct {
 	Ingress    *domain.Ingress `json:"ingress"`
 }
 
-func (i ConfigInput) Tunnel() *domain.Tunnel {
+func (i ConfigInput) tunnel() *domain.Tunnel {
 	return &domain.Tunnel{Name: i.TunnelName, Persistent: i.Persistent}
 }
 
@@ -30,30 +32,30 @@ type ConfigOutput struct {
 	ContentHash string `json:"content_hash"`
 }
 
-type ConfigHandler struct {
+type configHandler struct {
 	tunnelService ports.TunnelService
 }
 
-var _ framework.Lifecycle[ConfigInput, ConfigOutput] = (*ConfigHandler)(nil)
+var _ framework.Lifecycle[ConfigInput, ConfigOutput] = (*configHandler)(nil)
 
-func newConfigHandler(tunnelService ports.TunnelService) *ConfigHandler {
-	return &ConfigHandler{
+func NewConfigHandler(tunnelService ports.TunnelService) *configHandler {
+	return &configHandler{
 		tunnelService: tunnelService,
 	}
 }
 
-func (h *ConfigHandler) Name() string {
-	return HandlerTunnelConfig
+func (h *configHandler) Name() string {
+	return ConfigHandlerName
 }
 
-func (h *ConfigHandler) Key(input ConfigInput) string {
+func (h *configHandler) Key(input ConfigInput) string {
 	return input.TunnelName
 }
 
-func (h *ConfigHandler) Create(ctx context.Context, input ConfigInput) (ConfigOutput, error) {
+func (h *configHandler) Create(ctx context.Context, input ConfigInput) (ConfigOutput, error) {
 	logger.Debug("Configuring tunnel")
 
-	tunnel := input.Tunnel()
+	tunnel := input.tunnel()
 
 	if err := h.tunnelService.SaveConfiguration(ctx, tunnel, input.Ingress); err != nil {
 		return ConfigOutput{}, fmt.Errorf("failed to save tunnel configuration: %w", err)
@@ -72,7 +74,7 @@ func (h *ConfigHandler) Create(ctx context.Context, input ConfigInput) (ConfigOu
 	return output, nil
 }
 
-func (h *ConfigHandler) Destroy(ctx context.Context, output ConfigOutput) error {
+func (h *configHandler) Destroy(ctx context.Context, output ConfigOutput) error {
 	logger.Debug("Removing tunnel configuration")
 
 	tunnel := &domain.Tunnel{Name: output.TunnelName}
@@ -85,12 +87,12 @@ func (h *ConfigHandler) Destroy(ctx context.Context, output ConfigOutput) error 
 	return nil
 }
 
-func (h *ConfigHandler) Check(ctx context.Context, output ConfigOutput) (framework.Status, error) {
+func (h *configHandler) Check(ctx context.Context, output ConfigOutput) (framework.Status, error) {
 	return fileStatus(output.ConfigPath)
 }
 
-func (h *ConfigHandler) Recover(ctx context.Context, input ConfigInput) (ConfigOutput, framework.Status, error) {
-	tunnel := input.Tunnel()
+func (h *configHandler) Recover(ctx context.Context, input ConfigInput) (ConfigOutput, framework.Status, error) {
+	tunnel := input.tunnel()
 
 	output, err := h.recoverOutput(ctx, tunnel)
 	if err != nil {
@@ -102,7 +104,7 @@ func (h *ConfigHandler) Recover(ctx context.Context, input ConfigInput) (ConfigO
 }
 
 // recoverOutput builds a ConfigOutput by resolving the config path and hashing its contents.
-func (h *ConfigHandler) recoverOutput(ctx context.Context, tunnel *domain.Tunnel) (ConfigOutput, error) {
+func (h *configHandler) recoverOutput(ctx context.Context, tunnel *domain.Tunnel) (ConfigOutput, error) {
 	configPath, err := h.tunnelService.GetConfigurationPath(ctx, tunnel)
 	if err != nil {
 		return ConfigOutput{}, fmt.Errorf("failed to get configuration path: %w", err)

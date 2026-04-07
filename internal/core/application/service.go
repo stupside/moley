@@ -1,5 +1,6 @@
-// Package tunnel provides tunnel orchestration functionality.
-package tunnel
+// Package application orchestrates the full lifecycle of a tunnel session:
+// tunnel infrastructure, DNS routing, and Cloudflare Access protection.
+package application
 
 import (
 	"context"
@@ -16,16 +17,18 @@ type Service struct {
 	ingress       *domain.Ingress
 	dnsService    ports.DNSService
 	tunnelService ports.TunnelService
+	accessService ports.AccessService
 }
 
 var _ shared.Runnable = (*Service)(nil)
 
-func NewService(tunnel *domain.Tunnel, ingress *domain.Ingress, dnsService ports.DNSService, tunnelService ports.TunnelService) *Service {
+func NewService(tunnel *domain.Tunnel, ingress *domain.Ingress, dnsService ports.DNSService, tunnelService ports.TunnelService, accessService ports.AccessService) *Service {
 	return &Service{
 		tunnel:        tunnel,
 		ingress:       ingress,
 		dnsService:    dnsService,
 		tunnelService: tunnelService,
+		accessService: accessService,
 	}
 }
 

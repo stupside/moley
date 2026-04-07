@@ -22,8 +22,9 @@ func (t *TargetConfig) GetTargetURL() string {
 }
 
 type AppConfig struct {
-	Target TargetConfig `yaml:"target" json:"target" validate:"required"`
-	Expose ExposeConfig `yaml:"expose" json:"expose" validate:"required"`
+	Target TargetConfig  `yaml:"target" json:"target" validate:"required"`
+	Expose ExposeConfig  `yaml:"expose" json:"expose" validate:"required"`
+	Access *AccessConfig `yaml:"access,omitempty" json:"access,omitempty" validate:"omitempty"`
 }
 
 type ExposeConfig struct {
@@ -50,4 +51,19 @@ type Ingress struct {
 	Zone string      `yaml:"zone" json:"zone" validate:"required"`
 	Apps []AppConfig `yaml:"apps" json:"apps" validate:"required,dive"`
 	Mode IngressMode `yaml:"mode" json:"mode" validate:"required,oneof=wildcard subdomain"`
+}
+
+// HasAccessConfig returns true if any app has access protection configured.
+func (i *Ingress) HasAccessConfig() bool {
+	for _, app := range i.Apps {
+		if app.Access != nil {
+			return true
+		}
+	}
+	return false
+}
+
+// FQDN returns the fully qualified domain name for a subdomain within a zone.
+func FQDN(subdomain, zone string) string {
+	return subdomain + "." + zone
 }
