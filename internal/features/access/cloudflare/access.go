@@ -33,29 +33,27 @@ func (s *AccessService) CreateApplication(ctx context.Context, params accessusec
 		return "dry-run-access-app", nil
 	}
 
-	sessionDuration := params.SessionDuration
-	d, err := time.ParseDuration(sessionDuration)
+	d, err := time.ParseDuration(params.Session)
 	if err != nil {
-		return "", fmt.Errorf("invalid session_duration %q: %w", sessionDuration, err)
+		return "", fmt.Errorf("invalid session_duration %q: %w", params.Session, err)
 	}
-	sessionDuration = d.String()
 
 	body := zero_trust.AccessApplicationNewParamsBodySelfHostedApplication{
 		Name:            cfgo.F(params.Name),
 		Domain:          cfgo.F(params.Domain),
 		Type:            cfgo.F(string(zero_trust.ApplicationTypeSelfHosted)),
-		SessionDuration: cfgo.F(sessionDuration),
+		SessionDuration: cfgo.F(d.String()),
 		Policies: cfgo.F([]zero_trust.AccessApplicationNewParamsBodySelfHostedApplicationPolicyUnion{
 			zero_trust.AccessApplicationNewParamsBodySelfHostedApplicationPoliciesObject{
 				Name:     cfgo.F(fmt.Sprintf("%s-policy", params.Name)),
 				Decision: cfgo.F(mapDecision(params.Decision)),
-				Include:  cfgo.F(buildIncludeRules(params.Emails, params.EmailDomains)),
+				Include:  cfgo.F(buildIncludeRules(params.Emails, params.Domains)),
 			},
 		}),
 	}
 
-	if len(params.IdentityProviders) > 0 {
-		idpIDs, err := s.resolveIdentityProviders(ctx, params.IdentityProviders)
+	if len(params.Providers) > 0 {
+		idpIDs, err := s.resolveIdentityProviders(ctx, params.Providers)
 		if err != nil {
 			return "", fmt.Errorf("failed to resolve identity providers: %w", err)
 		}

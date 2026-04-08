@@ -7,15 +7,14 @@ ingress:
             port: 3000
             protocol: http
           access:
-            session_duration: "24h"
-            identity_providers:
+            session: "24h"
+            providers:
               - github
               - onetimepin
             policy:
               decision: allow
-              include:
-                emails:
-                  - kilian@xonery.dev
+              emails:
+                - kilian@xonery.dev
     mode: subdomain
     zone: xonery.dev
 tunnel:

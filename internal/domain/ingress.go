@@ -37,28 +37,24 @@ const (
 	AccessPolicyDecisionBypass AccessPolicyDecision = "bypass"
 )
 
-type AccessIncludeRule struct {
-	Emails       []string `yaml:"emails,omitempty" json:"emails,omitempty" validate:"omitempty,dive,email"`
-	EmailDomains []string `yaml:"email_domains,omitempty" json:"email_domains,omitempty" validate:"omitempty,dive,fqdn"`
-}
-
 type AccessPolicyConfig struct {
-	Include  AccessIncludeRule    `yaml:"include" json:"include" validate:"required"`
 	Decision AccessPolicyDecision `yaml:"decision" json:"decision" validate:"required,oneof=allow bypass"`
+	Emails   []string             `yaml:"emails,omitempty" json:"emails,omitempty" validate:"omitempty,dive,email"`
+	Domains  []string             `yaml:"domains,omitempty" json:"domains,omitempty" validate:"omitempty,dive,fqdn"`
 }
 
 type AccessConfig struct {
-	SessionDuration   string              `yaml:"session_duration,omitempty" json:"session_duration,omitempty" validate:"required"`
-	IdentityProviders []string            `yaml:"identity_providers,omitempty" json:"identity_providers,omitempty"`
-	Policy            *AccessPolicyConfig `yaml:"policy" json:"policy" validate:"required"`
+	Session   string              `yaml:"session,omitempty" json:"session,omitempty" validate:"required"`
+	Providers []string            `yaml:"providers,omitempty" json:"providers,omitempty"`
+	Policy    *AccessPolicyConfig `yaml:"policy" json:"policy" validate:"required"`
 }
 
-// GetSessionDuration parses SessionDuration.
+// GetSessionDuration parses Session.
 // Go's time.Duration format is used (e.g., "24h", "30m").
 func (c *AccessConfig) GetSessionDuration() (time.Duration, error) {
-	d, err := time.ParseDuration(c.SessionDuration)
+	d, err := time.ParseDuration(c.Session)
 	if err != nil {
-		return 0, fmt.Errorf("invalid session_duration %q: %w", c.SessionDuration, err)
+		return 0, fmt.Errorf("invalid session %q: %w", c.Session, err)
 	}
 	return d, nil
 }

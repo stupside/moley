@@ -11,13 +11,13 @@ import (
 )
 
 type AccessApplicationParams struct {
-	Name              string
-	Domain            string
-	SessionDuration   string
-	Decision          domain.AccessPolicyDecision
-	IdentityProviders []string
-	Emails            []string
-	EmailDomains      []string
+	Name      string
+	Domain    string
+	Session   string
+	Decision  domain.AccessPolicyDecision
+	Providers []string
+	Emails    []string
+	Domains   []string
 }
 
 type AccessManager interface {
@@ -31,11 +31,11 @@ const HandlerName = "access-app"
 type AppInput struct {
 	Zone              string                      `json:"zone"`
 	Subdomain         string                      `json:"subdomain"`
-	SessionDuration   string                      `json:"session_duration"`
-	Decision          domain.AccessPolicyDecision `json:"decision"`
-	IdentityProviders []string                    `json:"identity_providers"`
-	Emails            []string                    `json:"emails"`
-	EmailDomains      []string                    `json:"email_domains"`
+	Session   string                      `json:"session"`
+	Decision  domain.AccessPolicyDecision `json:"decision"`
+	Providers []string                    `json:"providers"`
+	Emails    []string                    `json:"emails"`
+	Domains   []string                    `json:"domains"`
 }
 
 func (i AppInput) fqdn() string {
@@ -78,11 +78,11 @@ func (h *appHandler) Create(ctx context.Context, input AppInput) (AppOutput, err
 	appID, err := h.accessService.CreateApplication(ctx, AccessApplicationParams{
 		Name:              fmt.Sprintf("moley-%s", fqdn),
 		Domain:            fqdn,
-		SessionDuration:   input.SessionDuration,
-		Decision:          input.Decision,
-		IdentityProviders: input.IdentityProviders,
-		Emails:            input.Emails,
-		EmailDomains:      input.EmailDomains,
+		Session:   input.Session,
+		Decision:  input.Decision,
+		Providers: input.Providers,
+		Emails:    input.Emails,
+		Domains:   input.Domains,
 	})
 	if err != nil {
 		return AppOutput{}, fmt.Errorf("failed to create Access Application for %s: %w", fqdn, err)
