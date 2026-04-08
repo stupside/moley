@@ -18,7 +18,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 	}
 
 	// tunnel-create — no dependencies
-	framework.Register(orchestrator, tunnelusecase.NewCreateHandler(s.tunnelService),
+	framework.Register(orchestrator, tunnelusecase.NewCreateHandler(s.tunnelCreator),
 		func(reg *framework.OutputRegistry) ([]tunnelusecase.CreateInput, error) {
 			return []tunnelusecase.CreateInput{
 				{
@@ -30,7 +30,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 	)
 
 	// tunnel-config — depends on tunnel-create (needs TunnelUUID)
-	framework.Register(orchestrator, tunnelusecase.NewConfigHandler(s.tunnelService),
+	framework.Register(orchestrator, tunnelusecase.NewConfigHandler(s.tunnelConfigurator),
 		func(reg *framework.OutputRegistry) ([]tunnelusecase.ConfigInput, error) {
 			create, ok := framework.GetOutput[tunnelusecase.CreateOutput](reg, tunnelusecase.CreateHandlerName, s.tunnel.Name)
 			if !ok {
@@ -53,7 +53,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 	)
 
 	// tunnel-run — depends on tunnel-config (needs ConfigPath + ContentHash)
-	framework.Register(orchestrator, tunnelusecase.NewRunHandler(s.tunnelService),
+	framework.Register(orchestrator, tunnelusecase.NewRunHandler(s.tunnelRunner),
 		func(reg *framework.OutputRegistry) ([]tunnelusecase.RunInput, error) {
 			config, ok := framework.GetOutput[tunnelusecase.ConfigOutput](reg, tunnelusecase.ConfigHandlerName, s.tunnel.Name)
 			if !ok {

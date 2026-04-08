@@ -14,30 +14,35 @@ import (
 	shared "github.com/stupside/moley/v2/internal/platform/runtime"
 )
 
-// TunnelService combines all tunnel operations needed by the session.
-type TunnelService interface {
-	tunnelusecase.TunnelCreator
-	tunnelusecase.TunnelConfigurator
-	tunnelusecase.TunnelRunner
-}
-
 type Service struct {
-	tunnel        *domain.Tunnel
-	ingress       *domain.Ingress
-	dnsService    dnsusecase.DNSRouter
-	tunnelService TunnelService
-	accessService accessusecase.AccessManager
+	tunnel             *domain.Tunnel
+	ingress            *domain.Ingress
+	dnsService         dnsusecase.DNSRouter
+	tunnelCreator      tunnelusecase.TunnelCreator
+	tunnelConfigurator tunnelusecase.TunnelConfigurator
+	tunnelRunner       tunnelusecase.TunnelRunner
+	accessService      accessusecase.AccessManager
 }
 
 var _ shared.Runnable = (*Service)(nil)
 
-func NewService(tunnel *domain.Tunnel, ingress *domain.Ingress, dnsService dnsusecase.DNSRouter, tunnelService TunnelService, accessService accessusecase.AccessManager) *Service {
+func NewService(
+	tunnel *domain.Tunnel,
+	ingress *domain.Ingress,
+	dnsService dnsusecase.DNSRouter,
+	tunnelCreator tunnelusecase.TunnelCreator,
+	tunnelConfigurator tunnelusecase.TunnelConfigurator,
+	tunnelRunner tunnelusecase.TunnelRunner,
+	accessService accessusecase.AccessManager,
+) *Service {
 	return &Service{
-		tunnel:        tunnel,
-		ingress:       ingress,
-		dnsService:    dnsService,
-		tunnelService: tunnelService,
-		accessService: accessService,
+		tunnel:             tunnel,
+		ingress:            ingress,
+		dnsService:         dnsService,
+		tunnelCreator:      tunnelCreator,
+		tunnelConfigurator: tunnelConfigurator,
+		tunnelRunner:       tunnelRunner,
+		accessService:      accessService,
 	}
 }
 
