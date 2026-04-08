@@ -10,7 +10,6 @@ import (
 	framework "github.com/stupside/moley/v2/internal/platform/orchestration"
 )
 
-// AccessApplicationParams defines the parameters for creating an Access application.
 type AccessApplicationParams struct {
 	Name              string
 	Domain            string
@@ -21,7 +20,6 @@ type AccessApplicationParams struct {
 	EmailDomains      []string
 }
 
-// AccessManager provides Access application operations for the app handler.
 type AccessManager interface {
 	CreateApplication(ctx context.Context, params AccessApplicationParams) (string, error)
 	DeleteApplication(ctx context.Context, appID string) error

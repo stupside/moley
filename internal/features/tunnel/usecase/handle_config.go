@@ -12,7 +12,6 @@ import (
 	framework "github.com/stupside/moley/v2/internal/platform/orchestration"
 )
 
-// TunnelConfigurator provides tunnel configuration operations for the config handler.
 type TunnelConfigurator interface {
 	SaveConfiguration(ctx context.Context, tunnel *domain.Tunnel, ingress *domain.Ingress) error
 	DeleteConfiguration(ctx context.Context, tunnel *domain.Tunnel) error

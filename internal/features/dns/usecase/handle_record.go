@@ -11,7 +11,6 @@ import (
 
 const HandlerName = "dns-record"
 
-// DNSRouter provides DNS record operations for the record handler.
 type DNSRouter interface {
 	RouteRecord(ctx context.Context, tunnelUUID string, zoneName string, subdomain string) error
 	DeleteRecord(ctx context.Context, tunnelUUID string, zoneName string, subdomain string) error

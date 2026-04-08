@@ -13,7 +13,6 @@ import (
 	sys "github.com/stupside/moley/v2/internal/platform/system"
 )
 
-// TunnelRunner provides tunnel process operations for the run handler.
 type TunnelRunner interface {
 	Run(ctx context.Context, tunnel *domain.Tunnel) (int, error)
 }

@@ -9,7 +9,6 @@ import (
 	framework "github.com/stupside/moley/v2/internal/platform/orchestration"
 )
 
-// TunnelCreator provides tunnel lifecycle operations for the create handler.
 type TunnelCreator interface {
 	Create(ctx context.Context, tunnel *domain.Tunnel) (string, error)
 	Delete(ctx context.Context, tunnel *domain.Tunnel) error

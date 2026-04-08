@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stupside/moley/v2/internal/domain"
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
 
 	cfgo "github.com/cloudflare/cloudflare-go/v3"
@@ -42,7 +43,7 @@ func (c *DNSService) RouteRecord(ctx context.Context, tunnelUUID string, zoneNam
 
 	dnsContent := cnameTarget(tunnelUUID)
 
-	name := subdomain + "." + zoneName
+	name := domain.FQDN(subdomain, zoneName)
 
 	records, err := c.listRecords(ctx, zoneID, dnsContent)
 	if err != nil {
@@ -134,7 +135,7 @@ func (c *DNSService) DeleteRecord(ctx context.Context, tunnelUUID string, zoneNa
 		return fmt.Errorf("failed to get DNS records for tunnel %s in zone %s: %w", tunnelUUID, zoneName, err)
 	}
 
-	name := subdomain + "." + zoneName
+	name := domain.FQDN(subdomain, zoneName)
 	for _, record := range records {
 		if record.Name == name {
 			_, err := c.client.DNS.Records.Delete(ctx, record.ID, dns.RecordDeleteParams{
@@ -170,7 +171,7 @@ func (c *DNSService) RecordExists(ctx context.Context, tunnelUUID string, zoneNa
 		return false, err
 	}
 
-	name := subdomain + "." + zoneName
+	name := domain.FQDN(subdomain, zoneName)
 	for _, r := range records {
 		if r.Name == name {
 			return true, nil
