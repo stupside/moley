@@ -29,8 +29,8 @@ type AccessManager interface {
 const HandlerName = "access-app"
 
 type AppInput struct {
-	Zone              string                      `json:"zone"`
-	Subdomain         string                      `json:"subdomain"`
+	Zone      string                      `json:"zone"`
+	Subdomain string                      `json:"subdomain"`
 	Session   string                      `json:"session"`
 	Decision  domain.AccessPolicyDecision `json:"decision"`
 	Providers []string                    `json:"providers"`
@@ -76,8 +76,8 @@ func (h *appHandler) Create(ctx context.Context, input AppInput) (AppOutput, err
 	logger.Debugf("Creating Access Application", map[string]any{"domain": fqdn})
 
 	appID, err := h.accessService.CreateApplication(ctx, AccessApplicationParams{
-		Name:              fmt.Sprintf("moley-%s", fqdn),
-		Domain:            fqdn,
+		Name:      fmt.Sprintf("moley-%s", fqdn),
+		Domain:    fqdn,
 		Session:   input.Session,
 		Decision:  input.Decision,
 		Providers: input.Providers,

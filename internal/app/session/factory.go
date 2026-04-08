@@ -121,8 +121,8 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 						continue
 					}
 					inputs = append(inputs, accessusecase.AppInput{
-						Zone:              s.ingress.Zone,
-						Subdomain:         app.Expose.Subdomain,
+						Zone:      s.ingress.Zone,
+						Subdomain: app.Expose.Subdomain,
 						Session:   app.Access.Session,
 						Decision:  app.Access.Policy.Decision,
 						Providers: app.Access.Providers,
