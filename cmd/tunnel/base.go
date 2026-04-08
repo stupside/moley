@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
+	appconfig "github.com/stupside/moley/v2/internal/app/config"
+	logger "github.com/stupside/moley/v2/internal/platform/logging"
 
 	"github.com/urfave/cli/v3"
 )
@@ -42,12 +42,12 @@ var Cmd = &cli.Command{
 
 				configPath := cmd.String(configPathFlag)
 
-				mgr, err := config.NewTunnelManager(configPath)
+				mgr, err := appconfig.NewTunnelManager(configPath)
 				if err != nil {
 					return fmt.Errorf("initialize tunnel config failed: %w", err)
 				}
 
-				example, err := config.ExampleTunnelConfig()
+				example, err := appconfig.ExampleTunnelConfig()
 				if err != nil {
 					return fmt.Errorf("create example tunnel config failed: %w", err)
 				}

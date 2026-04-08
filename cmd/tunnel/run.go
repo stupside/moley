@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
-	"github.com/stupside/moley/v2/internal/shared"
+	logger "github.com/stupside/moley/v2/internal/platform/logging"
+	shared "github.com/stupside/moley/v2/internal/platform/runtime"
 
 	"github.com/urfave/cli/v3"
 )

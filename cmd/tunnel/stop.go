@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
+	logger "github.com/stupside/moley/v2/internal/platform/logging"
 
 	"github.com/urfave/cli/v3"
 )

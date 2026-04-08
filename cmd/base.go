@@ -8,7 +8,7 @@ import (
 	"github.com/stupside/moley/v2/cmd/config"
 	"github.com/stupside/moley/v2/cmd/tunnel"
 
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
+	logger "github.com/stupside/moley/v2/internal/platform/logging"
 	"github.com/stupside/moley/v2/internal/version"
 
 	"github.com/rs/zerolog"

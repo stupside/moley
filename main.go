@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/stupside/moley/v2/cmd"
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
+	logger "github.com/stupside/moley/v2/internal/platform/logging"
 )
 
 func main() {

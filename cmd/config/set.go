@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/config"
-	"github.com/stupside/moley/v2/internal/platform/infrastructure/logger"
+	appconfig "github.com/stupside/moley/v2/internal/app/config"
+	logger "github.com/stupside/moley/v2/internal/platform/logging"
 
 	"github.com/urfave/cli/v3"
 )
@@ -31,12 +31,12 @@ var setCmd = &cli.Command{
 func execSet(ctx context.Context, cmd *cli.Command) error {
 	logger.Info("Editing configuration")
 
-	mgr, err := config.NewGlobalManager(cmd)
+	mgr, err := appconfig.NewGlobalManager()
 	if err != nil {
 		return fmt.Errorf("create global config manager failed: %w", err)
 	}
 
-	if err := mgr.Update(func(cfg *config.GlobalConfig) {
+	if err := mgr.Update(func(cfg *appconfig.GlobalConfig) {
 		cfg.Cloudflare.Token = cmd.String(cloudflareTokenFlag)
 	}); err != nil {
 		return fmt.Errorf("update global config failed: %w", err)
