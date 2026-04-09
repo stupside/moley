@@ -2,8 +2,9 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
-	"time"
+	"maps"
 )
 
 type TargetProtocol string
@@ -25,38 +26,29 @@ func (t *TargetConfig) GetTargetURL() string {
 }
 
 type AppConfig struct {
-	Target TargetConfig  `yaml:"target" json:"target" validate:"required"`
-	Expose ExposeConfig  `yaml:"expose" json:"expose" validate:"required"`
-	Access *AccessConfig `yaml:"access,omitempty" json:"access,omitempty" validate:"omitempty"`
+	Target   TargetConfig   `yaml:"target" json:"target" validate:"required"`
+	Expose   ExposeConfig   `yaml:"expose" json:"expose" validate:"required"`
+	Access   *AccessConfig  `yaml:"access,omitempty" json:"access,omitempty" validate:"omitempty"`
+	Policies []string `yaml:"policies,omitempty" json:"policies,omitempty"`
 }
 
-type AccessPolicyDecision string
-
-const (
-	AccessPolicyDecisionAllow  AccessPolicyDecision = "allow"
-	AccessPolicyDecisionBypass AccessPolicyDecision = "bypass"
-)
-
-type AccessPolicyConfig struct {
-	Decision AccessPolicyDecision `yaml:"decision" json:"decision" validate:"required,oneof=allow bypass"`
-	Emails   []string             `yaml:"emails,omitempty" json:"emails,omitempty" validate:"omitempty,dive,email"`
-	Domains  []string             `yaml:"domains,omitempty" json:"domains,omitempty" validate:"omitempty,dive,fqdn"`
-}
-
+// AccessConfig holds the raw Cloudflare Access application configuration.
+// Fields match the CF API shape and are passed through with minimal transformation.
+// Only `providers` is processed by Moley (resolved to IdP UUIDs); everything else
+// is forwarded to the Cloudflare API as-is.
 type AccessConfig struct {
-	Session   string              `yaml:"session,omitempty" json:"session,omitempty" validate:"required"`
-	Providers []string            `yaml:"providers,omitempty" json:"providers,omitempty"`
-	Policy    *AccessPolicyConfig `yaml:"policy" json:"policy" validate:"required"`
+	Providers []string       `yaml:"providers,omitempty" json:"providers,omitempty"`
+	Raw       map[string]any `yaml:",remain" json:"-"`
 }
 
-// GetSessionDuration parses Session.
-// Go's time.Duration format is used (e.g., "24h", "30m").
-func (c *AccessConfig) GetSessionDuration() (time.Duration, error) {
-	d, err := time.ParseDuration(c.Session)
-	if err != nil {
-		return 0, fmt.Errorf("invalid session %q: %w", c.Session, err)
+// MarshalJSON inlines Raw so policy changes are reflected in the input hash.
+func (a AccessConfig) MarshalJSON() ([]byte, error) {
+	m := make(map[string]any, len(a.Raw)+1)
+	maps.Copy(m, a.Raw)
+	if len(a.Providers) > 0 {
+		m["providers"] = a.Providers
 	}
-	return d, nil
+	return json.Marshal(m)
 }
 
 type ExposeConfig struct {
@@ -66,16 +58,9 @@ type ExposeConfig struct {
 type IngressMode string
 
 const (
-	// IngressModeWildcard creates a single *.zone DNS record.
-	// Cloudflared routes requests by hostname in ingress rules.
-	// Best for: development, frequently changing apps, faster iteration.
-	// DNS: *.example.com → tunnel (1 record)
+	// IngressModeWildcard — best for development and frequently changing apps; one DNS record covers all subdomains.
 	IngressModeWildcard IngressMode = "wildcard"
-
-	// IngressModeSubdomain creates individual DNS records per app.
-	// Each app gets its own subdomain.domain DNS entry.
-	// Best for: production, explicit DNS control, stable apps.
-	// DNS: api.example.com → tunnel, app.example.com → tunnel (N records)
+	// IngressModeSubdomain — best for production; each app gets its own explicit DNS record.
 	IngressModeSubdomain IngressMode = "subdomain"
 )
 
@@ -85,7 +70,6 @@ type Ingress struct {
 	Mode IngressMode `yaml:"mode" json:"mode" validate:"required,oneof=wildcard subdomain"`
 }
 
-// HasAccessConfig returns true if any app has access protection configured.
 func (i *Ingress) HasAccessConfig() bool {
 	for _, app := range i.Apps {
 		if app.Access != nil {
@@ -95,7 +79,6 @@ func (i *Ingress) HasAccessConfig() bool {
 	return false
 }
 
-// FQDN returns the fully qualified domain name for a subdomain within a zone.
 func FQDN(subdomain, zone string) string {
 	return subdomain + "." + zone
 }

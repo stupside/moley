@@ -291,7 +291,7 @@ func (c *TunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tu
 	for _, app := range ingress.Apps {
 		config.Ingress = append(config.Ingress, ingressRule{
 			Service:  app.Target.GetTargetURL(),
-			Hostname: app.Expose.Subdomain + "." + ingress.Zone,
+			Hostname: domain.FQDN(app.Expose.Subdomain, ingress.Zone),
 		})
 	}
 

@@ -12,6 +12,7 @@ import (
 type TunnelConfig struct {
 	Tunnel  *domain.Tunnel  `yaml:"tunnel" validate:"required"`
 	Ingress *domain.Ingress `yaml:"ingress" validate:"required"`
+	Access  *domain.Access  `yaml:"access,omitempty"`
 }
 
 // NewTunnelManager creates a new tunnel configuration manager

@@ -1,22 +1,26 @@
+access:
+  policies:
+    - name: moley-bypass-ip
+      decision: bypass
+      include:
+        - ip:
+            ip: 203.0.113.42
+
 ingress:
-    apps:
-        - expose:
-            subdomain: test
-          target:
-            hostname: localhost
-            port: 3000
-            protocol: http
-          access:
-            session: "24h"
-            providers:
-              - github
-              - onetimepin
-            policy:
-              decision: allow
-              emails:
-                - kilian@xonery.dev
-    mode: subdomain
-    zone: xonery.dev
+  apps:
+    - expose:
+        subdomain: test
+      target:
+        hostname: localhost
+        port: 3000
+        protocol: http
+      access:
+        session_duration: "168h"
+      policies:
+        - moley-bypass-ip
+  mode: subdomain
+  zone: xonery.dev
+
 tunnel:
-    id: demo
-    persistent: false
+  id: demo
+  persistent: false

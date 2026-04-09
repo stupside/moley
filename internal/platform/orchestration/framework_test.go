@@ -69,8 +69,10 @@ func chdir(t *testing.T) {
 	t.Helper()
 	dir := t.TempDir()
 	orig, _ := os.Getwd()
-	os.Chdir(dir)
-	t.Cleanup(func() { os.Chdir(orig) })
+	if err := os.Chdir(dir); err != nil {
+		t.Fatalf("chdir to temp dir: %v", err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(orig) })
 }
 
 func hashJSON(v any) string {
@@ -145,7 +147,7 @@ func TestLockFileSaveAndLoad(t *testing.T) {
 
 func TestLockFileCorruptRecovery(t *testing.T) {
 	chdir(t)
-	os.WriteFile("moley.lock", []byte("not json{{{"), 0644)
+	_ = os.WriteFile("moley.lock", []byte("not json{{{"), 0644)
 
 	lf, err := framework.LoadLockFile()
 	if err != nil {
@@ -160,7 +162,7 @@ func TestLockFileCorruptRecovery(t *testing.T) {
 
 func TestLockFileEmptyRecovery(t *testing.T) {
 	chdir(t)
-	os.WriteFile("moley.lock", []byte(""), 0644)
+	_ = os.WriteFile("moley.lock", []byte(""), 0644)
 
 	lf, err := framework.LoadLockFile()
 	if err != nil {

@@ -17,11 +17,13 @@ import (
 type Service struct {
 	tunnel             *domain.Tunnel
 	ingress            *domain.Ingress
+	access             *domain.Access
 	dnsService         dnsusecase.DNSRouter
 	tunnelCreator      tunnelusecase.TunnelCreator
 	tunnelConfigurator tunnelusecase.TunnelConfigurator
 	tunnelRunner       tunnelusecase.TunnelRunner
 	accessService      accessusecase.AccessManager
+	policyService      accessusecase.PolicyManager
 }
 
 var _ shared.Runnable = (*Service)(nil)
@@ -29,20 +31,24 @@ var _ shared.Runnable = (*Service)(nil)
 func NewService(
 	tunnel *domain.Tunnel,
 	ingress *domain.Ingress,
+	access *domain.Access,
 	dnsService dnsusecase.DNSRouter,
 	tunnelCreator tunnelusecase.TunnelCreator,
 	tunnelConfigurator tunnelusecase.TunnelConfigurator,
 	tunnelRunner tunnelusecase.TunnelRunner,
 	accessService accessusecase.AccessManager,
+	policyService accessusecase.PolicyManager,
 ) *Service {
 	return &Service{
 		tunnel:             tunnel,
 		ingress:            ingress,
+		access:             access,
 		dnsService:         dnsService,
 		tunnelCreator:      tunnelCreator,
 		tunnelConfigurator: tunnelConfigurator,
 		tunnelRunner:       tunnelRunner,
 		accessService:      accessService,
+		policyService:      policyService,
 	}
 }
 

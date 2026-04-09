@@ -53,9 +53,12 @@ func buildTunnelService(ctx context.Context, cmd *cli.Command) (*application.Ser
 	cfDNS := dnscf.NewDNSService(cfClient, dryRun)
 
 	var cfAccess accessusecase.AccessManager
-	if tunnelConfig.Ingress.HasAccessConfig() {
-		cfAccess = accesscf.NewAccessService(cfClient, cfTunnel.AccountID(), dryRun)
+	var cfPolicy accessusecase.PolicyManager
+	if tunnelConfig.Access.HasPolicies() || tunnelConfig.Ingress.HasAccessConfig() {
+		svc := accesscf.NewAccessService(cfClient, cfTunnel.AccountID(), dryRun)
+		cfAccess = svc
+		cfPolicy = svc
 	}
 
-	return application.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, cfDNS, cfTunnel, cfTunnel, cfTunnel, cfAccess), nil
+	return application.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, tunnelConfig.Access, cfDNS, cfTunnel, cfTunnel, cfTunnel, cfAccess, cfPolicy), nil
 }

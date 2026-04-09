@@ -111,28 +111,59 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 		tunnelusecase.CreateHandlerName,
 	)
 
-	// access-app — depends on dns-record (protects already-routed subdomains)
+	// access-policies — no dependencies, account-level endpoint
+	if s.policyService != nil && s.access.HasPolicies() {
+		framework.Register(orchestrator, accessusecase.NewPolicyHandler(s.policyService),
+			func(reg *framework.OutputRegistry) ([]accessusecase.PolicyInput, error) {
+				inputs := make([]accessusecase.PolicyInput, len(s.access.Policies))
+				for i, p := range s.access.Policies {
+					inputs[i] = accessusecase.PolicyInput{Policy: p}
+				}
+				return inputs, nil
+			},
+		)
+	}
+
+	// access-app — depends on dns-record (ordering) and access-policies (policy IDs)
 	if s.accessService != nil && s.ingress.HasAccessConfig() {
+		deps := []string{dnsusecase.HandlerName}
+		if s.policyService != nil && s.access.HasPolicies() {
+			deps = append(deps, accessusecase.PolicyHandlerName)
+		}
 		framework.Register(orchestrator, accessusecase.NewHandler(s.accessService),
 			func(reg *framework.OutputRegistry) ([]accessusecase.AppInput, error) {
+				policyIDByName := make(map[string]string, len(s.access.Policies))
+				for _, p := range s.access.Policies {
+					out, ok := framework.GetOutput[accessusecase.PolicyOutput](reg, accessusecase.PolicyHandlerName, p.Name)
+					if !ok {
+						return nil, fmt.Errorf("%s: missing output for policy %q", accessusecase.HandlerName, p.Name)
+					}
+					policyIDByName[p.Name] = out.PolicyID
+				}
+
 				var inputs []accessusecase.AppInput
 				for _, app := range s.ingress.Apps {
 					if app.Access == nil {
 						continue
 					}
+					policyIDs := make([]string, 0, len(app.Policies))
+					for _, name := range app.Policies {
+						id, ok := policyIDByName[name]
+						if !ok {
+							return nil, fmt.Errorf("policy %q referenced in app %q is not defined in access.policies", name, app.Expose.Subdomain)
+						}
+						policyIDs = append(policyIDs, id)
+					}
 					inputs = append(inputs, accessusecase.AppInput{
 						Zone:      s.ingress.Zone,
 						Subdomain: app.Expose.Subdomain,
-						Session:   app.Access.Session,
-						Decision:  app.Access.Policy.Decision,
-						Providers: app.Access.Providers,
-						Emails:    app.Access.Policy.Emails,
-						Domains:   app.Access.Policy.Domains,
+						Access:    *app.Access,
+						PolicyIDs: policyIDs,
 					})
 				}
 				return inputs, nil
 			},
-			dnsusecase.HandlerName,
+			deps...,
 		)
 	}
 

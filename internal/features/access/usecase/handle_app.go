@@ -13,11 +13,8 @@ import (
 type AccessApplicationParams struct {
 	Name      string
 	Domain    string
-	Session   string
-	Decision  domain.AccessPolicyDecision
-	Providers []string
-	Emails    []string
-	Domains   []string
+	Access    domain.AccessConfig
+	PolicyIDs []string
 }
 
 type AccessManager interface {
@@ -29,27 +26,16 @@ type AccessManager interface {
 const HandlerName = "access-app"
 
 type AppInput struct {
-	Zone      string                      `json:"zone"`
-	Subdomain string                      `json:"subdomain"`
-	Session   string                      `json:"session"`
-	Decision  domain.AccessPolicyDecision `json:"decision"`
-	Providers []string                    `json:"providers"`
-	Emails    []string                    `json:"emails"`
-	Domains   []string                    `json:"domains"`
-}
-
-func (i AppInput) fqdn() string {
-	return domain.FQDN(i.Subdomain, i.Zone)
+	Zone      string              `json:"zone"`
+	Subdomain string              `json:"subdomain"`
+	Access    domain.AccessConfig `json:"access"`
+	PolicyIDs []string            `json:"policy_ids,omitempty"`
 }
 
 type AppOutput struct {
 	Zone      string `json:"zone"`
-	Subdomain string `json:"subdomain"`
 	AppID     string `json:"app_id"`
-}
-
-func (o AppOutput) fqdn() string {
-	return domain.FQDN(o.Subdomain, o.Zone)
+	Subdomain string `json:"subdomain"`
 }
 
 type appHandler struct {
@@ -71,18 +57,14 @@ func (h *appHandler) Key(input AppInput) string {
 }
 
 func (h *appHandler) Create(ctx context.Context, input AppInput) (AppOutput, error) {
-	fqdn := input.fqdn()
-
+	fqdn := domain.FQDN(input.Subdomain, input.Zone)
 	logger.Debugf("Creating Access Application", map[string]any{"domain": fqdn})
 
 	appID, err := h.accessService.CreateApplication(ctx, AccessApplicationParams{
 		Name:      fmt.Sprintf("moley-%s", fqdn),
 		Domain:    fqdn,
-		Session:   input.Session,
-		Decision:  input.Decision,
-		Providers: input.Providers,
-		Emails:    input.Emails,
-		Domains:   input.Domains,
+		Access:    input.Access,
+		PolicyIDs: input.PolicyIDs,
 	})
 	if err != nil {
 		return AppOutput{}, fmt.Errorf("failed to create Access Application for %s: %w", fqdn, err)
@@ -96,8 +78,7 @@ func (h *appHandler) Create(ctx context.Context, input AppInput) (AppOutput, err
 	}, nil
 }
 func (h *appHandler) Destroy(ctx context.Context, output AppOutput) error {
-	fqdn := output.fqdn()
-
+	fqdn := domain.FQDN(output.Subdomain, output.Zone)
 	logger.Debugf("Deleting Access Application", map[string]any{"domain": fqdn, "app_id": output.AppID})
 
 	if err := h.accessService.DeleteApplication(ctx, output.AppID); err != nil {
@@ -109,7 +90,7 @@ func (h *appHandler) Destroy(ctx context.Context, output AppOutput) error {
 }
 
 func (h *appHandler) Check(ctx context.Context, output AppOutput) (framework.Status, error) {
-	_, exists, err := h.accessService.FindApplication(ctx, output.fqdn())
+	_, exists, err := h.accessService.FindApplication(ctx, domain.FQDN(output.Subdomain, output.Zone))
 	if err != nil {
 		return framework.StatusUnknown, fmt.Errorf("failed to check Access Application: %w", err)
 	}
@@ -120,7 +101,7 @@ func (h *appHandler) Check(ctx context.Context, output AppOutput) (framework.Sta
 }
 
 func (h *appHandler) Recover(ctx context.Context, input AppInput) (AppOutput, framework.Status, error) {
-	appID, exists, err := h.accessService.FindApplication(ctx, input.fqdn())
+	appID, exists, err := h.accessService.FindApplication(ctx, domain.FQDN(input.Subdomain, input.Zone))
 	if err != nil {
 		return AppOutput{}, framework.StatusUnknown, err
 	}
