@@ -89,7 +89,7 @@ func (m *Manager[T]) Get(validate bool) (*T, error) {
 	if err := m.k.UnmarshalWithConf("", config, koanf.UnmarshalConf{
 		Tag: configTag,
 		DecoderConfig: &mapstructure.DecoderConfig{
-			DecodeHook: numericKeysToSliceHookFunc(),
+			DecodeHook:       numericKeysToSliceHookFunc(),
 			WeaklyTypedInput: true,
 			Result:           config,
 			TagName:          configTag,

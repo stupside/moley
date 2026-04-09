@@ -33,12 +33,12 @@ type policyRef struct {
 }
 
 type accessAppBody struct {
-	Name        string                    `json:"name"`
-	Domain      string                    `json:"domain"`
+	Name        string                     `json:"name"`
+	Domain      string                     `json:"domain"`
 	Type        zero_trust.ApplicationType `json:"type"`
-	AllowedIdPs []string                  `json:"allowed_idps"`
-	Policies    []policyRef               `json:"policies"`
-	Extra       map[string]any            `json:"-"`
+	AllowedIdPs []string                   `json:"allowed_idps"`
+	Policies    []policyRef                `json:"policies"`
+	Extra       map[string]any             `json:"-"`
 }
 
 func (b accessAppBody) MarshalJSON() ([]byte, error) {
@@ -128,7 +128,6 @@ func (s *AccessService) FindApplication(ctx context.Context, domain string) (str
 	}
 	return "", false, nil
 }
-
 
 func (s *AccessService) resolveIdentityProviders(ctx context.Context, types []string) ([]string, error) {
 	want := make(map[string]struct{}, len(types))

@@ -26,10 +26,10 @@ func (t *TargetConfig) GetTargetURL() string {
 }
 
 type AppConfig struct {
-	Target   TargetConfig   `yaml:"target" json:"target" validate:"required"`
-	Expose   ExposeConfig   `yaml:"expose" json:"expose" validate:"required"`
-	Access   *AccessConfig  `yaml:"access,omitempty" json:"access,omitempty" validate:"omitempty"`
-	Policies []string `yaml:"policies,omitempty" json:"policies,omitempty"`
+	Target   TargetConfig  `yaml:"target" json:"target" validate:"required"`
+	Expose   ExposeConfig  `yaml:"expose" json:"expose" validate:"required"`
+	Access   *AccessConfig `yaml:"access,omitempty" json:"access,omitempty" validate:"omitempty"`
+	Policies []string      `yaml:"policies,omitempty" json:"policies,omitempty"`
 }
 
 // AccessConfig holds the raw Cloudflare Access application configuration.
