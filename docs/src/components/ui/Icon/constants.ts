@@ -9,6 +9,8 @@ import {
 	Download,
 	Github,
 	Link,
+	Lock,
+	Shield,
 	TriangleAlert,
 	Zap,
 } from "@lucide/astro";
@@ -24,6 +26,8 @@ export const iconMap = {
 	link: Link,
 	github: Github,
 	"cloud-download": CloudDownload,
+	lock: Lock,
+	shield: Shield,
 } as const;
 
 export type IconName = keyof typeof iconMap;

@@ -77,6 +77,22 @@ export const documentationPages: PageDefinition[] = [
 							href: `/docs/troubleshooting/`,
 							icon: "alert-triangle",
 						},
+						{
+							type: "card",
+							title: "Access",
+							description:
+								"Protect apps with Cloudflare Access and identity providers.",
+							href: `/docs/access/`,
+							icon: "shield",
+						},
+						{
+							type: "card",
+							title: "Policies",
+							description:
+								"Define reusable access policies and attach them to apps.",
+							href: `/docs/policies/`,
+							icon: "lock",
+						},
 					],
 				},
 			],
@@ -140,6 +156,31 @@ export const documentationPages: PageDefinition[] = [
 								{
 									type: "text",
 									text: " with DNS managed by Cloudflare",
+								},
+							],
+						},
+						{
+							type: "listitem",
+							children: [
+								{
+									type: "text",
+									text: "A ",
+								},
+								{
+									type: "link",
+									href: "https://dash.cloudflare.com/profile/api-tokens",
+									text: "Cloudflare API token",
+									external: true,
+									rel: "nofollow noopener noreferrer",
+								},
+								{
+									type: "text",
+									text: " — required scopes are covered in the ",
+								},
+								{
+									type: "link",
+									href: "/docs/quick-start/",
+									text: "Quick Start",
 								},
 							],
 						},
@@ -245,9 +286,7 @@ export const documentationPages: PageDefinition[] = [
 						{
 							type: "codeblock",
 							language: "bash",
-							code: `cloudflared tunnel login
-
-moley config set --cloudflare.token="your-api-token"`,
+							code: `moley config set --cloudflare.token="your-api-token"`,
 						},
 						{
 							type: "infobox",
@@ -280,11 +319,19 @@ moley config set --cloudflare.token="your-api-token"`,
 									children: [
 										{
 											type: "listitem",
-											text: "Zone:Zone:Read",
+											text: "Zone > Zone > Read — resolve your zone and account ID",
 										},
 										{
 											type: "listitem",
-											text: "Zone:DNS:Edit",
+											text: "Zone > DNS > Edit — create and delete CNAME records",
+										},
+										{
+											type: "listitem",
+											text: "Account > Cloudflare Tunnel > Edit — create, configure, and delete tunnels",
+										},
+										{
+											type: "listitem",
+											text: "Account > Zero Trust > Edit — only when using access: blocks (Access Applications, Policies, Identity Providers)",
 										},
 									],
 								},
@@ -316,7 +363,7 @@ moley config set --cloudflare.token="your-api-token"`,
 								},
 								{
 									type: "text",
-									text: " with a tunnel ID and example app config.",
+									text: " with a generated tunnel name and an example app config.",
 								},
 							],
 						},
@@ -401,7 +448,7 @@ ingress:
 								},
 								{
 									type: "text",
-									text: " — tunnels and DNS records are cleaned up automatically.",
+									text: " — tunnels, DNS records, and Access Applications are cleaned up automatically.",
 								},
 							],
 						},
@@ -652,7 +699,7 @@ ingress:
 					type: "codeblock",
 					language: "bash",
 					title: "Or use an environment variable",
-					code: `export MOLEY_CLOUDFLARE_TOKEN="your-api-token"`,
+					code: `export MOLEY_CLOUDFLARE__TOKEN="your-api-token"`,
 				},
 
 				{
@@ -696,7 +743,7 @@ ingress:
 								},
 								{
 									type: "listitem",
-									text: "API token needs Zone:Read and DNS:Edit permissions",
+									text: "API token: Zone > Zone > Read, Zone > DNS > Edit, Account > Cloudflare Tunnel > Edit",
 								},
 							],
 						},
@@ -706,7 +753,7 @@ ingress:
 					type: "codeblock",
 					language: "bash",
 					title: "Zone environment variable",
-					code: `export MOLEY_TUNNEL_INGRESS_ZONE="yourdomain.com"`,
+					code: `export MOLEY_TUNNEL_INGRESS__ZONE="yourdomain.com"`,
 				},
 
 				{
@@ -774,12 +821,383 @@ ingress:
 					text: "Environment variables",
 				},
 				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "Use ",
+						},
+						{
+							type: "inline-code",
+							code: "__",
+						},
+						{
+							type: "text",
+							text: " as the path separator and ",
+						},
+						{
+							type: "inline-code",
+							code: "__N__",
+						},
+						{
+							type: "text",
+							text: " for array indexes (0-based).",
+						},
+					],
+				},
+				{
 					type: "codeblock",
 					language: "bash",
-					title: "Per-app overrides",
-					code: `export MOLEY_TUNNEL_INGRESS_APPS_0_TARGET_PORT="3000"
-export MOLEY_TUNNEL_INGRESS_APPS_0_TARGET_HOSTNAME="localhost"
-export MOLEY_TUNNEL_INGRESS_APPS_0_EXPOSE_SUBDOMAIN="app"`,
+					title: "Per-app overrides (MOLEY_TUNNEL_ prefix)",
+					code: `export MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PORT="3000"
+export MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__HOSTNAME="localhost"
+export MOLEY_TUNNEL_INGRESS__APPS__0__EXPOSE__SUBDOMAIN="app"`,
+				},
+				{
+					type: "callout",
+					style: "info",
+					children: [
+						{
+							type: "paragraph",
+							children: [
+								{
+									type: "text",
+									text: "To protect apps with Cloudflare Access, see ",
+								},
+								{
+									type: "link",
+									href: "/docs/access/",
+									text: "Access",
+								},
+								{
+									type: "text",
+									text: " and ",
+								},
+								{
+									type: "link",
+									href: "/docs/policies/",
+									text: "Policies",
+								},
+								{
+									type: "text",
+									text: ".",
+								},
+							],
+						},
+					],
+				},
+			],
+		},
+	},
+
+	// Zero Trust — Access
+	{
+		meta: {
+			title: "Access",
+			menuTitle: "Access",
+			slug: "access",
+			description:
+				"Protect apps with Cloudflare Access: identity providers, session duration, and passthrough options.",
+			order: 6,
+			category: "Zero Trust",
+			href: "/docs/access/",
+		},
+		content: {
+			type: "page",
+			children: [
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "Add an ",
+						},
+						{
+							type: "inline-code",
+							code: "access:",
+						},
+						{
+							type: "text",
+							text: " block to any app to protect it with Cloudflare Access. Moley creates the Access Application automatically and tears it down on stop.",
+						},
+					],
+				},
+				{
+					type: "heading",
+					level: 2,
+					text: "Basic Example",
+				},
+				{
+					type: "codeblock",
+					language: "yaml",
+					title: "moley.yml",
+					code: `ingress:
+  zone: "yourdomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 3000
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "app"
+      access:
+        providers:
+          - github
+        session_duration: "24h"`,
+				},
+				{
+					type: "heading",
+					level: 2,
+					text: "Identity Providers",
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "The ",
+						},
+						{
+							type: "inline-code",
+							code: "providers",
+						},
+						{
+							type: "text",
+							text: " list accepts Cloudflare IdP type names (e.g. ",
+						},
+						{
+							type: "inline-code",
+							code: "github",
+						},
+						{
+							type: "text",
+							text: ", ",
+						},
+						{
+							type: "inline-code",
+							code: "google-workspace",
+						},
+						{
+							type: "text",
+							text: "). Moley matches these against the IdPs configured in your account and resolves them to UUIDs. See ",
+						},
+						{
+							type: "link",
+							href: "https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/",
+							text: "Cloudflare identity provider integration",
+							external: true,
+							rel: "nofollow noopener noreferrer",
+						},
+						{
+							type: "text",
+							text: " for available types and setup.",
+						},
+					],
+				},
+				{
+					type: "heading",
+					level: 2,
+					text: "Cloudflare API Passthrough",
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "All fields under ",
+						},
+						{
+							type: "inline-code",
+							code: "access:",
+						},
+						{
+							type: "text",
+							text: " (other than ",
+						},
+						{
+							type: "inline-code",
+							code: "providers",
+						},
+						{
+							type: "text",
+							text: ") are forwarded to the Cloudflare Access API as-is. See the ",
+						},
+						{
+							type: "link",
+							href: "https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/",
+							text: "Cloudflare self-hosted app configuration",
+							external: true,
+							rel: "nofollow noopener noreferrer",
+						},
+						{
+							type: "text",
+							text: " for all available fields.",
+						},
+					],
+				},
+				{
+					type: "heading",
+					level: 2,
+					text: "Attaching Policies",
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "Reference named policies from ",
+						},
+						{
+							type: "link",
+							href: "/docs/policies/",
+							text: "access.policies",
+						},
+						{
+							type: "text",
+							text: " by name:",
+						},
+					],
+				},
+				{
+					type: "codeblock",
+					language: "yaml",
+					code: `ingress:
+  apps:
+    - expose:
+        subdomain: "app"
+      access:
+        providers:
+          - github
+      policies:
+        - team-only    # references access.policies[name=team-only]`,
+				},
+			],
+		},
+	},
+
+	// Zero Trust — Policies
+	{
+		meta: {
+			title: "Policies",
+			menuTitle: "Policies",
+			slug: "policies",
+			description:
+				"Define reusable Cloudflare Access policies at the account level and attach them to apps by name.",
+			order: 7,
+			category: "Zero Trust",
+			href: "/docs/policies/",
+		},
+		content: {
+			type: "page",
+			children: [
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "Define reusable access policies under ",
+						},
+						{
+							type: "inline-code",
+							code: "access.policies",
+						},
+						{
+							type: "text",
+							text: " at the top level of ",
+						},
+						{
+							type: "inline-code",
+							code: "moley.yml",
+						},
+						{
+							type: "text",
+							text: ". Moley creates them as account-level policies in Cloudflare Access, then attaches them to each app by ID. Apps opt in via the ",
+						},
+						{
+							type: "link",
+							href: "/docs/access/",
+							text: "access:",
+						},
+						{
+							type: "text",
+							text: " block.",
+						},
+					],
+				},
+				{
+					type: "heading",
+					level: 2,
+					text: "Example",
+				},
+				{
+					type: "codeblock",
+					language: "yaml",
+					title: "moley.yml",
+					code: `access:
+  policies:
+    - name: team-only
+      decision: allow
+      include:
+        - email_domain:
+            domain: "mycompany.com"
+
+    - name: bypass-health
+      decision: bypass
+      include:
+        - everyone: {}
+
+ingress:
+  zone: "yourdomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 3000
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "app"
+      access:
+        providers:
+          - github
+      policies:
+        - team-only
+
+    - target:
+        port: 8080
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "health"
+      access:
+        providers:
+          - github
+      policies:
+        - bypass-health`,
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "inline-code",
+							code: "name",
+						},
+						{
+							type: "text",
+							text: " is required — moley uses it to wire policies to apps. All other fields are forwarded verbatim to the ",
+						},
+						{
+							type: "link",
+							href: "https://developers.cloudflare.com/cloudflare-one/policies/access/",
+							text: "Cloudflare Access — decisions, rule selectors, and logic",
+							external: true,
+							rel: "nofollow noopener noreferrer",
+						},
+						{
+							type: "text",
+							text: ".",
+						},
+					],
 				},
 			],
 		},
@@ -948,8 +1366,8 @@ cloudflared tunnel list`,
 						{
 							type: "codeblock",
 							language: "bash",
-							code: `moley tunnel run --log-level=debug
-moley tunnel run --dry-run`,
+							code: `moley --log-level=debug tunnel run
+moley tunnel --dry-run run`,
 						},
 					],
 				},
@@ -1041,11 +1459,11 @@ cloudflared tunnel list`,
 				{
 					type: "codeblock",
 					language: "bash",
-					code: `moley tunnel stop --dry-run --log-level=debug
+					code: `moley --log-level=debug tunnel --dry-run stop
 
 # Force orphan detection
 rm moley.lock
-moley tunnel stop --dry-run --log-level=trace`,
+moley --log-level=trace tunnel --dry-run stop`,
 				},
 			],
 		},
