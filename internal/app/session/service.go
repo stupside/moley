@@ -55,7 +55,7 @@ func NewService(
 func (s *Service) Start(ctx context.Context) error {
 	logger.Infof("Starting tunnel service", map[string]any{
 		"zone":   s.ingress.Zone,
-		"tunnel": s.tunnel.Name,
+		"tunnel": s.tunnel.Ref(),
 	})
 
 	orch, err := s.createOrchestrator(ctx)
@@ -74,7 +74,7 @@ func (s *Service) Start(ctx context.Context) error {
 func (s *Service) Stop(ctx context.Context) error {
 	logger.Infof("Stopping tunnel service", map[string]any{
 		"zone":   s.ingress.Zone,
-		"tunnel": s.tunnel.Name,
+		"tunnel": s.tunnel.Ref(),
 	})
 
 	orch, err := s.createOrchestrator(ctx)

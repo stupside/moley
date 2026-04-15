@@ -4,12 +4,14 @@ package domain
 import "fmt"
 
 type Tunnel struct {
-	Name       string `yaml:"name" json:"name" validate:"required"`
+	// Deprecated: Use Name instead.
+	ID         string `yaml:"id" json:"-" validate:"-"`
+	Name       string `yaml:"name" json:"name" validate:"-"`
 	Persistent bool   `yaml:"persistent" json:"persistent" validate:"-"`
 }
 
 func (t *Tunnel) GetName() string {
-	return fmt.Sprintf("moley-%s", t.Name)
+	return fmt.Sprintf("moley-%s", t.Ref())
 }
 
 func NewTunnel(name string) (*Tunnel, error) {
@@ -17,4 +19,12 @@ func NewTunnel(name string) (*Tunnel, error) {
 		Name:       name,
 		Persistent: false,
 	}, nil
+}
+
+// Ref returns ID if set, otherwise Name. This allows both "id" and "name" YAML keys.
+func (t *Tunnel) Ref() string {
+	if t.ID != "" {
+		return t.ID
+	}
+	return t.Name
 }

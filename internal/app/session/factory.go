@@ -22,7 +22,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 		func(reg *framework.OutputRegistry) ([]tunnelusecase.CreateInput, error) {
 			return []tunnelusecase.CreateInput{
 				{
-					Name:       s.tunnel.Name,
+					Name:       s.tunnel.Ref(),
 					Persistent: s.tunnel.Persistent,
 				},
 			}, nil
@@ -32,13 +32,13 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 	// tunnel-config — depends on tunnel-create (needs TunnelUUID)
 	framework.Register(orchestrator, tunnelusecase.NewConfigHandler(s.tunnelConfigurator),
 		func(reg *framework.OutputRegistry) ([]tunnelusecase.ConfigInput, error) {
-			create, ok := framework.GetOutput[tunnelusecase.CreateOutput](reg, tunnelusecase.CreateHandlerName, s.tunnel.Name)
+			create, ok := framework.GetOutput[tunnelusecase.CreateOutput](reg, tunnelusecase.CreateHandlerName, s.tunnel.Ref())
 			if !ok {
 				return nil, fmt.Errorf("%s: missing upstream output from %s", tunnelusecase.ConfigHandlerName, tunnelusecase.CreateHandlerName)
 			}
 			return []tunnelusecase.ConfigInput{
 				{
-					TunnelName: s.tunnel.Name,
+					TunnelName: s.tunnel.Ref(),
 					TunnelUUID: create.TunnelUUID,
 					Persistent: s.tunnel.Persistent,
 					Ingress: &domain.Ingress{
@@ -55,13 +55,13 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 	// tunnel-run — depends on tunnel-config (needs ConfigPath + ContentHash)
 	framework.Register(orchestrator, tunnelusecase.NewRunHandler(s.tunnelRunner),
 		func(reg *framework.OutputRegistry) ([]tunnelusecase.RunInput, error) {
-			config, ok := framework.GetOutput[tunnelusecase.ConfigOutput](reg, tunnelusecase.ConfigHandlerName, s.tunnel.Name)
+			config, ok := framework.GetOutput[tunnelusecase.ConfigOutput](reg, tunnelusecase.ConfigHandlerName, s.tunnel.Ref())
 			if !ok {
 				return nil, fmt.Errorf("%s: missing upstream output from %s", tunnelusecase.RunHandlerName, tunnelusecase.ConfigHandlerName)
 			}
 			return []tunnelusecase.RunInput{
 				{
-					TunnelName:  s.tunnel.Name,
+					TunnelName:  s.tunnel.Ref(),
 					ConfigPath:  config.ConfigPath,
 					ContentHash: config.ContentHash,
 				},
@@ -73,7 +73,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 	// dns-record — depends on tunnel-create (needs TunnelUUID)
 	framework.Register(orchestrator, dnsusecase.NewHandler(s.dnsService),
 		func(reg *framework.OutputRegistry) ([]dnsusecase.RecordInput, error) {
-			create, ok := framework.GetOutput[tunnelusecase.CreateOutput](reg, tunnelusecase.CreateHandlerName, s.tunnel.Name)
+			create, ok := framework.GetOutput[tunnelusecase.CreateOutput](reg, tunnelusecase.CreateHandlerName, s.tunnel.Ref())
 			if !ok {
 				return nil, fmt.Errorf("%s: missing upstream output from %s", dnsusecase.HandlerName, tunnelusecase.CreateHandlerName)
 			}
@@ -86,7 +86,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 					{
 						Zone:       s.ingress.Zone,
 						Subdomain:  "*",
-						TunnelName: s.tunnel.Name,
+						TunnelName: s.tunnel.Ref(),
 						TunnelUUID: create.TunnelUUID,
 						Persistent: s.tunnel.Persistent,
 					},
@@ -97,7 +97,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 					inputs = append(inputs, dnsusecase.RecordInput{
 						Zone:       s.ingress.Zone,
 						Subdomain:  app.Expose.Subdomain,
-						TunnelName: s.tunnel.Name,
+						TunnelName: s.tunnel.Ref(),
 						TunnelUUID: create.TunnelUUID,
 						Persistent: s.tunnel.Persistent,
 					})
