@@ -1184,18 +1184,135 @@ ingress:
 						},
 						{
 							type: "text",
-							text: " is required — moley uses it to wire policies to apps. All other fields are forwarded verbatim to the ",
+							text: " is required. Moley uses it to wire policies to apps. All other fields are forwarded verbatim to the ",
 						},
 						{
 							type: "link",
 							href: "https://developers.cloudflare.com/cloudflare-one/policies/access/",
-							text: "Cloudflare Access — decisions, rule selectors, and logic",
+							text: "Cloudflare Access policy API",
 							external: true,
 							rel: "nofollow noopener noreferrer",
 						},
 						{
 							type: "text",
-							text: ".",
+							text: " (decisions, rule selectors, logic).",
+						},
+					],
+				},
+				{
+					type: "heading",
+					level: 2,
+					text: "Gate a service with a token",
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "For machine-to-machine access (webhooks, CI jobs, internal APIs), use a Cloudflare ",
+						},
+						{
+							type: "link",
+							href: "https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/",
+							text: "service token",
+							external: true,
+							rel: "nofollow noopener noreferrer",
+						},
+						{
+							type: "text",
+							text: ". No browser flow, no identity provider. Policies use ",
+						},
+						{
+							type: "inline-code",
+							code: "decision: non_identity",
+						},
+						{
+							type: "text",
+							text: " and the app skips the ",
+						},
+						{
+							type: "inline-code",
+							code: "access.providers",
+						},
+						{
+							type: "text",
+							text: " block entirely.",
+						},
+					],
+				},
+				{
+					type: "codeblock",
+					language: "yaml",
+					title: "moley.yml",
+					code: `access:
+  policies:
+    - name: api-client
+      decision: non_identity
+      include:
+        - service_token:
+            token_id: "your-service-token-uuid"
+
+tunnel:
+  name: "my-tunnel"
+
+ingress:
+  zone: "yourdomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 8080
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "api"
+      policies:
+        - api-client`,
+				},
+				{
+					type: "paragraph",
+					children: [
+						{
+							type: "text",
+							text: "Callers reach ",
+						},
+						{
+							type: "inline-code",
+							code: "api.yourdomain.com",
+						},
+						{
+							type: "text",
+							text: " by sending ",
+						},
+						{
+							type: "inline-code",
+							code: "CF-Access-Client-Id",
+						},
+						{
+							type: "text",
+							text: " and ",
+						},
+						{
+							type: "inline-code",
+							code: "CF-Access-Client-Secret",
+						},
+						{
+							type: "text",
+							text: " headers. Unauthenticated requests get blocked at Cloudflare's edge.",
+						},
+					],
+				},
+				{
+					type: "callout",
+					style: "info",
+					children: [
+						{
+							type: "paragraph",
+							children: [
+								{
+									type: "text",
+									text: "Service tokens are created in Cloudflare (Zero Trust → Access → Service Auth). Moley references them by UUID and does not manage their lifecycle.",
+								},
+							],
 						},
 					],
 				},

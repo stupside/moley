@@ -1,26 +1,27 @@
 access:
   policies:
-    - name: moley-bypass-ip
-      decision: bypass
+    - name: moley-allow-email
+      decision: allow
       include:
-        - ip:
-            ip: 203.0.113.42
+        - email: {email: "kilian.houpeurt@gmail.com"}
+    - name: moley-api-service-token
+      decision: non_identity
+      include:
+        - service_token:
+            token_id: "REPLACE_WITH_SERVICE_TOKEN_UUID"
 
 ingress:
-  apps:
-    - expose:
-        subdomain: test
-      target:
-        hostname: localhost
-        port: 3000
-        protocol: http
-      access:
-        session_duration: "168h"
-      policies:
-        - moley-bypass-ip
   mode: subdomain
-  zone: xonery.dev
+  zone: "xonery.dev"
+  apps:
+    - target: {hostname: localhost, port: 3000, protocol: http}
+      expose: {subdomain: test}
+      access:
+        providers: [github, onetimepin]
+        session_duration: "168h"
+      policies: [moley-allow-email]
+    - target: {hostname: localhost, port: 3001, protocol: http}
+      expose: {subdomain: api}
+      policies: [moley-api-service-token]
 
-tunnel:
-  id: demo
-  persistent: false
+tunnel: {id: "demo", name: "test-tunnel", persistent: false}
