@@ -4673,17 +4673,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"smol-toml@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "smol-toml@npm:1.4.2"
-  checksum: e01e5f249b1ad852d09aa22f338a6cb3896ac35c92bf0d35744ce1b1e2f4b67901d4a0e886027617a2a8aa9f1a6c67c919c41b544c4aec137b6ebe042ca10d36
-  languageName: node
-  linkType: hard
-
-"smol-toml@npm:^1.5.0":
-  version: 1.5.2
-  resolution: "smol-toml@npm:1.5.2"
-  checksum: ccfe5dda80c1d0c45869140b1e695a13a81ba7c57c1ca083146fe2f475d6f57031c12410f95d53a5acb3a1504e8e8e12cab36871909e8c8ce0c7011ccd22a2ac
+"smol-toml@npm:^1.4.2, smol-toml@npm:^1.5.0":
+  version: 1.6.1
+  resolution: "smol-toml@npm:1.6.1"
+  checksum: 511a78722f99c7616fdb46af708de3d7e81434b5a3d58061166da73f28bfc6cae4f0cd04683f60515b9c490cd10152fce72287c960b337419c0299cc1f0f2a22
   languageName: node
   linkType: hard
 
