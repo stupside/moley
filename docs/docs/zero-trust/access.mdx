@@ -1,0 +1,53 @@
+---
+id: access
+title: Protect apps with Cloudflare Access
+sidebar_label: Access
+description: "Protect apps with Cloudflare Access: identity providers, session duration, and passthrough options."
+slug: /access
+sidebar_position: 1
+---
+
+Add an `access:` block to any app to protect it with Cloudflare Access. Moley creates the Access Application automatically and tears it down on stop.
+
+## Basic Example
+
+```yaml title="moley.yml"
+ingress:
+  zone: "yourdomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 3000
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "app"
+      access:
+        providers:
+          - github
+        session_duration: "24h"
+```
+
+## Identity Providers
+
+The `providers` list accepts Cloudflare IdP type names (e.g. `github`, `google-workspace`). Moley matches these against the IdPs configured in your account and resolves them to UUIDs. See [Cloudflare identity provider integration](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/) for available types and setup.
+
+## Cloudflare API Passthrough
+
+All fields under `access:` (other than `providers`) are forwarded to the Cloudflare Access API as-is. See the [Cloudflare self-hosted app configuration](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/) for all available fields.
+
+## Attaching Policies
+
+Reference named policies from [access.policies](/docs/policies/) by name:
+
+```yaml
+ingress:
+  apps:
+    - expose:
+        subdomain: "app"
+      access:
+        providers:
+          - github
+      policies:
+        - team-only    # references access.policies[name=team-only]
+```

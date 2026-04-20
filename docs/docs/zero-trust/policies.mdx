@@ -1,0 +1,95 @@
+---
+id: policies
+title: Reusable access policies
+sidebar_label: Policies
+description: Define reusable Cloudflare Access policies at the account level and attach them to apps by name.
+slug: /policies
+sidebar_position: 2
+---
+
+Define reusable access policies under `access.policies` at the top level of `moley.yml`. Moley creates them as account-level policies in Cloudflare Access, then attaches them to each app by ID. Apps opt in via the [access:](/docs/access/) block.
+
+## Example
+
+```yaml title="moley.yml"
+access:
+  policies:
+    - name: team-only
+      decision: allow
+      include:
+        - email_domain:
+            domain: "mycompany.com"
+
+    - name: bypass-health
+      decision: bypass
+      include:
+        - everyone: {}
+
+ingress:
+  zone: "yourdomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 3000
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "app"
+      access:
+        providers:
+          - github
+      policies:
+        - team-only
+
+    - target:
+        port: 8080
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "health"
+      access:
+        providers:
+          - github
+      policies:
+        - bypass-health
+```
+
+`name` is required. Moley uses it to wire policies to apps. All other fields are forwarded verbatim to the [Cloudflare Access policy API](https://developers.cloudflare.com/cloudflare-one/policies/access/) (decisions, rule selectors, logic).
+
+## Gate a service with a token
+
+For machine-to-machine access (webhooks, CI jobs, internal APIs), use a Cloudflare [service token](https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/). No browser flow, no identity provider. Policies use `decision: non_identity` and the app skips the `access.providers` block entirely.
+
+```yaml title="moley.yml"
+access:
+  policies:
+    - name: api-client
+      decision: non_identity
+      include:
+        - service_token:
+            token_id: "your-service-token-uuid"
+
+tunnel:
+  name: "my-tunnel"
+
+ingress:
+  zone: "yourdomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 8080
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "api"
+      policies:
+        - api-client
+```
+
+Callers reach `api.yourdomain.com` by sending `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers. Unauthenticated requests get blocked at Cloudflare's edge.
+
+:::info
+
+Service tokens are created in Cloudflare (Zero Trust → Access → Service Auth). Moley references them by UUID and does not manage their lifecycle.
+
+:::

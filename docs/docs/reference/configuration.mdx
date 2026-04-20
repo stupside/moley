@@ -1,0 +1,130 @@
+---
+id: configuration
+title: moley.yml reference
+sidebar_label: Configuration
+description: moley.yml reference — tunnel settings, ingress zones, app routing, and environment variable overrides.
+slug: /configuration
+sidebar_position: 2
+---
+
+## Configuration File
+
+All tunnel config lives in `moley.yml` in your project root. Global settings (API token) are in `~/.moley/config.yml`.
+
+```yaml title="moley.yml"
+tunnel:
+  name: "my-project"
+  persistent: false
+
+ingress:
+  zone: "mydomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 3000
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "app"       # app.mydomain.com
+
+    - target:
+        port: 8080
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "api"       # api.mydomain.com
+```
+
+## Tunnel
+
+- `name` — tunnel name (required). The actual Cloudflare tunnel is created as `moley-{name}`.
+- `persistent` — if true, the tunnel is kept alive when you stop. Defaults to false (tunnel + DNS cleaned up on stop).
+
+## Ingress Mode
+
+Controls how DNS records are created. Two modes:
+
+- `subdomain` — creates one DNS record per app (`api.domain.com`, `web.domain.com`). Best for production.
+- `wildcard` — creates a single `*.domain.com` record. Cloudflared routes by hostname. Best for dev when apps change frequently.
+
+## Target Protocol
+
+Each app target requires a `protocol` field:
+
+- `http` — standard HTTP (most common)
+- `https` — local service uses HTTPS
+- `tcp` — raw TCP (databases, custom protocols)
+
+## Global Config
+
+```yaml title="~/.moley/config.yml"
+cloudflare:
+  token: "your-api-token"
+```
+
+```bash title="Or use an environment variable"
+export MOLEY_CLOUDFLARE__TOKEN="your-api-token"
+```
+
+## Zone
+
+The `zone` is the Cloudflare-managed domain used for all subdomains.
+
+:::warning[Requirements]
+
+- Domain must be on Cloudflare
+- DNS managed by Cloudflare (orange cloud enabled)
+- API token: Zone > Zone > Read, Zone > DNS > Edit, Account > Cloudflare Tunnel > Edit
+
+:::
+
+```bash title="Zone environment variable"
+export MOLEY_TUNNEL_INGRESS__ZONE="yourdomain.com"
+```
+
+## Apps
+
+Each app maps a local `target` (port + hostname) to a public `expose` (subdomain).
+
+```yaml title="Full example"
+ingress:
+  zone: "yourdomain.com"
+  mode: subdomain
+  apps:
+    - target:
+        port: 3000
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "app"       # app.yourdomain.com
+
+    - target:
+        port: 8080
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "api"       # api.yourdomain.com
+
+    - target:
+        port: 5432
+        hostname: "127.0.0.1"
+        protocol: tcp
+      expose:
+        subdomain: "db"        # db.yourdomain.com (TCP)
+```
+
+### Environment variables
+
+Use `__` as the path separator and `__N__` for array indexes (0-based).
+
+```bash title="Per-app overrides (MOLEY_TUNNEL_ prefix)"
+export MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PORT="3000"
+export MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__HOSTNAME="localhost"
+export MOLEY_TUNNEL_INGRESS__APPS__0__EXPOSE__SUBDOMAIN="app"
+```
+
+:::info
+
+To protect apps with Cloudflare Access, see [Access](/docs/access/) and [Policies](/docs/policies/).
+
+:::

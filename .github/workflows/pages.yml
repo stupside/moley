@@ -5,11 +5,9 @@ on:
     branches: ['main']
     paths: ['docs/**']
   workflow_dispatch:
-    
+
 permissions:
-  pages: write
   contents: read
-  id-token: write
 
 concurrency:
   group: "docs"
@@ -37,19 +35,23 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build Astro site
-        run: yarn astro:build
+      - name: Build Docusaurus site
+        run: yarn build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./docs/dist
+          path: ./docs/build
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

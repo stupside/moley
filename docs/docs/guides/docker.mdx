@@ -1,0 +1,204 @@
+---
+id: docker
+title: Run moley in Docker
+sidebar_label: Docker
+description: Use the official moley container image with docker compose. Mount your moley.yml and persistent state for a reproducible, host-agnostic setup.
+slug: /docker
+sidebar_position: 1
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+A pre-built container is published to the GitHub Container Registry at `ghcr.io/stupside/moley`. The image bundles both `moley` and a pinned `cloudflared` on Alpine — nothing else to install on the host.
+
+## Why containerize
+
+- **No local Go / Homebrew / cloudflared setup** — the image has everything.
+- **Pinned cloudflared version** — reproducible across laptops and CI.
+- **Isolated state** — `~/.moley` and `~/.cloudflared` live in a volume you control.
+- **Same config** — the same `moley.yml` you'd use on the host works unchanged.
+
+## Quick start with Compose
+
+The repo ships a ready-to-use `docker-compose.yml`:
+
+```yaml title="docker-compose.yml"
+services:
+  moley:
+    image: ghcr.io/stupside/moley:latest
+    container_name: moley
+    volumes:
+      # Configuration file for moley
+      - ./moley.yml:/root/moley.yml:ro
+      # Data directories for moley and cloudflared
+      - ./data/.moley:/root/.moley
+      - ./data/.cloudflared:/root/.cloudflared
+    command: ["--help"]
+```
+
+Run a one-shot command:
+
+```bash
+docker compose run --rm moley tunnel init
+docker compose run --rm moley tunnel run
+```
+
+:::tip
+
+`docker compose run --rm` tears the container down after each command, so state only lives in the mounted volumes — exactly where moley expects it.
+
+:::
+
+## First-time setup
+
+<Tabs>
+  <TabItem value="authenticate" label="1. Authenticate cloudflared" default>
+
+cloudflared needs to log in once to issue the tunnel certificate. Run it through the image:
+
+```bash
+docker compose run --rm --entrypoint cloudflared moley tunnel login
+```
+
+The browser flow prints a URL — open it, authorize your Cloudflare account, and the container writes `cert.pem` into `./data/.cloudflared/`.
+
+  </TabItem>
+  <TabItem value="token" label="2. Set your Cloudflare token">
+
+```bash
+docker compose run --rm moley config set --cloudflare.token="your-api-token"
+```
+
+This writes `./data/.moley/config.yml`.
+
+  </TabItem>
+  <TabItem value="init" label="3. Initialize moley.yml">
+
+```bash
+docker compose run --rm moley tunnel init
+```
+
+Generates a `moley.yml` in your working directory (mounted read-only into the container). Edit it to match your services.
+
+  </TabItem>
+  <TabItem value="run" label="4. Run the tunnel">
+
+```bash
+docker compose run --rm moley tunnel run
+```
+
+Ctrl-C to stop. Moley cleans up tunnels, DNS records, and Access apps on shutdown.
+
+  </TabItem>
+</Tabs>
+
+## Taskfile shortcuts
+
+If you already use [Task](https://taskfile.dev), the project's `Taskfile.yml` wraps these into two reusable tasks:
+
+```bash
+# Run any moley command inside the container
+task docker:moley -- tunnel run
+task docker:moley -- tunnel stop
+
+# Run cloudflared directly (for initial login or manual debugging)
+task docker:cloudflared -- tunnel login
+task docker:cloudflared -- tunnel list
+```
+
+## Environment variable overrides
+
+Every `moley.yml` key can be overridden with an env var. Pass them through Compose:
+
+```yaml title="docker-compose.yml"
+services:
+  moley:
+    image: ghcr.io/stupside/moley:latest
+    environment:
+      MOLEY_CLOUDFLARE__TOKEN: "${CF_TOKEN}"
+      MOLEY_TUNNEL_INGRESS__ZONE: "example.com"
+      MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PORT: "3000"
+    volumes:
+      - ./moley.yml:/root/moley.yml:ro
+      - ./data/.moley:/root/.moley
+      - ./data/.cloudflared:/root/.cloudflared
+```
+
+See [Configuration → Environment variables](/docs/configuration/#environment-variables) for the full convention.
+
+## Talking to services on the host
+
+Inside the container, `localhost` is the container itself — not your Mac/Linux host. To reach services on the host, use the platform-specific alias:
+
+<Tabs>
+  <TabItem value="mac-windows" label="macOS / Windows" default>
+
+```yaml title="moley.yml"
+ingress:
+  apps:
+    - target:
+        hostname: host.docker.internal   # resolves to the host
+        port: 3000
+        protocol: http
+      expose:
+        subdomain: app
+```
+
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+
+Add `network_mode: host` in Compose (simplest):
+
+```yaml title="docker-compose.yml"
+services:
+  moley:
+    image: ghcr.io/stupside/moley:latest
+    network_mode: host
+    volumes:
+      - ./moley.yml:/root/moley.yml:ro
+      - ./data/.moley:/root/.moley
+      - ./data/.cloudflared:/root/.cloudflared
+```
+
+Then `hostname: localhost` in `moley.yml` works as expected.
+
+  </TabItem>
+</Tabs>
+
+## Running another stack in the same compose file
+
+Moley plays nicely with the apps it exposes. Put them side-by-side:
+
+```yaml title="docker-compose.yml"
+services:
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+
+  moley:
+    image: ghcr.io/stupside/moley:latest
+    depends_on:
+      - web
+    volumes:
+      - ./moley.yml:/root/moley.yml:ro
+      - ./data/.moley:/root/.moley
+      - ./data/.cloudflared:/root/.cloudflared
+    command: ["tunnel", "run"]
+```
+
+Point `moley.yml` at the `web` service by its container name:
+
+```yaml title="moley.yml"
+ingress:
+  apps:
+    - target: {hostname: web, port: 3000, protocol: http}
+      expose: {subdomain: app}
+```
+
+:::info
+
+`cloudflared` inside moley can reach any other service on the Compose network by name — no `host.docker.internal` needed.
+
+:::

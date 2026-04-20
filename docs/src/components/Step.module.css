@@ -1,0 +1,46 @@
+.step {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.number {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: var(--ifm-color-primary);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ifm-heading-color);
+  line-height: 2rem;
+}
+
+.description {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--ifm-color-content-secondary);
+  font-size: 0.9375rem;
+}
+
+.content > :first-child {
+  margin-top: 0.5rem;
+}
+
+.content > :last-child {
+  margin-bottom: 0;
+}

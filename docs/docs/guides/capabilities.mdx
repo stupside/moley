@@ -1,0 +1,105 @@
+---
+id: capabilities
+title: What moley can do
+sidebar_label: Capabilities
+description: A tour of moley's features — tunnel lifecycle, DNS routing, Cloudflare Access, policies, reconciliation, dry-run, and orphan cleanup.
+slug: /capabilities
+sidebar_position: 2
+---
+
+Moley is a thin, opinionated orchestrator over three Cloudflare APIs — Tunnels, DNS, and Access. Everything you need lives in a single `moley.yml`; everything moley does is reversible.
+
+## Tunnel lifecycle
+
+One command provisions the tunnel, routes DNS, creates Access apps, and starts cloudflared. Another tears it all back down.
+
+| Command | What it does |
+| --- | --- |
+| `moley tunnel init` | Generates a starter `moley.yml` in the current directory |
+| `moley tunnel run` | Creates the tunnel, sets up DNS and Access, then starts cloudflared in the foreground |
+| `moley tunnel run --detach` | Same, but detaches — moley stays running under your shell |
+| `moley tunnel stop` | Cleans up every resource moley created for this config |
+
+By default, tunnels and DNS records are deleted when you stop. Set `tunnel.persistent: true` to keep them (useful if you want a stable URL across runs).
+
+## DNS routing modes
+
+Pick per-project based on how often your apps change.
+
+- **`mode: subdomain`** — one CNAME per app (`api.example.com`, `web.example.com`). Production-flavored; each app gets its own record proxied to the tunnel.
+- **`mode: wildcard`** — a single `*.example.com` CNAME. cloudflared routes by hostname. Ideal for dev when you're adding and removing apps constantly — no DNS churn.
+
+See [Configuration → Ingress Mode](/docs/configuration/#ingress-mode).
+
+## Protocol support
+
+Each app target declares its protocol: `http`, `https`, or `tcp`. TCP opens the door to databases, SSH, and custom protocols through the same tunnel.
+
+## Cloudflare Access integration
+
+Add an `access:` block to any app and moley creates the Access Application, wires up identity providers (GitHub, Google Workspace, one-time PIN, etc.), and attaches any policies you reference. Pure pass-through: every field not named `providers` is forwarded to the Cloudflare Access API as-is, so anything the API supports, moley supports.
+
+See [Access](/docs/access/).
+
+## Reusable, account-level policies
+
+Policies live at the top level of `moley.yml` under `access.policies` — not buried inside each app. Name them once, reference by name from as many apps as you want. Moley creates them as **account-level** Access policies, which means:
+
+- Swap a policy's rules in one place → every app using it updates.
+- Policies outlive a single tunnel, so reconnection doesn't rebuild them.
+- Service-token-only policies (`decision: non_identity`) work for machine-to-machine calls without any browser flow.
+
+See [Policies](/docs/policies/).
+
+## Reconciliation and change detection
+
+Moley hashes each resource's desired input. If nothing changed between runs, the resource is left alone. If the input changed, only the diff is applied. This keeps re-runs cheap and avoids flapping DNS or re-issuing Access apps needlessly.
+
+## Lock file and orphan cleanup
+
+Every run writes a `moley.lock` alongside `moley.yml`. The lock records exactly which tunnel, DNS records, and Access apps belong to this project. On `tunnel stop`:
+
+1. Moley reads the lock.
+2. Deletes each resource in dependency order (apps → DNS → tunnel).
+3. Removes the lock.
+
+If a run crashes or the lock goes missing, moley can rediscover the resources from Cloudflare by name and clean them up anyway.
+
+## Dry-run
+
+Prepend `--dry-run` to any `tunnel` command to simulate it. No resources are created, deleted, or modified — moley just logs what it *would* do.
+
+```bash
+moley tunnel --dry-run run
+moley tunnel --dry-run stop
+```
+
+Great for CI previews and for checking a new config before committing to it.
+
+## Structured logging
+
+Log output uses [zerolog](https://github.com/rs/zerolog) with selectable levels via `--log-level`:
+
+`trace` · `debug` · `info` (default) · `warn` · `error` · `fatal` · `panic` · `disabled`
+
+Trace and debug are verbose by design — use them when debugging Cloudflare API responses or tunnel lifecycle issues.
+
+## Environment variable overrides
+
+Every key in `moley.yml` and the global config can be set via env vars. Useful for CI, Docker, and ephemeral shells.
+
+- Global keys: `MOLEY_*` (e.g. `MOLEY_CLOUDFLARE__TOKEN`)
+- Tunnel keys: `MOLEY_TUNNEL_*` (e.g. `MOLEY_TUNNEL_INGRESS__ZONE`)
+- Array indexes: `__N__` where N is 0-based
+
+See [Configuration → Environment variables](/docs/configuration/#environment-variables).
+
+## Container image
+
+An official image is published to `ghcr.io/stupside/moley:latest` with `cloudflared` bundled. See [Docker](/docs/docker/) for a turnkey Compose setup.
+
+## What moley does *not* do
+
+- No built-in web UI — it's a CLI, by design.
+- No load balancing across multiple origins per hostname — one tunnel target per app.
+- No non-Cloudflare backends. Moley is Cloudflare-shaped on purpose.

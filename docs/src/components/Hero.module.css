@@ -1,0 +1,40 @@
+.hero {
+  padding: 6rem 1.5rem 5rem;
+  text-align: center;
+}
+
+.logo {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 2rem;
+  display: block;
+}
+
+.title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--ifm-heading-color);
+  margin: 0;
+}
+
+.titleAccent {
+  color: var(--ifm-color-primary);
+}
+
+.subtitle {
+  max-width: 36rem;
+  margin: 1.5rem auto 0;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--ifm-color-content-secondary);
+}
+
+.ctaRow {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}

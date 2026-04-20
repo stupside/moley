@@ -1,0 +1,64 @@
+---
+id: installation
+title: Install moley
+sidebar_label: Installation
+description: Install moley using Homebrew or Go. Requires cloudflared and a Cloudflare domain.
+slug: /installation
+sidebar_position: 1
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+## Prerequisites
+
+- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) — installed and authenticated
+- A domain on [Cloudflare](https://www.cloudflare.com/) with DNS managed by Cloudflare
+- A [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens) — required scopes are covered in the [Quick Start](/docs/quick-start/)
+
+## Install
+
+<Tabs>
+  <TabItem value="homebrew" label="Homebrew" default>
+
+```bash
+brew install --cask stupside/tap/moley
+```
+
+  </TabItem>
+  <TabItem value="go" label="Go">
+
+Requires Go 1.23+.
+
+```bash
+go install github.com/stupside/moley/v2@latest
+```
+
+  </TabItem>
+  <TabItem value="docker" label="Docker">
+
+A pre-built image bundling `moley` and `cloudflared` is published to `ghcr.io/stupside/moley:latest`. See [Run moley in Docker](/docs/docker/) for the full Compose setup.
+
+```bash
+docker pull ghcr.io/stupside/moley:latest
+```
+
+  </TabItem>
+  <TabItem value="binary" label="Binary">
+
+Grab a pre-built binary for your platform from the [releases page](https://github.com/stupside/moley/releases/latest).
+
+  </TabItem>
+</Tabs>
+
+## Verify
+
+```bash
+moley info
+```
+
+:::info
+
+Next: [Quick Start](/docs/quick-start/) — set up your first tunnel.
+
+:::

@@ -1,0 +1,152 @@
+---
+id: cli
+title: CLI reference
+sidebar_label: CLI
+description: Every moley command and flag, with examples.
+slug: /cli
+sidebar_position: 1
+---
+
+Every command and flag moley ships with. Global flags apply to any subcommand.
+
+## Global flags
+
+| Flag | Values | Default | What it does |
+| --- | --- | --- | --- |
+| `--log-level` | `trace`, `debug`, `info`, `warn`, `error`, `fatal`, `panic`, `disabled` | `info` | Log verbosity. `trace` and `debug` dump Cloudflare API calls and reconciler decisions. |
+
+```bash
+moley --log-level=debug tunnel run
+```
+
+## `moley info`
+
+Prints build metadata — version, git commit, and build time.
+
+```bash
+moley info
+```
+
+Use this when filing bug reports.
+
+## `moley config set`
+
+Writes to the global config at `~/.moley/config.yml`. Used for values that shouldn't live in per-project `moley.yml` (API tokens, secrets).
+
+| Flag | Required | What it does |
+| --- | --- | --- |
+| `--cloudflare.token` | ✓ | Cloudflare API token with the scopes from [Quick Start](/docs/quick-start/). |
+
+```bash
+moley config set --cloudflare.token="your-api-token"
+```
+
+:::tip
+
+You can also set the token via env var — `MOLEY_CLOUDFLARE__TOKEN` — and skip writing to disk entirely.
+
+:::
+
+## `moley tunnel`
+
+The main lifecycle group. All `tunnel` subcommands share these flags:
+
+| Flag | Default | What it does |
+| --- | --- | --- |
+| `--config` | `moley.yml` | Path to the tunnel config file. |
+| `--dry-run` | `false` | Simulate without touching Cloudflare. No tunnel, DNS, or Access changes — moley just logs decisions. |
+
+### `moley tunnel init`
+
+Generates a starter `moley.yml` in the current directory, pre-filled with a generated tunnel name and a single example app.
+
+```bash
+moley tunnel init
+moley tunnel init --config=./environments/staging/moley.yml
+```
+
+### `moley tunnel run`
+
+Reconciles the desired state (tunnel + DNS + Access) and starts cloudflared.
+
+| Flag | Default | What it does |
+| --- | --- | --- |
+| `--detach` | `false` | Fork cloudflared into the background. Moley returns immediately; the tunnel keeps running. |
+
+```bash
+# Foreground — Ctrl-C to stop
+moley tunnel run
+
+# Background
+moley tunnel run --detach
+
+# Preview changes without applying them
+moley tunnel --dry-run run
+
+# Use a non-default config
+moley tunnel --config=./moley.prod.yml run
+```
+
+On first start, moley creates:
+
+1. The Cloudflare tunnel (named `moley-{tunnel.name}`).
+2. DNS records for every app (or one wildcard if `ingress.mode: wildcard`).
+3. Access applications and any referenced policies.
+4. The `moley.lock` file that tracks what was provisioned.
+
+### `moley tunnel stop`
+
+Tears everything down in reverse order. Reads `moley.lock`, deletes resources, removes the lock.
+
+```bash
+moley tunnel stop
+
+# Preview without deleting
+moley tunnel --dry-run stop
+```
+
+If `moley.lock` is missing (crash, manual delete, fresh clone), moley will rediscover resources by name from Cloudflare and clean them up anyway.
+
+## Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Success |
+| `1` | Unhandled error — check `--log-level=debug` output |
+| Non-zero on `tunnel run` | cloudflared exited; check stderr and Cloudflare dashboard |
+
+## Environment variables
+
+Every config key — both global (`~/.moley/config.yml`) and per-project (`moley.yml`) — can be set via an env var. Precedence: **env var > config file**.
+
+| Prefix | Scope |
+| --- | --- |
+| `MOLEY_*` | Global config (API token) |
+| `MOLEY_TUNNEL_*` | Tunnel config (ingress, apps, access) |
+
+- Use `__` as the path separator.
+- Use `__N__` for array indexes (0-based).
+
+```bash
+# Global
+export MOLEY_CLOUDFLARE__TOKEN="your-api-token"
+
+# Tunnel — single values
+export MOLEY_TUNNEL_INGRESS__ZONE="example.com"
+export MOLEY_TUNNEL_INGRESS__MODE="subdomain"
+
+# Tunnel — arrays (first app's port)
+export MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PORT="3000"
+```
+
+See [Configuration](/docs/configuration/) for the full field reference.
+
+## Getting help
+
+Every command accepts `--help`:
+
+```bash
+moley --help
+moley tunnel --help
+moley tunnel run --help
+```

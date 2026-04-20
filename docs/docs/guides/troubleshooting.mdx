@@ -1,0 +1,86 @@
+---
+id: troubleshooting
+title: Troubleshooting
+sidebar_label: Troubleshooting
+description: Fix DNS issues, auth errors, tunnel failures, and orphaned resources.
+slug: /troubleshooting
+sidebar_position: 3
+---
+
+import Step from '@site/src/components/Step';
+
+## Quick fixes
+
+- Tunnel already exists → `moley tunnel stop`
+- Permission denied → `cloudflared tunnel login`
+- DNS not resolving → wait 5 minutes, then check the [Cloudflare dashboard](https://dash.cloudflare.com/)
+
+## DNS issues
+
+<Step number={1} title="Check DNS resolution">
+
+```bash
+dig your-domain.com
+nslookup your-domain.com 1.1.1.1
+```
+
+</Step>
+
+<Step number={2} title="Test access">
+
+```bash
+curl -v https://your-domain.com
+```
+
+</Step>
+
+<Step number={3} title="Check Cloudflare dashboard">
+
+- DNS record exists and points to your tunnel
+- Proxy status (orange cloud) is enabled
+- Wait up to 5 minutes for propagation
+
+</Step>
+
+## Tunnel failures
+
+<Step number={1} title="Check your API token">
+
+```bash
+cat ~/.moley/config.yml
+moley config set --cloudflare.token=your_token
+```
+
+</Step>
+
+<Step number={2} title="Check cloudflared auth">
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel list
+```
+
+</Step>
+
+<Step number={3} title="Run with debug logs">
+
+```bash
+moley --log-level=debug tunnel run
+moley tunnel --dry-run run
+```
+
+</Step>
+
+## Orphaned resources
+
+If `moley tunnel stop` fails or resources remain after a crash:
+
+```bash
+# Force orphan detection
+rm -f moley.lock
+moley tunnel stop --log-level=debug
+
+# Manual cleanup (last resort)
+cloudflared tunnel list
+cloudflared tunnel delete <tunnel-id>
+```

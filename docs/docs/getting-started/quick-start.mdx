@@ -1,0 +1,92 @@
+---
+id: quick-start
+title: Your first tunnel in four steps
+sidebar_label: Quick Start
+description: Authenticate, configure, and run a tunnel in minutes.
+slug: /quick-start
+sidebar_position: 2
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import Step from '@site/src/components/Step';
+
+<Step number={1} title="Authenticate" description="Log in to Cloudflare and set your API token.">
+
+```bash
+moley config set --cloudflare.token="your-api-token"
+```
+
+:::tip[Getting an API token]
+
+Go to [Cloudflare → API Tokens](https://dash.cloudflare.com/profile/api-tokens) and create a token with:
+
+- Zone > Zone > Read — resolve your zone and account ID
+- Zone > DNS > Edit — create and delete CNAME records
+- Account > Cloudflare Tunnel > Edit — create, configure, and delete tunnels
+- Account > Zero Trust > Edit — only when using `access:` blocks (Access Applications, Policies, Identity Providers)
+
+:::
+
+</Step>
+
+<Step number={2} title="Initialize" description="Generate a tunnel configuration file.">
+
+```bash
+moley tunnel init
+```
+
+This creates a `moley.yml` with a generated tunnel name and an example app config.
+
+</Step>
+
+<Step number={3} title="Configure apps" description="Edit moley.yml to match your local services.">
+
+```yaml title="moley.yml"
+tunnel:
+  name: "my-project"
+  persistent: false           # delete tunnel on stop
+
+ingress:
+  zone: "yourdomain.com"
+  mode: subdomain             # or "wildcard"
+  apps:
+    - target:
+        port: 8080
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "api"      # api.yourdomain.com
+
+    - target:
+        port: 3000
+        hostname: "localhost"
+        protocol: http
+      expose:
+        subdomain: "web"      # web.yourdomain.com
+```
+
+</Step>
+
+<Step number={4} title="Run">
+
+<Tabs>
+  <TabItem value="foreground" label="Foreground" default>
+
+```bash
+moley tunnel run
+```
+
+  </TabItem>
+  <TabItem value="background" label="Background">
+
+```bash
+moley tunnel run --detach
+```
+
+  </TabItem>
+</Tabs>
+
+Your apps are now live. Stop with `moley tunnel stop` — tunnels, DNS records, and Access Applications are cleaned up automatically.
+
+</Step>

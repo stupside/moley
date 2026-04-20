@@ -1,0 +1,100 @@
+---
+id: intro
+title: Moley documentation
+description: Documentation for moley — automate Cloudflare Tunnel creation, DNS routing, and cleanup from the CLI.
+slug: /
+sidebar_position: 1
+sidebar_label: Overview
+---
+
+import Card from '@site/src/components/Card';
+import CardGrid from '@site/src/components/CardGrid';
+import {
+  AlertTriangle,
+  Code2,
+  Container,
+  Download,
+  Layers,
+  Lock,
+  Rocket,
+  Shield,
+  Terminal,
+  Zap,
+} from 'lucide-react';
+
+Share a local app on your own domain in one command. Moley unlocks the good parts of Cloudflare — [Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/), DNS, [Access](https://developers.cloudflare.com/cloudflare-one/policies/access/) — from a single YAML file. Point it at `localhost:3000`, declare who can see it, get a live URL.
+
+## Start here
+
+<CardGrid>
+  <Card
+    title="Installation"
+    description="Install via Homebrew, Go, or Docker."
+    href="/docs/installation/"
+    icon={Download}
+  />
+  <Card
+    title="Quick Start"
+    description="Set up your first tunnel in a few minutes."
+    href="/docs/quick-start/"
+    icon={Zap}
+  />
+  <Card
+    title="Use cases"
+    description="Share with a teammate, gate an API, corporate SSO — real setups."
+    href="/docs/use-cases/"
+    icon={Rocket}
+  />
+  <Card
+    title="Capabilities"
+    description="What moley can do: tunnels, DNS, Access, policies, lifecycle."
+    href="/docs/capabilities/"
+    icon={Layers}
+  />
+</CardGrid>
+
+## Reference
+
+<CardGrid>
+  <Card
+    title="CLI"
+    description="Every command and flag, with examples."
+    href="/docs/cli/"
+    icon={Terminal}
+  />
+  <Card
+    title="Configuration"
+    description="moley.yml reference and environment variables."
+    href="/docs/configuration/"
+    icon={Code2}
+  />
+  <Card
+    title="Docker"
+    description="Run moley in a container with docker compose."
+    href="/docs/docker/"
+    icon={Container}
+  />
+  <Card
+    title="Troubleshooting"
+    description="Common issues and how to fix them."
+    href="/docs/troubleshooting/"
+    icon={AlertTriangle}
+  />
+</CardGrid>
+
+## Zero Trust
+
+<CardGrid>
+  <Card
+    title="Access"
+    description="Protect apps with Cloudflare Access and identity providers."
+    href="/docs/access/"
+    icon={Shield}
+  />
+  <Card
+    title="Policies"
+    description="Define reusable access policies and attach them to apps."
+    href="/docs/policies/"
+    icon={Lock}
+  />
+</CardGrid>

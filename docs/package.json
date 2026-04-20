@@ -1,29 +1,49 @@
 {
-	"name": "moley-docs",
-	"type": "module",
-	"version": "1.0.0",
-	"packageManager": "yarn@4.0.0",
-	"scripts": {
-		"astro": "astro",
-		"astro:dev": "astro dev",
-		"astro:check": "astro check && tsc --noEmit",
-		"astro:build": "astro build",
-		"astro:preview": "astro preview",
-		"biome:fix": "biome format . --write",
-		"biome:check": "biome check . --fix"
-	},
-	"dependencies": {
-		"@astrojs/sitemap": "^3.6.0",
-		"@lucide/astro": "^0.544.0",
-		"@tailwindcss/vite": "^4.1.13",
-		"astro": "^5.15.9",
-		"tailwindcss": "^4.1.13",
-		"zod": "^4.1.11"
-	},
-	"devDependencies": {
-		"@astrojs/check": "^0.9.4",
-		"@biomejs/biome": "^2.2.4",
-		"@types/node": "^24.5.2",
-		"typescript": "^5.9.2"
-	}
+  "name": "moley-docs",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "yarn@4.0.0",
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve",
+    "clear": "docusaurus clear",
+    "typecheck": "tsc --noEmit",
+    "swizzle": "docusaurus swizzle"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.8.1",
+    "@docusaurus/preset-classic": "^3.8.1",
+    "@easyops-cn/docusaurus-search-local": "^0.52.1",
+    "@mdx-js/react": "^3.1.0",
+    "lucide-react": "^0.544.0",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "^3.8.1",
+    "@docusaurus/tsconfig": "^3.8.1",
+    "@docusaurus/types": "^3.8.1",
+    "@types/react": "^18.3.12",
+    "typescript": "^5.9.2"
+  },
+  "resolutions": {
+    "webpackbar": "^7.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0"
+  }
 }

@@ -1,0 +1,34 @@
+---
+id: advanced-debugging
+title: Advanced Debugging
+description: Trace logging, config inspection, and resource debugging.
+slug: /advanced-debugging
+unlisted: true
+---
+
+Deep debugging for contributors and power users. Use these when basic troubleshooting doesn't cut it.
+
+## Trace logging
+
+```bash
+moley tunnel run --log-level=trace 2>&1 | tee debug.log
+```
+
+## Inspect state
+
+```bash
+cat ~/.moley/config.yml
+cat moley.yml
+cat moley.lock
+cloudflared tunnel list
+```
+
+## Resource debugging
+
+```bash
+moley --log-level=debug tunnel --dry-run stop
+
+# Force orphan detection
+rm moley.lock
+moley --log-level=trace tunnel --dry-run stop
+```

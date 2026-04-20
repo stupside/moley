@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/images/moley.png" alt="Moley" width="200"/>
+  <img src=".github/images/moley.svg" alt="Moley" width="200"/>
 </p>
 
 <p align="center">

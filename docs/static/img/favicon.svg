@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Moley">
+  <!-- Hole rim (dirt) — flat ellipse the mole pokes through -->
+  <ellipse cx="50" cy="82" rx="44" ry="9" fill="#262626"/>
+
+  <!-- Mole body / head — rounded teardrop poking up out of the hole -->
+  <path
+    d="M50 12
+       C 28 12, 18 32, 20 56
+       C 22 76, 32 84, 50 84
+       C 68 84, 78 76, 80 56
+       C 82 32, 72 12, 50 12 Z"
+    fill="#f97316"
+  />
+
+  <!-- Snout — slightly darker tip for depth -->
+  <ellipse cx="50" cy="68" rx="14" ry="11" fill="#fdba74"/>
+
+  <!-- Nose -->
+  <ellipse cx="50" cy="64" rx="4" ry="3" fill="#0a0a0a"/>
+
+  <!-- Whiskers — three short strokes each side -->
+  <g stroke="#0a0a0a" stroke-width="1.2" stroke-linecap="round" opacity="0.7">
+    <line x1="40" y1="68" x2="32" y2="66"/>
+    <line x1="40" y1="71" x2="32" y2="71"/>
+    <line x1="40" y1="74" x2="32" y2="76"/>
+    <line x1="60" y1="68" x2="68" y2="66"/>
+    <line x1="60" y1="71" x2="68" y2="71"/>
+    <line x1="60" y1="74" x2="68" y2="76"/>
+  </g>
+
+  <!-- Eyes — closed/squinting (moles are nearly blind) -->
+  <g stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" fill="none">
+    <path d="M 36 48 Q 41 44, 46 48"/>
+    <path d="M 54 48 Q 59 44, 64 48"/>
+  </g>
+</svg>

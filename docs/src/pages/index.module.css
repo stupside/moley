@@ -1,0 +1,64 @@
+.comparison {
+  border-top: 1px solid var(--ifm-toc-border-color);
+  padding: 6rem 1.5rem;
+}
+
+.container {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.sectionTitle,
+.sectionTitleAccent {
+  font-size: 1.875rem;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.sectionTitle {
+  color: var(--ifm-heading-color);
+}
+
+.sectionTitleAccent {
+  color: var(--ifm-color-primary);
+}
+
+.stepList {
+  margin: 2rem 0 5rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.875rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+.stepList > div {
+  padding: 0.15rem 0;
+}
+
+.stepNumber {
+  color: var(--ifm-color-emphasis-500);
+  margin-right: 0.75rem;
+}
+
+.command {
+  margin-top: 2rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.875rem;
+}
+
+.prompt {
+  color: var(--ifm-color-emphasis-600);
+}
+
+.commandText {
+  color: var(--ifm-color-primary);
+  margin-left: 0.25rem;
+}
+
+.tagline {
+  margin-top: 1.5rem;
+  max-width: 32rem;
+  color: var(--ifm-color-content);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}

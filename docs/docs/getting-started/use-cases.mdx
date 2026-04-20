@@ -1,0 +1,131 @@
+---
+id: use-cases
+title: What you can do with moley
+sidebar_label: Use cases
+description: Real setups — share a dev app, open up to the whole company, gate an API with a service token, or mix them all in one file.
+slug: /use-cases
+sidebar_position: 3
+---
+
+One `moley.yml`, one command, and Cloudflare does the rest. Four real setups that cover most of what people build with moley.
+
+## Share a dev app with a teammate
+
+You're building something on `localhost:3000` and want to show it to one person, signed in with their GitHub account, on your own domain.
+
+```yaml title="moley.yml"
+access:
+  policies:
+    - name: just-us
+      decision: allow
+      include:
+        - email: {email: "teammate@example.com"}
+
+ingress:
+  zone: "example.com"
+  mode: subdomain
+  apps:
+    - target: {hostname: localhost, port: 3000, protocol: http}
+      expose: {subdomain: demo}
+      access:
+        providers: [github, onetimepin]
+        session_duration: "168h"
+      policies: [just-us]
+```
+
+`moley tunnel run` → `demo.example.com`, behind a GitHub login, locked to the email you listed.
+
+## Let the whole company in
+
+Swap the policy. Anyone with a company email, signed in through your corporate IdP, gets through.
+
+```yaml title="moley.yml"
+access:
+  policies:
+    - name: company-only
+      decision: allow
+      include:
+        - email_domain: {domain: "mycompany.com"}
+
+ingress:
+  zone: "example.com"
+  mode: subdomain
+  apps:
+    - target: {hostname: localhost, port: 3000, protocol: http}
+      expose: {subdomain: staging}
+      access:
+        providers: [google-workspace]
+      policies: [company-only]
+```
+
+## Gate an API for a single service
+
+Expose a local API so only one caller can reach it, using a Cloudflare service token. No browser flow, no IdP.
+
+```yaml title="moley.yml"
+access:
+  policies:
+    - name: one-client
+      decision: non_identity
+      include:
+        - service_token: {token_id: "your-service-token-uuid"}
+
+ingress:
+  zone: "example.com"
+  mode: subdomain
+  apps:
+    - target: {hostname: localhost, port: 8080, protocol: http}
+      expose: {subdomain: api}
+      policies: [one-client]
+```
+
+The caller sends `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers. Everyone else gets blocked at Cloudflare's edge, before a single packet hits your laptop.
+
+## Mix and match
+
+Nothing stops you from combining these in one file — dashboard behind a GitHub login, webhook behind a service token, public status page behind nothing at all, all running through the same tunnel, all cleaned up when you run `moley tunnel stop`.
+
+```yaml title="moley.yml"
+access:
+  policies:
+    - name: team
+      decision: allow
+      include:
+        - email_domain: {domain: "mycompany.com"}
+    - name: webhook-client
+      decision: non_identity
+      include:
+        - service_token: {token_id: "webhook-token-uuid"}
+
+ingress:
+  zone: "example.com"
+  mode: subdomain
+  apps:
+    # Dashboard — corporate SSO
+    - target: {hostname: localhost, port: 3000, protocol: http}
+      expose: {subdomain: dashboard}
+      access:
+        providers: [google-workspace]
+      policies: [team]
+
+    # Webhook receiver — service token
+    - target: {hostname: localhost, port: 8080, protocol: http}
+      expose: {subdomain: hooks}
+      policies: [webhook-client]
+
+    # Public status page — no auth
+    - target: {hostname: localhost, port: 9000, protocol: http}
+      expose: {subdomain: status}
+```
+
+:::tip
+
+All three apps live on the same tunnel. Stop it once, everything is cleaned up — tunnel, DNS records, Access applications, policies.
+
+:::
+
+## Next steps
+
+- [Configuration reference](/docs/configuration/) — every field explained.
+- [Access](/docs/access/) and [Policies](/docs/policies/) — deep dives on Zero Trust.
+- [CLI](/docs/cli/) — every command and flag.
