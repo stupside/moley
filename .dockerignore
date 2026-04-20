@@ -8,7 +8,6 @@ SECURITY.md
 LICENSE
 
 # Build artifacts
-moley
 *.exe
 *.dll
 *.so
