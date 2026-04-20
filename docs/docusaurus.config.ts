@@ -30,6 +30,37 @@ const config: Config = {
     },
   ],
 
+  plugins: [
+    () => ({
+      name: 'moley-structured-data',
+      injectHtmlTags() {
+        const jsonLd = {
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          url: 'https://moley.dev',
+          name: 'Moley',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+          sameAs: ['https://github.com/stupside/moley'],
+          license: 'https://github.com/stupside/moley/blob/main/LICENSE',
+          description: 'Moley runs Cloudflare Tunnels, DNS, and Access from a config file.',
+          codeRepository: 'https://github.com/stupside/moley',
+          operatingSystem: 'macOS, Linux, Windows',
+          programmingLanguage: 'Go',
+          applicationCategory: 'DeveloperApplication',
+        };
+        return {
+          headTags: [
+            {
+              tagName: 'script',
+              attributes: { type: 'application/ld+json' },
+              innerHTML: JSON.stringify(jsonLd),
+            },
+          ],
+        };
+      },
+    }),
+  ],
+
   presets: [
     [
       'classic',
@@ -66,7 +97,13 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/moley.svg',
+    image: 'img/og-image.png',
+    metadata: [
+      { name: 'description', content: 'Moley runs Cloudflare Tunnels, DNS, and Access from a config file. No GUI, no vendor lock-in, MIT-licensed.' },
+      { name: 'keywords', content: 'cloudflare tunnel, cloudflared, localhost, ngrok alternative, devtunnel, zero trust, go cli' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+    ],
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
