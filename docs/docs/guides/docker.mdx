@@ -16,7 +16,7 @@ A pre-built container is published to the GitHub Container Registry at `ghcr.io/
 
 - **No local Go / Homebrew / cloudflared setup** — the image has everything.
 - **Pinned cloudflared version** — reproducible across laptops and CI.
-- **Isolated state** — `~/.moley` and `~/.cloudflared` live in a volume you control.
+- **Isolated state** — `~/.moley` lives in a volume you control.
 - **Same config** — the same `moley.yml` you'd use on the host works unchanged.
 
 ## Quick start with Compose
@@ -31,9 +31,8 @@ services:
     volumes:
       # Configuration file for moley
       - ./moley.yml:/root/moley.yml:ro
-      # Data directories for moley and cloudflared
+      # Persisted moley state (API token, lock file, tunnel configs)
       - ./data/.moley:/root/.moley
-      - ./data/.cloudflared:/root/.cloudflared
     command: ["--help"]
 ```
 
@@ -53,27 +52,16 @@ docker compose run --rm moley tunnel run
 ## First-time setup
 
 <Tabs>
-  <TabItem value="authenticate" label="1. Authenticate cloudflared" default>
-
-cloudflared needs to log in once to issue the tunnel certificate. Run it through the image:
-
-```bash
-docker compose run --rm --entrypoint cloudflared moley tunnel login
-```
-
-The browser flow prints a URL — open it, authorize your Cloudflare account, and the container writes `cert.pem` into `./data/.cloudflared/`.
-
-  </TabItem>
-  <TabItem value="token" label="2. Set your Cloudflare token">
+  <TabItem value="token" label="1. Set your Cloudflare token" default>
 
 ```bash
 docker compose run --rm moley config set --cloudflare.token="your-api-token"
 ```
 
-This writes `./data/.moley/config.yml`.
+This writes `./data/.moley/config.yml`. Moley creates tunnels via the Cloudflare API using this token — no `cloudflared tunnel login` step is needed.
 
   </TabItem>
-  <TabItem value="init" label="3. Initialize moley.yml">
+  <TabItem value="init" label="2. Initialize moley.yml">
 
 ```bash
 docker compose run --rm moley tunnel init
@@ -82,7 +70,7 @@ docker compose run --rm moley tunnel init
 Generates a `moley.yml` in your working directory (mounted read-only into the container). Edit it to match your services.
 
   </TabItem>
-  <TabItem value="run" label="4. Run the tunnel">
+  <TabItem value="run" label="3. Run the tunnel">
 
 ```bash
 docker compose run --rm moley tunnel run
@@ -102,9 +90,9 @@ If you already use [Task](https://taskfile.dev), the project's `Taskfile.yml` wr
 task docker:moley -- tunnel run
 task docker:moley -- tunnel stop
 
-# Run cloudflared directly (for initial login or manual debugging)
-task docker:cloudflared -- tunnel login
+# Run cloudflared directly (for manual debugging)
 task docker:cloudflared -- tunnel list
+task docker:cloudflared -- --version
 ```
 
 ## Environment variable overrides
@@ -122,7 +110,6 @@ services:
     volumes:
       - ./moley.yml:/root/moley.yml:ro
       - ./data/.moley:/root/.moley
-      - ./data/.cloudflared:/root/.cloudflared
 ```
 
 See [Configuration → Environment variables](/docs/configuration/#environment-variables) for the full convention.
@@ -158,7 +145,6 @@ services:
     volumes:
       - ./moley.yml:/root/moley.yml:ro
       - ./data/.moley:/root/.moley
-      - ./data/.cloudflared:/root/.cloudflared
 ```
 
 Then `hostname: localhost` in `moley.yml` works as expected.
@@ -184,7 +170,6 @@ services:
     volumes:
       - ./moley.yml:/root/moley.yml:ro
       - ./data/.moley:/root/.moley
-      - ./data/.cloudflared:/root/.cloudflared
     command: ["tunnel", "run"]
 ```
 

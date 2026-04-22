@@ -2,7 +2,7 @@
 id: installation
 title: Install moley
 sidebar_label: Installation
-description: Install moley using Homebrew or Go. Requires cloudflared and a Cloudflare domain.
+description: Install moley using Homebrew or Go. Requires cloudflared, a Cloudflare domain, and an API token.
 slug: /installation
 sidebar_position: 1
 ---
@@ -12,9 +12,15 @@ import TabItem from '@theme/TabItem';
 
 ## Prerequisites
 
-- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) — installed and authenticated
+- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) — installed and on your `PATH`
 - A domain on [Cloudflare](https://www.cloudflare.com/) with DNS managed by Cloudflare
 - A [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens) — required scopes are covered in the [Quick Start](/docs/quick-start/)
+
+:::info
+
+You don't need to run `cloudflared tunnel login`. Moley creates the tunnel via the API and writes the credentials file itself.
+
+:::
 
 ## Install
 

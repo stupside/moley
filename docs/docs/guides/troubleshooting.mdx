@@ -12,8 +12,8 @@ import Step from '@site/src/components/Step';
 ## Quick fixes
 
 - Tunnel already exists → `moley tunnel stop`
-- Permission denied → `cloudflared tunnel login`
 - DNS not resolving → wait 5 minutes, then check the [Cloudflare dashboard](https://dash.cloudflare.com/)
+- Permission denied → check your API token scopes (Zone:Read, DNS:Edit, Cloudflare Tunnel:Edit, Access:Edit)
 
 ## DNS issues
 
@@ -53,12 +53,13 @@ moley config set --cloudflare.token=your_token
 
 </Step>
 
-<Step number={2} title="Check cloudflared auth">
+<Step number={2} title="Check cloudflared is on your PATH">
 
 ```bash
-cloudflared tunnel login
-cloudflared tunnel list
+cloudflared --version
 ```
+
+Moley shells out to `cloudflared` to run the tunnel process. If this command fails, [install cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) — no `tunnel login` step is needed.
 
 </Step>
 

@@ -62,7 +62,7 @@ Moley implements several security-focused features:
 ### File System Security
 
 - Tunnel configuration files are stored in `~/.moley/tunnels/` with appropriate permissions
-- Cloudflared credentials are stored in `~/.cloudflared/` (managed by cloudflared itself)
+- Tunnel credentials are written to `~/.cloudflared/<tunnelID>.json` with 0600 permissions for cloudflared to consume, and removed on tunnel teardown
 - Log files do not contain sensitive information
 
 ## Network Security
@@ -152,7 +152,6 @@ Moley uses minimal external dependencies:
 1. Check API token permissions in Cloudflare dashboard
 2. Verify token is correctly set: ensure `~/.moley/config.yml` exists and contains your token
 3. Test token with minimal operations first
-4. Check cloudflared authentication: `cloudflared tunnel login`
 
 ### Permission Errors
 

@@ -74,7 +74,15 @@ func (c *TunnelService) Run(ctx context.Context, tunnel *domain.Tunnel) (int, er
 		return 0, fmt.Errorf("failed to get tunnel configuration path: %w", err)
 	}
 
-	cfCommand := newCommand(ctx, "tunnel", "--config", configPath, "run", tunnel.GetName())
+	// Pass the UUID (not the name) so cloudflared doesn't do a name→UUID
+	// lookup via the Cloudflare control plane, which would require cert.pem
+	// from `cloudflared tunnel login`.
+	tunnelUUID, err := c.GetID(ctx, tunnel)
+	if err != nil {
+		return 0, fmt.Errorf("failed to resolve tunnel UUID: %w", err)
+	}
+
+	cfCommand := newCommand(ctx, "tunnel", "--config", configPath, "run", tunnelUUID)
 	pid, err := cfCommand.execAsync()
 	if err != nil {
 		return 0, fmt.Errorf("failed to run tunnel: %w", err)
@@ -256,28 +264,27 @@ func (c *TunnelService) Delete(ctx context.Context, tunnel *domain.Tunnel) error
 	return nil
 }
 
-func (c *TunnelService) getCredentialsPath(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
-	tunnelID, err := c.GetID(ctx, tunnel)
-	if err != nil {
-		return "", fmt.Errorf("failed to get tunnel ID: %w", err)
-	}
-	return cloudflaredCredPath(tunnelID)
-}
-
 func (c *TunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tunnel, ingress *domain.Ingress) error {
 	logger.Info("Saving Cloudflare configuration")
 
-	credentialsFile, err := c.getCredentialsPath(ctx, tunnel)
+	tunnelUUID, err := c.GetID(ctx, tunnel)
 	if err != nil {
-		return fmt.Errorf("failed to get credentials file path: %w", err)
+		return fmt.Errorf("failed to resolve tunnel UUID: %w", err)
+	}
+
+	credentialsFile, err := cloudflaredCredPath(tunnelUUID)
+	if err != nil {
+		return fmt.Errorf("failed to build credentials file path: %w", err)
 	}
 
 	logger.Debugf("Using credentials file", map[string]any{
 		"path": credentialsFile,
 	})
 
+	// Store the UUID (not the name) in the config so cloudflared never needs
+	// to resolve a name via the control plane (which would require cert.pem).
 	config := &runConfig{
-		Tunnel:          tunnel.GetName(),
+		Tunnel:          tunnelUUID,
 		Logfile:         "cloudflared.log",
 		Ingress:         nil,
 		Loglevel:        "info",

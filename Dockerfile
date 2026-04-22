@@ -31,9 +31,8 @@ RUN make cloudflared
 # Final runtime stage
 FROM alpine:3.22.1 AS runtime
 
-# Install runtime dependencies and setup in a single layer
-RUN apk --no-cache add ca-certificates && \
-    adduser -D -s /bin/sh moley
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates
 
 # Copy cloudflared binary from builder stage
 COPY --from=cloudflared /go/src/cloudflared/cloudflared /usr/local/bin/cloudflared
@@ -44,11 +43,9 @@ COPY moley /usr/local/bin/moley
 # Make binaries executable (COPY already sets root:root ownership)
 RUN chmod +x /usr/local/bin/cloudflared /usr/local/bin/moley
 
-# Set working directory
-WORKDIR /usr/local/bin
-
-# Switch to non-root user for security
-USER moley
+# Runs as root; $HOME defaults to /root, which matches the volume mount
+# paths used by docker-compose.yml (~/.moley → /root/.moley).
+WORKDIR /root
 
 ENTRYPOINT ["moley"]
 CMD ["--help"]

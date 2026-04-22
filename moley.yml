@@ -4,11 +4,6 @@ access:
       decision: allow
       include:
         - email: {email: "kilian.houpeurt@gmail.com"}
-    - name: moley-api-service-token
-      decision: non_identity
-      include:
-        - service_token:
-            token_id: "REPLACE_WITH_SERVICE_TOKEN_UUID"
 
 ingress:
   mode: subdomain
@@ -20,8 +15,5 @@ ingress:
         providers: [github, onetimepin]
         session_duration: "168h"
       policies: [moley-allow-email]
-    - target: {hostname: localhost, port: 3001, protocol: http}
-      expose: {subdomain: api}
-      policies: [moley-api-service-token]
 
 tunnel: {id: "demo", name: "test-tunnel", persistent: false}

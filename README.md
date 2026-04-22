@@ -124,8 +124,6 @@ Or grab a binary from the [releases page](https://github.com/stupside/moley/rele
 ## Quick start
 
 ```bash
-cloudflared tunnel login
-
 moley config set --cloudflare.token="your-api-token"
 
 moley tunnel init
