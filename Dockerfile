@@ -1,7 +1,7 @@
-# Manual Docker build. Expects a pre-built `moley` binary in the build context
-# (run `go build -o moley .` first, or use the artifact produced by GoReleaser).
-# The published image at ghcr.io/stupside/moley is built by ko via GoReleaser,
-# not by this file — see .goreleaser.yml.
+# Expects a pre-built `moley` binary in the build context.
+# For a local build run `go build -o moley .` first.
+# In the release pipeline GoReleaser builds the binary and drops it into the
+# build context automatically — see the `dockers:` block in .goreleaser.yml.
 
 # Keep GO_VERSION in sync with the `go` directive in go.mod.
 ARG GO_VERSION=1.26.1

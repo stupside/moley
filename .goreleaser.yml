@@ -23,26 +23,50 @@ builds:
       - -X 'github.com/stupside/moley/v2/internal/version.Version={{.Version}}'
     binary: moley
 
-kos:
-  - repositories: 
-      - ghcr.io/stupside/moley
-    tags:
-      - latest
-      - "{{.Tag}}"
-    bare: true
-    labels:
-      org.opencontainers.image.url: "{{.GitURL}}"
-      org.opencontainers.image.title: "{{.ProjectName}}"
-      org.opencontainers.image.source: "{{.GitURL}}"
-      org.opencontainers.image.version: "{{.Version}}"
-      org.opencontainers.image.licenses: "MIT"
-      org.opencontainers.image.revision: "{{.FullCommit}}"
-      org.opencontainers.image.description: "Expose your local apps to the world—securely, instantly, and with zero hassle."
-      org.opencontainers.image.documentation: "{{.GitURL}}/blob/main/README.md"
-    preserve_import_paths: false
-    platforms:
-      - linux/amd64
-      - linux/arm64
+dockers:
+  - image_templates:
+      - "ghcr.io/stupside/moley:{{ .Version }}-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.url={{.GitURL}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.description=Expose your local apps to the world—securely, instantly, and with zero hassle."
+      - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
+
+  - image_templates:
+      - "ghcr.io/stupside/moley:{{ .Version }}-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.url={{.GitURL}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.description=Expose your local apps to the world—securely, instantly, and with zero hassle."
+      - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
+
+docker_manifests:
+  - name_template: "ghcr.io/stupside/moley:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/stupside/moley:{{ .Version }}-amd64"
+      - "ghcr.io/stupside/moley:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/stupside/moley:latest"
+    image_templates:
+      - "ghcr.io/stupside/moley:{{ .Version }}-amd64"
+      - "ghcr.io/stupside/moley:{{ .Version }}-arm64"
 
 changelog:
   sort: asc
