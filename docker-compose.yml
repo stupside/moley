@@ -2,9 +2,10 @@ services:
   moley:
     image: ghcr.io/stupside/moley:latest
     container_name: moley
+    working_dir: /home/nonroot
     volumes:
       # Configuration file for moley
-      - ./moley.yml:/root/moley.yml:ro
+      - ./moley.yml:/home/nonroot/moley.yml:ro
       # Persisted moley state (API token, lock file, tunnel configs)
-      - ./data/.moley:/root/.moley
+      - ./data/.moley:/home/nonroot/.moley
     command: ["--help"]
