@@ -28,12 +28,11 @@ services:
   moley:
     image: ghcr.io/stupside/moley:latest
     container_name: moley
-    working_dir: /home/nonroot
     volumes:
       # Configuration file for moley
-      - ./moley.yml:/home/nonroot/moley.yml:ro
+      - ./moley.yml:/root/moley.yml:ro
       # Persisted moley state (API token, lock file, tunnel configs)
-      - ./data/.moley:/home/nonroot/.moley
+      - ./data/.moley:/root/.moley
     command: ["--help"]
 ```
 
@@ -108,10 +107,9 @@ services:
       MOLEY_CLOUDFLARE__TOKEN: "${CF_TOKEN}"
       MOLEY_TUNNEL_INGRESS__ZONE: "example.com"
       MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PORT: "3000"
-    working_dir: /home/nonroot
     volumes:
-      - ./moley.yml:/home/nonroot/moley.yml:ro
-      - ./data/.moley:/home/nonroot/.moley
+      - ./moley.yml:/root/moley.yml:ro
+      - ./data/.moley:/root/.moley
 ```
 
 See [Configuration → Environment variables](/docs/configuration/#environment-variables) for the full convention.
@@ -144,10 +142,9 @@ services:
   moley:
     image: ghcr.io/stupside/moley:latest
     network_mode: host
-    working_dir: /home/nonroot
     volumes:
-      - ./moley.yml:/home/nonroot/moley.yml:ro
-      - ./data/.moley:/home/nonroot/.moley
+      - ./moley.yml:/root/moley.yml:ro
+      - ./data/.moley:/root/.moley
 ```
 
 Then `hostname: localhost` in `moley.yml` works as expected.
@@ -170,10 +167,9 @@ services:
     image: ghcr.io/stupside/moley:latest
     depends_on:
       - web
-    working_dir: /home/nonroot
     volumes:
-      - ./moley.yml:/home/nonroot/moley.yml:ro
-      - ./data/.moley:/home/nonroot/.moley
+      - ./moley.yml:/root/moley.yml:ro
+      - ./data/.moley:/root/.moley
     command: ["tunnel", "run"]
 ```
 

@@ -2,10 +2,19 @@ services:
   moley:
     image: ghcr.io/stupside/moley:latest
     container_name: moley
-    working_dir: /home/nonroot
+    environment:
+      MOLEY_CLOUDFLARE__TOKEN: "<your-cloudflare-api-token>"
+      MOLEY_TUNNEL_TUNNEL__NAME: "moley-test"
+      MOLEY_TUNNEL_TUNNEL__PERSISTENT: "false"
+      MOLEY_TUNNEL_INGRESS__ZONE: "xonery.dev"
+      MOLEY_TUNNEL_INGRESS__MODE: "subdomain"
+      MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__HOSTNAME: "host.docker.internal"
+      MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PORT: "3000"
+      MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PROTOCOL: "http"
+      MOLEY_TUNNEL_INGRESS__APPS__0__EXPOSE__SUBDOMAIN: "test"
     volumes:
       # Configuration file for moley
-      - ./moley.yml:/home/nonroot/moley.yml:ro
+      # - ./moley.yml:/root/moley.yml:ro
       # Persisted moley state (API token, lock file, tunnel configs)
-      - ./data/.moley:/home/nonroot/.moley
+      - ./data/.moley:/root/.moley
     command: ["--help"]
