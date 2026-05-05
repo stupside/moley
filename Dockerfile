@@ -1,10 +1,12 @@
-# Expects a pre-built `moley` binary in the build context.
-# For a local build run `go build -o moley .` first.
-# In the release pipeline GoReleaser builds the binary and drops it into the
-# build context automatically — see the `dockers:` block in .goreleaser.yml.
+# Expects a pre-built `moley` binary at $TARGETPLATFORM/moley in the build context.
+# For a local build:
+#   mkdir -p linux/amd64 && GOOS=linux GOARCH=amd64 go build -o linux/amd64/moley .
+#   docker buildx build --platform linux/amd64 -t moley:local --load .
+# In the release pipeline GoReleaser builds per-platform binaries and lays them
+# out as $TARGETPLATFORM/moley automatically — see `dockers_v2:` in .goreleaser.yml.
 
 # Keep GO_VERSION in sync with the `go` directive in go.mod.
-ARG GO_VERSION=1.26.1
+ARG GO_VERSION=1.26.2
 ARG CLOUDFLARED_VERSION=2026.3.0
 
 # Builder stage for cloudflared
@@ -29,7 +31,7 @@ WORKDIR /go/src/cloudflared
 RUN make cloudflared
 
 # Final runtime stage
-FROM alpine:3.22.1 AS runtime
+FROM alpine:3.22.4 AS runtime
 
 # Install runtime dependencies
 RUN apk --no-cache add ca-certificates
@@ -37,8 +39,9 @@ RUN apk --no-cache add ca-certificates
 # Copy cloudflared binary from builder stage
 COPY --from=cloudflared /go/src/cloudflared/cloudflared /usr/local/bin/cloudflared
 
-# Copy the pre-built moley binary from the build context
-COPY moley /usr/local/bin/moley
+# Copy the pre-built moley binary from the per-platform build-context layout
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/moley /usr/local/bin/moley
 
 # Make binaries executable (COPY already sets root:root ownership)
 RUN chmod +x /usr/local/bin/cloudflared /usr/local/bin/moley
