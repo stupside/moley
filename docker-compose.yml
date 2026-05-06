@@ -3,18 +3,25 @@ services:
     image: ghcr.io/stupside/moley:latest
     container_name: moley
     environment:
+      # Cloudflare API token (required)
       MOLEY_CLOUDFLARE__TOKEN: "<your-cloudflare-api-token>"
-      MOLEY_TUNNEL_TUNNEL__NAME: "moley-test"
+
+      # Tunnel
+      MOLEY_TUNNEL_TUNNEL__NAME: "moley"
       MOLEY_TUNNEL_TUNNEL__PERSISTENT: "false"
-      MOLEY_TUNNEL_INGRESS__ZONE: "xonery.dev"
+
+      # Ingress
+      MOLEY_TUNNEL_INGRESS__ZONE: "<your-zone.com>"
       MOLEY_TUNNEL_INGRESS__MODE: "subdomain"
+
+      # First app — duplicate the APPS__0 block as APPS__1, APPS__2, … for more
       MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__HOSTNAME: "host.docker.internal"
       MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PORT: "3000"
       MOLEY_TUNNEL_INGRESS__APPS__0__TARGET__PROTOCOL: "http"
-      MOLEY_TUNNEL_INGRESS__APPS__0__EXPOSE__SUBDOMAIN: "test"
+      MOLEY_TUNNEL_INGRESS__APPS__0__EXPOSE__SUBDOMAIN: "app"
     volumes:
-      # Configuration file for moley
-      # - ./moley.yml:/root/moley.yml:ro
-      # Persisted moley state (API token, lock file, tunnel configs)
+      # Persisted moley state (lock file, tunnel configs)
       - ./data/.moley:/root/.moley
-    command: ["--help"]
+      # Optional: use a moley.yml file for advanced config (e.g. Access policies)
+      # - ./moley.yml:/root/moley.yml:ro
+    command: ["tunnel", "run"]
