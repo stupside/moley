@@ -78,6 +78,7 @@ const config: Config = {
           changefreq: 'weekly',
           priority: 0.8,
           lastmod: 'date',
+          ignorePatterns: ['/search/**'],
         },
       } satisfies Preset.Options,
     ],
