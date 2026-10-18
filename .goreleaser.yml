@@ -43,13 +43,15 @@ dockers_v2:
       "org.opencontainers.image.description": "Expose your local apps to the world—securely, instantly, and with zero hassle."
       "org.opencontainers.image.documentation": "{{.GitURL}}/blob/main/README.md"
 
-# Release Please owns the changelog and creates the GitHub release first.
+# Release Please creates the tag and draft with release notes.
+# GoReleaser uploads the assets before publishing the immutable release.
 changelog:
   disable: true
 
 release:
   name_template: "v{{ .Version }}"
   mode: keep-existing
+  use_existing_draft: true
 
 homebrew_casks:
   - name: moley
