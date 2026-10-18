@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.1](https://github.com/stupside/moley/compare/v2.7.0...v2.7.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* upload release assets before publishing immutable releases ([603d77e](https://github.com/stupside/moley/commit/603d77e56df1adc59584d7d5ea55a1774a76cd85))
+
 ## [2.7.0](https://github.com/stupside/moley/compare/v2.6.1...v2.7.0) (2026-10-18)
 
 
