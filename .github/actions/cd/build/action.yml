@@ -17,4 +17,4 @@ runs:
 
     - name: Build binary
       run: go build -o ${{ inputs.output }} .
-      shell: bash 
+      shell: bash

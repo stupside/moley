@@ -6,11 +6,11 @@
 # out as $TARGETPLATFORM/moley automatically — see `dockers_v2:` in .goreleaser.yml.
 
 # Keep GO_VERSION in sync with the `go` directive in go.mod.
-ARG GO_VERSION=1.26.2
-ARG CLOUDFLARED_VERSION=2026.3.0
+ARG GO_VERSION=1.27.2
+ARG CLOUDFLARED_VERSION=2026.10.1
 
 # Builder stage for cloudflared
-FROM golang:${GO_VERSION}-alpine3.22 AS cloudflared
+FROM golang:${GO_VERSION}-alpine3.24 AS cloudflared
 ARG CLOUDFLARED_VERSION
 
 # Install build dependencies
@@ -31,7 +31,7 @@ WORKDIR /go/src/cloudflared
 RUN make cloudflared
 
 # Final runtime stage
-FROM alpine:3.22.4 AS runtime
+FROM alpine:3.24.2 AS runtime
 
 # Install runtime dependencies
 RUN apk --no-cache add ca-certificates

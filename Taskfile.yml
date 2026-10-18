@@ -11,18 +11,41 @@ vars:
   LDFLAGS: -ldflags "-X 'github.com/stupside/moley/v2/internal/version.Version={{.VERSION}}' -X 'github.com/stupside/moley/v2/internal/version.Commit={{.COMMIT}}' -X 'github.com/stupside/moley/v2/internal/version.BuildTime={{.BUILD_TIME}}'"
 
 tasks:
-  
-  clean: 
+
+  clean:
     desc: Clean build artifacts
     cmds:
       - rm -f {{.BINARY_NAME}}
-      - cloudflared tunnel list --output json | jq -r '.[].id' | xargs -n1 -I{} cloudflared tunnel delete {}
 
   # Go build tasks
   go:build:
     desc: Build the application
     cmds:
       - go build {{.LDFLAGS}} -o {{.BINARY_NAME}} .
+
+  go:modernize:
+    desc: Apply Go modernization fixes
+    cmds:
+      - go fix ./...
+
+  go:test:
+    desc: Run Go tests with the race detector
+    cmds:
+      - go test -race ./...
+
+  go:lint:
+    desc: Check Go code
+    cmds:
+      - go vet ./...
+      - test -z "$(gofmt -l .)"
+
+  docs:check:
+    desc: Validate and build documentation
+    dir: docs
+    cmds:
+      - yarn install --immutable
+      - yarn typecheck
+      - yarn build
 
   # Docker tasks
   docker:moley:

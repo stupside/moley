@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
 )
@@ -119,8 +120,7 @@ func (r *Reconciler) Stop(ctx context.Context) error {
 	var errs []error
 
 	// Stop in reverse order
-	for i := len(sorted) - 1; i >= 0; i-- {
-		n := sorted[i]
+	for _, n := range slices.Backward(sorted) {
 		logger.Debugf("Stopping", map[string]any{
 			"resource": n.name(),
 		})

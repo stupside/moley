@@ -49,7 +49,7 @@ func GetOutput[T any](reg *OutputRegistry, handlerName string, key string) (T, b
 		return typed, true
 	}
 
-	// Fall back to JSON round-trip for interface{} → concrete type
+	// Fall back to JSON round-trip for any → concrete type
 	var result T
 	if err := unmarshalData(v, &result); err != nil {
 		return result, false

@@ -55,7 +55,7 @@ type nodeManager[TInput any, TOutput any] struct {
 	lockFile *LockFile
 }
 
-// unmarshalData converts interface{} data back to typed struct using JSON marshaling.
+// unmarshalData converts any data back to typed struct using JSON marshaling.
 func unmarshalData[T any](data any, target *T) error {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {

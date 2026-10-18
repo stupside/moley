@@ -1,16 +1,18 @@
-name: Deploy to GitHub Pages
+name: Documentation
 
 on:
   push:
     branches: ['main']
-    paths: ['docs/**']
+    paths: ['docs/**', '.github/workflows/pages.yml']
+  pull_request:
+    paths: ['docs/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: "docs"
+  group: docs-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -21,29 +23,40 @@ jobs:
         working-directory: ./docs
     steps:
       - name: Checkout source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: docs/.node-version
 
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Cache Yarn packages
+        uses: actions/setup-node@v7
         with:
-          cache: 'yarn'
+          node-version-file: docs/.node-version
+          cache: yarn
           cache-dependency-path: docs/yarn.lock
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
+
+      - name: Check TypeScript
+        run: yarn typecheck
 
       - name: Build Docusaurus site
         run: yarn build
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v5
         with:
           path: ./docs/build
 
   deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:

@@ -140,12 +140,12 @@ func (m *Manager[T]) Override(config *T) error {
 	return m.save()
 }
 
-// numericKeysToSliceHookFunc converts map[string]interface{} with sequential numeric
-// string keys ("0", "1", "2", ...) into []interface{} when the target is a slice.
+// numericKeysToSliceHookFunc converts map[string]any with sequential numeric
+// string keys ("0", "1", "2", ...) into []any when the target is a slice.
 // This handles env variables like MOLEY_TUNNEL_INGRESS_APPS_0_TARGET_PORT=3000 which
 // koanf parses as map keys instead of array indices.
 func numericKeysToSliceHookFunc() mapstructure.DecodeHookFunc {
-	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+	return func(from reflect.Type, to reflect.Type, data any) (any, error) {
 		if from.Kind() != reflect.Map || from.Key().Kind() != reflect.String {
 			return data, nil
 		}
@@ -153,7 +153,7 @@ func numericKeysToSliceHookFunc() mapstructure.DecodeHookFunc {
 			return data, nil
 		}
 
-		mapVal, ok := data.(map[string]interface{})
+		mapVal, ok := data.(map[string]any)
 		if !ok {
 			return data, nil
 		}
@@ -174,7 +174,7 @@ func numericKeysToSliceHookFunc() mapstructure.DecodeHookFunc {
 			}
 		}
 
-		result := make([]interface{}, len(indices))
+		result := make([]any, len(indices))
 		for i := range indices {
 			result[i] = mapVal[strconv.Itoa(i)]
 		}

@@ -105,8 +105,7 @@ func (h *runHandler) Destroy(ctx context.Context, output RunOutput) error {
 }
 
 func isProcessNotFoundError(err error) bool {
-	var errno syscall.Errno
-	if errors.As(err, &errno) {
+	if errno, ok := errors.AsType[syscall.Errno](err); ok {
 		return errno == syscall.ESRCH
 	}
 	return false

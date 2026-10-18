@@ -10,5 +10,5 @@ runs:
       shell: bash
 
     - name: Run tests
-      run: go test -v ./...
+      run: go test -race -count=1 ./...
       shell: bash

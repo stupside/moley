@@ -50,3 +50,9 @@ Dockerfile*
 # Temporary files
 *.tmp
 *.log
+
+# Local documentation dependencies and application state
+docs/
+data/
+moley.lock
+moley.yml
