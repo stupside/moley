@@ -69,3 +69,22 @@ As of October 18, 2026, it still reports the unpatched
 through Chokidar 3 in the docs development tooling, plus a `whatwg-encoding`
 deprecation. Do not force Chokidar to a new major version without checking its
 watcher API and glob behavior. These packages are not part of the Moley Go binary.
+
+## Releases
+
+Use Conventional Commits: `fix:` for patch releases, `feat:` for minor releases,
+and `!` or a `BREAKING CHANGE:` footer for major releases. Release Please maintains
+one release PR against `main`, updating `CHANGELOG.md` and
+`.release-please-manifest.json` from the last release (initially `v2.6.1`).
+
+Review and merge that PR to publish. The Release workflow creates the tag and
+GitHub release, then calls `_delivery.yml` in the same run. GoReleaser checks out
+that exact tag, attaches binaries, publishes the multi-platform Docker image, and
+updates the Homebrew tap while preserving Release Please's release notes.
+
+The workflow uses `GITHUB_TOKEN` for release automation and the existing
+`HOMEBREW_TAP_GITHUB_TOKEN` secret for the tap. GitHub Actions must be allowed to
+create pull requests in the repository's Actions settings. As in Castor, bot-created
+release PRs do not trigger push/PR CI with `GITHUB_TOKEN`; check the `main` CI results
+and review the generated release diff before merging. To retry failed delivery,
+rerun the failed jobs on the release's original workflow run.

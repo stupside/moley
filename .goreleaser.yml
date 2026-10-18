@@ -43,20 +43,13 @@ dockers_v2:
       "org.opencontainers.image.description": "Expose your local apps to the world—securely, instantly, and with zero hassle."
       "org.opencontainers.image.documentation": "{{.GitURL}}/blob/main/README.md"
 
+# Release Please owns the changelog and creates the GitHub release first.
 changelog:
-  sort: asc
-  use: git
-  format: "{{ .SHA }}: {{ .Message }}{{ with .AuthorUsername }} (@{{ . }}){{ end }}"
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - "^chore:"
+  disable: true
 
 release:
   name_template: "v{{ .Version }}"
-  footer: |
-    **Full Changelog**: https://github.com/stupside/moley/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
+  mode: keep-existing
 
 homebrew_casks:
   - name: moley

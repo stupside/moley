@@ -1,46 +1,42 @@
 name: Release
 
+# Merging release-please's PR tags a release and delivers it in the same run, so no PAT bridges the tag.
+
 on:
   push:
-    tags: ['v*']
+    branches: [ main ]
 
-permissions:
-  contents: write
-  packages: write
+permissions: {}
+
+concurrency:
+  group: cd
+  cancel-in-progress: false
 
 jobs:
-  release:
+  please:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      version: ${{ steps.release.outputs.tag_name }}
+      released: ${{ steps.release.outputs.releases_created }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
         with:
-          fetch-depth: 0
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
-      - name: Set up Go
-        uses: actions/setup-go@v7
-        with:
-          go-version-file: go.mod
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release with GoReleaser
-        uses: goreleaser/goreleaser-action@v7
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+  delivery:
+    needs: please
+    if: needs.please.outputs.released == 'true'
+    uses: ./.github/workflows/_delivery.yml
+    secrets:
+      HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+    permissions:
+      contents: write
+      packages: write
+    with:
+      version: ${{ needs.please.outputs.version }}
