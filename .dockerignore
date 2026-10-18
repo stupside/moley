@@ -55,4 +55,5 @@ Dockerfile*
 docs/
 data/
 moley.lock
+moley.lock.guard
 moley.yml

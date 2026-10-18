@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"runtime"
 	"slices"
 
 	"github.com/gofrs/flock"
@@ -31,7 +32,14 @@ type LockFile struct {
 // LoadLockFile loads moley.lock from disk and acquires an exclusive file lock.
 // Returns an empty LockFile if the file is missing or corrupt.
 func LoadLockFile() (*LockFile, error) {
-	fl := flock.New(lockFilePath)
+	guardPath := lockFilePath
+	if runtime.GOOS == "windows" {
+		// Windows locks are mandatory: locking the data file prevents ReadFile
+		// and WriteFile from accessing it through their separate file handles.
+		// Keep a separate guard file in place, even after releasing its lock.
+		guardPath += ".guard"
+	}
+	fl := flock.New(guardPath)
 
 	if err := fl.Lock(); err != nil {
 		return nil, fmt.Errorf("failed to acquire file lock: %w", err)
