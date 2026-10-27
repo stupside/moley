@@ -49,7 +49,10 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 					continue
 				}
 				out, ok := framework.GetOutput[accessusecase.AppOutput](reg, accessusecase.HandlerName, accessusecase.AppKey(s.ingress.Zone, app.Expose.Subdomain, app.Expose.Path))
-				if !ok || out.AUD == "" || out.TeamName == "" {
+				if !ok {
+					return nil, fmt.Errorf("%s: missing upstream output from %s", tunnelusecase.ConfigHandlerName, accessusecase.HandlerName)
+				}
+				if out.AUD == "" || out.TeamName == "" {
 					logger.Warnf("Origin Access check disabled for app; stop and restart the tunnel to enable it", map[string]any{"host": app.Expose.Host(s.ingress.Zone)})
 					continue
 				}
