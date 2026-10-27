@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.8.0](https://github.com/stupside/moley/compare/v2.7.1...v2.8.0) (2026-10-27)
+
+
+### Features
+
+* fall back to the cloudflared login token ([820e9b1](https://github.com/stupside/moley/commit/820e9b167fe40553745db395bc0e84f50186f24a))
+* per-app cloudflared origin_request options ([98793d6](https://github.com/stupside/moley/commit/98793d6e218c88f58824e12c3c6f5a0ef7623853))
+* route apps by path prefix with expose.path ([37cee73](https://github.com/stupside/moley/commit/37cee73aabbdff55241880624f8418acf3463c27))
+* validate Cloudflare Access tokens at the origin ([4e8bb24](https://github.com/stupside/moley/commit/4e8bb24913adf0ff5f23f5de4d55863e6f4cac19))
+
+
+### Bug Fixes
+
+* bump Go to 1.27.3 and cloudflared to 2026.10.5 ([2d49f8d](https://github.com/stupside/moley/commit/2d49f8d0be6817828502b09902f1e52e40b7d9d0))
+* don't warn about the origin check while stopping ([12e2f7e](https://github.com/stupside/moley/commit/12e2f7e7f23cf9b2745770ea3a4d5c5b8cbf4de8))
+* migrate to cloudflare-go v6 and paginate Access policy lookup ([598e43a](https://github.com/stupside/moley/commit/598e43a08b44e919a85abc0e8e34ba18952e0ae2))
+* name the Access permission origin validation needs ([9732bda](https://github.com/stupside/moley/commit/9732bdafd814a449a8c68eb0a9ea803827ae1b74))
+* write credentials-file key that cloudflared actually reads ([696c0c2](https://github.com/stupside/moley/commit/696c0c2a8fdd1b79c95b0b44767b6c646a8c5e45))
+
 ## [2.7.1](https://github.com/stupside/moley/compare/v2.7.0...v2.7.1) (2026-10-18)
 
 
