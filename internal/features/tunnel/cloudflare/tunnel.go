@@ -295,17 +295,7 @@ func (c *TunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tu
 		"apps": len(ingress.Apps),
 		"zone": ingress.Zone,
 	})
-	for _, app := range ingress.Apps {
-		config.Ingress = append(config.Ingress, ingressRule{
-			Service:  app.Target.GetTargetURL(),
-			Hostname: domain.FQDN(app.Expose.Subdomain, ingress.Zone),
-		})
-	}
-
-	logger.Info("Adding catch-all ingress rule")
-	config.Ingress = append(config.Ingress, ingressRule{
-		Service: "http_status:404",
-	})
+	config.Ingress = buildIngress(ingress)
 
 	bytes, err := yaml.Marshal(config)
 	if err != nil {

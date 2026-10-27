@@ -113,6 +113,22 @@ ingress:
         subdomain: "db"        # db.yourdomain.com (TCP)
 ```
 
+### Origin request options
+
+`target.origin_request` sets the app's cloudflared [origin parameters](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/configure-tunnels/cloudflared-parameters/origin-parameters/), using cloudflared's key names: `httpHostHeader`, `originServerName`, `caPool`, `noTLSVerify` and `http2Origin` (needed for gRPC). Common ones for local development:
+
+```yaml
+- target:
+    port: 5173
+    hostname: "localhost"
+    protocol: https
+    origin_request:
+      httpHostHeader: "localhost" # dev servers like Vite reject unknown Host headers
+      noTLSVerify: true           # local HTTPS with a self-signed certificate
+  expose:
+    subdomain: "app"
+```
+
 ### Environment variables
 
 Use `__` as the path separator and `__N__` for array indexes (0-based).

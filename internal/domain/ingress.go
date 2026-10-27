@@ -16,9 +16,19 @@ const (
 )
 
 type TargetConfig struct {
-	Port     int            `yaml:"port" json:"port" validate:"required,min=1,max=65535"`
-	Hostname string         `yaml:"hostname" json:"hostname" validate:"required"`
-	Protocol TargetProtocol `yaml:"protocol" json:"protocol" validate:"required,oneof=http https tcp"`
+	Port          int            `yaml:"port" json:"port" validate:"required,min=1,max=65535"`
+	Hostname      string         `yaml:"hostname" json:"hostname" validate:"required"`
+	Protocol      TargetProtocol `yaml:"protocol" json:"protocol" validate:"required,oneof=http https tcp"`
+	OriginRequest *OriginRequest `yaml:"origin_request,omitempty" json:"origin_request,omitempty"`
+}
+
+// OriginRequest is cloudflared's per-rule originRequest; keys keep cloudflared's names so its docs apply.
+type OriginRequest struct {
+	HTTPHostHeader   string `yaml:"httpHostHeader,omitempty" json:"httpHostHeader,omitempty"`
+	OriginServerName string `yaml:"originServerName,omitempty" json:"originServerName,omitempty"`
+	CAPool           string `yaml:"caPool,omitempty" json:"caPool,omitempty"`
+	NoTLSVerify      bool   `yaml:"noTLSVerify,omitempty" json:"noTLSVerify,omitempty"`
+	HTTP2Origin      bool   `yaml:"http2Origin,omitempty" json:"http2Origin,omitempty"`
 }
 
 func (t *TargetConfig) GetTargetURL() string {
