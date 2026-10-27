@@ -15,6 +15,7 @@ import (
 	"github.com/cloudflare/cloudflare-go/v6/zones"
 
 	"github.com/stupside/moley/v2/internal/domain"
+	tunnelusecase "github.com/stupside/moley/v2/internal/features/tunnel/usecase"
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
 	"github.com/stupside/moley/v2/internal/platform/paths"
 	"go.yaml.in/yaml/v3"
@@ -264,7 +265,7 @@ func (c *TunnelService) Delete(ctx context.Context, tunnel *domain.Tunnel) error
 	return nil
 }
 
-func (c *TunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tunnel, ingress *domain.Ingress) error {
+func (c *TunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tunnel, ingress *domain.Ingress, guards map[string]tunnelusecase.AccessGuard) error {
 	logger.Info("Saving Cloudflare configuration")
 
 	tunnelUUID, err := c.GetID(ctx, tunnel)
@@ -295,7 +296,7 @@ func (c *TunnelService) SaveConfiguration(ctx context.Context, tunnel *domain.Tu
 		"apps": len(ingress.Apps),
 		"zone": ingress.Zone,
 	})
-	config.Ingress = buildIngress(ingress)
+	config.Ingress = buildIngress(ingress, guards)
 
 	bytes, err := yaml.Marshal(config)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	accessusecase "github.com/stupside/moley/v2/internal/features/access/usecase"
 	dnsusecase "github.com/stupside/moley/v2/internal/features/dns/usecase"
 	tunnelusecase "github.com/stupside/moley/v2/internal/features/tunnel/usecase"
+	logger "github.com/stupside/moley/v2/internal/platform/logging"
 	framework "github.com/stupside/moley/v2/internal/platform/orchestration"
 )
 
@@ -29,12 +30,30 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 		},
 	)
 
-	// tunnel-config — depends on tunnel-create (needs TunnelUUID)
+	hasAccessApps := s.accessService != nil && s.ingress.HasAccessConfig()
+
+	// tunnel-config — depends on tunnel-create (needs TunnelUUID) and access-app if any (needs AUDs)
+	configDeps := []string{tunnelusecase.CreateHandlerName}
+	if hasAccessApps {
+		configDeps = append(configDeps, accessusecase.HandlerName)
+	}
 	framework.Register(orchestrator, tunnelusecase.NewConfigHandler(s.tunnelConfigurator),
 		func(reg *framework.OutputRegistry) ([]tunnelusecase.ConfigInput, error) {
 			create, ok := framework.GetOutput[tunnelusecase.CreateOutput](reg, tunnelusecase.CreateHandlerName, s.tunnel.Ref())
 			if !ok {
 				return nil, fmt.Errorf("%s: missing upstream output from %s", tunnelusecase.ConfigHandlerName, tunnelusecase.CreateHandlerName)
+			}
+			guards := make(map[string]tunnelusecase.AccessGuard)
+			for _, app := range s.ingress.Apps {
+				if !hasAccessApps || app.Access == nil {
+					continue
+				}
+				out, ok := framework.GetOutput[accessusecase.AppOutput](reg, accessusecase.HandlerName, accessusecase.AppKey(s.ingress.Zone, app.Expose.Subdomain, app.Expose.Path))
+				if !ok || out.AUD == "" || out.TeamName == "" {
+					logger.Warnf("Origin Access check disabled for app; stop and restart the tunnel to enable it", map[string]any{"host": app.Expose.Host(s.ingress.Zone)})
+					continue
+				}
+				guards[out.Host()] = tunnelusecase.AccessGuard{TeamName: out.TeamName, AUD: out.AUD}
 			}
 			return []tunnelusecase.ConfigInput{
 				{
@@ -46,10 +65,11 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 						Apps: s.ingress.Apps,
 						Mode: s.ingress.Mode,
 					},
+					Guards: guards,
 				},
 			}, nil
 		},
-		tunnelusecase.CreateHandlerName,
+		configDeps...,
 	)
 
 	// tunnel-run — depends on tunnel-config (needs ConfigPath + ContentHash)
@@ -130,7 +150,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 	}
 
 	// access-app — depends on dns-record (ordering) and access-policies (policy IDs)
-	if s.accessService != nil && s.ingress.HasAccessConfig() {
+	if hasAccessApps {
 		deps := []string{dnsusecase.HandlerName}
 		if s.policyService != nil && s.access.HasPolicies() {
 			deps = append(deps, accessusecase.PolicyHandlerName)

@@ -17,10 +17,17 @@ type AccessApplicationParams struct {
 	PolicyIDs []string
 }
 
+// AUD is the audience tag in the application's Access JWTs.
+type Application struct {
+	ID  string `json:"id"`
+	AUD string `json:"aud"`
+}
+
 type AccessManager interface {
-	CreateApplication(ctx context.Context, params AccessApplicationParams) (string, error)
+	CreateApplication(ctx context.Context, params AccessApplicationParams) (Application, error)
 	DeleteApplication(ctx context.Context, appID string) error
-	FindApplication(ctx context.Context, domain string) (string, bool, error)
+	FindApplication(ctx context.Context, domain string) (Application, bool, error)
+	TeamName(ctx context.Context) (string, error)
 }
 
 const HandlerName = "access-app"
@@ -42,6 +49,8 @@ type AppOutput struct {
 	AppID     string `json:"app_id"`
 	Subdomain string `json:"subdomain"`
 	Path      string `json:"path,omitempty"`
+	AUD       string `json:"aud,omitempty"`
+	TeamName  string `json:"team_name,omitempty"`
 }
 
 func (o AppOutput) Host() string {
@@ -74,7 +83,12 @@ func (h *appHandler) Create(ctx context.Context, input AppInput) (AppOutput, err
 	host := input.host()
 	logger.Debugf("Creating Access Application", map[string]any{"domain": host})
 
-	appID, err := h.accessService.CreateApplication(ctx, AccessApplicationParams{
+	team, err := h.accessService.TeamName(ctx)
+	if err != nil {
+		return AppOutput{}, err
+	}
+
+	app, err := h.accessService.CreateApplication(ctx, AccessApplicationParams{
 		Name:      fmt.Sprintf("moley-%s", host),
 		Domain:    host,
 		Access:    input.Access,
@@ -84,13 +98,19 @@ func (h *appHandler) Create(ctx context.Context, input AppInput) (AppOutput, err
 		return AppOutput{}, fmt.Errorf("failed to create Access Application for %s: %w", host, err)
 	}
 
-	logger.Infof("Access Application created", map[string]any{"domain": host, "app_id": appID})
+	logger.Infof("Access Application created", map[string]any{"domain": host, "app_id": app.ID})
+	return newAppOutput(input, app, team), nil
+}
+
+func newAppOutput(input AppInput, app Application, team string) AppOutput {
 	return AppOutput{
 		Zone:      input.Zone,
 		Subdomain: input.Subdomain,
 		Path:      input.Path,
-		AppID:     appID,
-	}, nil
+		AppID:     app.ID,
+		AUD:       app.AUD,
+		TeamName:  team,
+	}
 }
 func (h *appHandler) Destroy(ctx context.Context, output AppOutput) error {
 	host := output.Host()
@@ -116,17 +136,16 @@ func (h *appHandler) Check(ctx context.Context, output AppOutput) (framework.Sta
 }
 
 func (h *appHandler) Recover(ctx context.Context, input AppInput) (AppOutput, framework.Status, error) {
-	appID, exists, err := h.accessService.FindApplication(ctx, input.host())
+	app, exists, err := h.accessService.FindApplication(ctx, input.host())
 	if err != nil {
 		return AppOutput{}, framework.StatusUnknown, err
 	}
 	if !exists {
 		return AppOutput{}, framework.StatusDown, nil
 	}
-	return AppOutput{
-		Zone:      input.Zone,
-		Subdomain: input.Subdomain,
-		Path:      input.Path,
-		AppID:     appID,
-	}, framework.StatusUp, nil
+	team, err := h.accessService.TeamName(ctx)
+	if err != nil {
+		return AppOutput{}, framework.StatusUnknown, err
+	}
+	return newAppOutput(input, app, team), framework.StatusUp, nil
 }

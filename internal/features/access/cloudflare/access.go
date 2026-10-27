@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"strings"
 
 	cfgo "github.com/cloudflare/cloudflare-go/v6"
 	"github.com/cloudflare/cloudflare-go/v6/zero_trust"
@@ -56,10 +57,10 @@ func (b accessAppBody) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-func (s *AccessService) CreateApplication(ctx context.Context, params accessusecase.AccessApplicationParams) (string, error) {
+func (s *AccessService) CreateApplication(ctx context.Context, params accessusecase.AccessApplicationParams) (accessusecase.Application, error) {
 	if s.dryRun {
 		logger.Debug("Dry run: skipping Access Application creation")
-		return "dry-run-access-app", nil
+		return accessusecase.Application{ID: "dry-run-access-app", AUD: "dry-run-aud"}, nil
 	}
 
 	body := accessAppBody{
@@ -72,7 +73,7 @@ func (s *AccessService) CreateApplication(ctx context.Context, params accessusec
 	if len(params.Access.Providers) > 0 {
 		ids, err := s.resolveIdentityProviders(ctx, params.Access.Providers)
 		if err != nil {
-			return "", fmt.Errorf("failed to resolve identity providers: %w", err)
+			return accessusecase.Application{}, fmt.Errorf("failed to resolve identity providers: %w", err)
 		}
 		body.AllowedIdPs = ids
 	}
@@ -85,16 +86,14 @@ func (s *AccessService) CreateApplication(ctx context.Context, params accessusec
 	}
 
 	var env struct {
-		Result struct {
-			ID string `json:"id"`
-		} `json:"result"`
+		Result accessusecase.Application `json:"result"`
 	}
 	if err := s.client.Post(ctx, s.appsPath(), body, &env); err != nil {
-		return "", fmt.Errorf("failed to create Access Application: %w", err)
+		return accessusecase.Application{}, fmt.Errorf("failed to create Access Application: %w", err)
 	}
 
 	logger.Debugf("Access Application created", map[string]any{"app_id": env.Result.ID, "domain": params.Domain})
-	return env.Result.ID, nil
+	return env.Result, nil
 }
 
 func (s *AccessService) DeleteApplication(ctx context.Context, appID string) error {
@@ -111,22 +110,40 @@ func (s *AccessService) DeleteApplication(ctx context.Context, appID string) err
 	return nil
 }
 
-func (s *AccessService) FindApplication(ctx context.Context, domain string) (string, bool, error) {
+func (s *AccessService) FindApplication(ctx context.Context, domain string) (accessusecase.Application, bool, error) {
 	if s.dryRun {
-		return "dry-run-access-app", true, nil
+		return accessusecase.Application{ID: "dry-run-access-app", AUD: "dry-run-aud"}, true, nil
 	}
 	pager := s.client.ZeroTrust.Access.Applications.ListAutoPaging(ctx, zero_trust.AccessApplicationListParams{
 		AccountID: cfgo.F(s.accountID),
 	})
 	for pager.Next() {
 		if app := pager.Current(); app.Domain == domain {
-			return app.ID, true, nil
+			return accessusecase.Application{ID: app.ID, AUD: app.AUD}, true, nil
 		}
 	}
 	if err := pager.Err(); err != nil {
-		return "", false, fmt.Errorf("failed to list Access Applications: %w", err)
+		return accessusecase.Application{}, false, fmt.Errorf("failed to list Access Applications: %w", err)
 	}
-	return "", false, nil
+	return accessusecase.Application{}, false, nil
+}
+
+// TeamName returns <team> from the <team>.cloudflareaccess.com auth domain.
+func (s *AccessService) TeamName(ctx context.Context) (string, error) {
+	if s.dryRun {
+		return "dry-run-team", nil
+	}
+	org, err := s.client.ZeroTrust.Organizations.List(ctx, zero_trust.OrganizationListParams{
+		AccountID: cfgo.F(s.accountID),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to get Zero Trust organization: %w", err)
+	}
+	team, _, _ := strings.Cut(org.AuthDomain, ".")
+	if team == "" {
+		return "", fmt.Errorf("zero Trust organization has no auth domain")
+	}
+	return team, nil
 }
 
 func (s *AccessService) resolveIdentityProviders(ctx context.Context, types []string) ([]string, error) {

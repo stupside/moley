@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/stupside/moley/v2/internal/domain"
+	tunnelusecase "github.com/stupside/moley/v2/internal/features/tunnel/usecase"
 )
 
 // runConfig is the YAML config format for `cloudflared tunnel run`.
@@ -27,16 +28,29 @@ type ingressRule struct {
 
 type originRequest struct {
 	domain.OriginRequest `yaml:",inline"`
+	Access               *originAccess `yaml:"access,omitempty"`
+}
+
+type originAccess struct {
+	Required bool     `yaml:"required"`
+	TeamName string   `yaml:"teamName"`
+	AudTag   []string `yaml:"audTag"`
 }
 
 // buildIngress returns the cloudflared rules for the apps, ending with a 404 catch-all.
 // cloudflared picks the first match, so longer paths go first.
-func buildIngress(ingress *domain.Ingress) []ingressRule {
+func buildIngress(ingress *domain.Ingress, guards map[string]tunnelusecase.AccessGuard) []ingressRule {
 	rules := make([]ingressRule, 0, len(ingress.Apps)+1)
 	for _, app := range ingress.Apps {
 		var origin *originRequest
 		if app.Target.OriginRequest != nil {
 			origin = &originRequest{OriginRequest: *app.Target.OriginRequest}
+		}
+		if g, ok := guards[app.Expose.Host(ingress.Zone)]; ok {
+			if origin == nil {
+				origin = &originRequest{}
+			}
+			origin.Access = &originAccess{Required: true, TeamName: g.TeamName, AudTag: []string{g.AUD}}
 		}
 		rules = append(rules, ingressRule{
 			Hostname:      domain.FQDN(app.Expose.Subdomain, ingress.Zone),

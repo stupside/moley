@@ -12,8 +12,15 @@ import (
 	framework "github.com/stupside/moley/v2/internal/platform/orchestration"
 )
 
+// AccessGuard makes cloudflared reject requests without a valid Access JWT.
+type AccessGuard struct {
+	TeamName string `json:"team_name"`
+	AUD      string `json:"aud"`
+}
+
 type TunnelConfigurator interface {
-	SaveConfiguration(ctx context.Context, tunnel *domain.Tunnel, ingress *domain.Ingress) error
+	// SaveConfiguration writes the cloudflared config; guards are keyed by ExposeConfig.Host.
+	SaveConfiguration(ctx context.Context, tunnel *domain.Tunnel, ingress *domain.Ingress, guards map[string]AccessGuard) error
 	DeleteConfiguration(ctx context.Context, tunnel *domain.Tunnel) error
 	GetConfigurationPath(ctx context.Context, tunnel *domain.Tunnel) (string, error)
 }
@@ -21,10 +28,11 @@ type TunnelConfigurator interface {
 const ConfigHandlerName = "tunnel-config"
 
 type ConfigInput struct {
-	TunnelName string          `json:"tunnel_name"`
-	TunnelUUID string          `json:"tunnel_uuid"`
-	Persistent bool            `json:"persistent"`
-	Ingress    *domain.Ingress `json:"ingress"`
+	TunnelName string                 `json:"tunnel_name"`
+	TunnelUUID string                 `json:"tunnel_uuid"`
+	Persistent bool                   `json:"persistent"`
+	Ingress    *domain.Ingress        `json:"ingress"`
+	Guards     map[string]AccessGuard `json:"guards,omitempty"`
 }
 
 func (i ConfigInput) tunnel() *domain.Tunnel {
@@ -62,7 +70,7 @@ func (h *configHandler) Create(ctx context.Context, input ConfigInput) (ConfigOu
 
 	tunnel := input.tunnel()
 
-	if err := h.tunnelService.SaveConfiguration(ctx, tunnel, input.Ingress); err != nil {
+	if err := h.tunnelService.SaveConfiguration(ctx, tunnel, input.Ingress, input.Guards); err != nil {
 		return ConfigOutput{}, fmt.Errorf("failed to save tunnel configuration: %w", err)
 	}
 
