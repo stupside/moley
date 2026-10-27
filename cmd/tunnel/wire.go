@@ -41,12 +41,27 @@ func buildTunnelService(ctx context.Context, cmd *cli.Command) (*application.Ser
 		return nil, fmt.Errorf("failed to get tunnel config: %w", err)
 	}
 
-	cfClient := cfgo.NewClient(
-		option.WithAPIToken(globalConfig.Cloudflare.Token),
-	)
+	needsAccess := tunnelConfig.Access.HasPolicies() || tunnelConfig.Ingress.HasAccessConfig()
+
+	token := globalConfig.Cloudflare.Token
+	if token == "" {
+		cert, err := tunnelcf.LoadOriginCert()
+		if err != nil {
+			return nil, fmt.Errorf("no cloudflare.token set and no cloudflared login found (run `cloudflared tunnel login` or `moley config set --cloudflare.token`): %w", err)
+		}
+		if needsAccess {
+			return nil, fmt.Errorf("the cloudflared login token cannot manage Cloudflare Access; set cloudflare.token to use access or policies")
+		}
+		token = cert.APIToken
+	}
+
+	cfClient := cfgo.NewClient(option.WithAPIToken(token))
 
 	cfTunnel, err := tunnelcf.NewTunnelService(ctx, cfClient, tunnelConfig.Ingress.Zone, dryRun)
 	if err != nil {
+		if globalConfig.Cloudflare.Token == "" {
+			err = fmt.Errorf("%w (the cloudflared login token only covers the zone picked at login)", err)
+		}
 		return nil, fmt.Errorf("failed to create Cloudflare tunnel service: %w", err)
 	}
 
@@ -54,7 +69,7 @@ func buildTunnelService(ctx context.Context, cmd *cli.Command) (*application.Ser
 
 	var cfAccess accessusecase.AccessManager
 	var cfPolicy accessusecase.PolicyManager
-	if tunnelConfig.Access.HasPolicies() || tunnelConfig.Ingress.HasAccessConfig() {
+	if needsAccess {
 		svc := accesscf.NewAccessService(cfClient, cfTunnel.AccountID(), dryRun)
 		cfAccess = svc
 		cfPolicy = svc

@@ -11,7 +11,7 @@ import (
 // GlobalConfig represents the global application configuration
 type GlobalConfig struct {
 	Cloudflare struct {
-		Token string `yaml:"token" validate:"required"`
+		Token string `yaml:"token,omitempty"` // empty falls back to cloudflared's cert.pem
 	} `yaml:"cloudflare"`
 }
 
@@ -42,9 +42,5 @@ func globalConfigPath() (string, error) {
 }
 
 func defaultGlobalConfig() *GlobalConfig {
-	return &GlobalConfig{
-		Cloudflare: struct {
-			Token string `yaml:"token" validate:"required"`
-		}{},
-	}
+	return &GlobalConfig{}
 }

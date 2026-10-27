@@ -66,6 +66,8 @@ cloudflare:
 export MOLEY_CLOUDFLARE__TOKEN="your-api-token"
 ```
 
+Without a token, moley uses the one `cloudflared tunnel login` saved in `~/.cloudflared/cert.pem` (or `$TUNNEL_ORIGIN_CERT`), so you can sign in through the browser instead. That token only covers the zone you picked at login and cannot manage [Access](/docs/access/), so set an API token for `access:` and `policies`.
+
 ## Zone
 
 The `zone` is the Cloudflare-managed domain used for all subdomains.
