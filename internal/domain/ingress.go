@@ -63,6 +63,12 @@ func (a AccessConfig) MarshalJSON() ([]byte, error) {
 
 type ExposeConfig struct {
 	Subdomain string `yaml:"subdomain" json:"subdomain" validate:"required"`
+	Path      string `yaml:"path,omitempty" json:"path,omitempty" validate:"omitempty,startswith=/,endsnotwith=/"`
+}
+
+// Host is the FQDN plus path, which is also the app's Access application domain.
+func (e ExposeConfig) Host(zone string) string {
+	return FQDN(e.Subdomain, zone) + e.Path
 }
 
 type IngressMode string

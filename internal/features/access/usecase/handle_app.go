@@ -28,14 +28,24 @@ const HandlerName = "access-app"
 type AppInput struct {
 	Zone      string              `json:"zone"`
 	Subdomain string              `json:"subdomain"`
+	Path      string              `json:"path,omitempty"`
 	Access    domain.AccessConfig `json:"access"`
 	PolicyIDs []string            `json:"policy_ids,omitempty"`
+}
+
+func (i AppInput) host() string {
+	return domain.ExposeConfig{Subdomain: i.Subdomain, Path: i.Path}.Host(i.Zone)
 }
 
 type AppOutput struct {
 	Zone      string `json:"zone"`
 	AppID     string `json:"app_id"`
 	Subdomain string `json:"subdomain"`
+	Path      string `json:"path,omitempty"`
+}
+
+func (o AppOutput) Host() string {
+	return domain.ExposeConfig{Subdomain: o.Subdomain, Path: o.Path}.Host(o.Zone)
 }
 
 type appHandler struct {
@@ -53,44 +63,49 @@ func (h *appHandler) Name() string {
 }
 
 func (h *appHandler) Key(input AppInput) string {
-	return fmt.Sprintf("%s:%s", input.Zone, input.Subdomain)
+	return AppKey(input.Zone, input.Subdomain, input.Path)
+}
+
+func AppKey(zone, subdomain, path string) string {
+	return fmt.Sprintf("%s:%s%s", zone, subdomain, path)
 }
 
 func (h *appHandler) Create(ctx context.Context, input AppInput) (AppOutput, error) {
-	fqdn := domain.FQDN(input.Subdomain, input.Zone)
-	logger.Debugf("Creating Access Application", map[string]any{"domain": fqdn})
+	host := input.host()
+	logger.Debugf("Creating Access Application", map[string]any{"domain": host})
 
 	appID, err := h.accessService.CreateApplication(ctx, AccessApplicationParams{
-		Name:      fmt.Sprintf("moley-%s", fqdn),
-		Domain:    fqdn,
+		Name:      fmt.Sprintf("moley-%s", host),
+		Domain:    host,
 		Access:    input.Access,
 		PolicyIDs: input.PolicyIDs,
 	})
 	if err != nil {
-		return AppOutput{}, fmt.Errorf("failed to create Access Application for %s: %w", fqdn, err)
+		return AppOutput{}, fmt.Errorf("failed to create Access Application for %s: %w", host, err)
 	}
 
-	logger.Infof("Access Application created", map[string]any{"domain": fqdn, "app_id": appID})
+	logger.Infof("Access Application created", map[string]any{"domain": host, "app_id": appID})
 	return AppOutput{
 		Zone:      input.Zone,
 		Subdomain: input.Subdomain,
+		Path:      input.Path,
 		AppID:     appID,
 	}, nil
 }
 func (h *appHandler) Destroy(ctx context.Context, output AppOutput) error {
-	fqdn := domain.FQDN(output.Subdomain, output.Zone)
-	logger.Debugf("Deleting Access Application", map[string]any{"domain": fqdn, "app_id": output.AppID})
+	host := output.Host()
+	logger.Debugf("Deleting Access Application", map[string]any{"domain": host, "app_id": output.AppID})
 
 	if err := h.accessService.DeleteApplication(ctx, output.AppID); err != nil {
-		return fmt.Errorf("failed to delete Access Application for %s: %w", fqdn, err)
+		return fmt.Errorf("failed to delete Access Application for %s: %w", host, err)
 	}
 
-	logger.Infof("Access Application deleted", map[string]any{"domain": fqdn})
+	logger.Infof("Access Application deleted", map[string]any{"domain": host})
 	return nil
 }
 
 func (h *appHandler) Check(ctx context.Context, output AppOutput) (framework.Status, error) {
-	_, exists, err := h.accessService.FindApplication(ctx, domain.FQDN(output.Subdomain, output.Zone))
+	_, exists, err := h.accessService.FindApplication(ctx, output.Host())
 	if err != nil {
 		return framework.StatusUnknown, fmt.Errorf("failed to check Access Application: %w", err)
 	}
@@ -101,7 +116,7 @@ func (h *appHandler) Check(ctx context.Context, output AppOutput) (framework.Sta
 }
 
 func (h *appHandler) Recover(ctx context.Context, input AppInput) (AppOutput, framework.Status, error) {
-	appID, exists, err := h.accessService.FindApplication(ctx, domain.FQDN(input.Subdomain, input.Zone))
+	appID, exists, err := h.accessService.FindApplication(ctx, input.host())
 	if err != nil {
 		return AppOutput{}, framework.StatusUnknown, err
 	}
@@ -111,6 +126,7 @@ func (h *appHandler) Recover(ctx context.Context, input AppInput) (AppOutput, fr
 	return AppOutput{
 		Zone:      input.Zone,
 		Subdomain: input.Subdomain,
+		Path:      input.Path,
 		AppID:     appID,
 	}, framework.StatusUp, nil
 }

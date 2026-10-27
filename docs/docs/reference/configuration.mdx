@@ -113,6 +113,18 @@ ingress:
         subdomain: "db"        # db.yourdomain.com (TCP)
 ```
 
+### Path routing
+
+Set `expose.path` to serve several apps from one subdomain. It is a path prefix: `/api` matches `/api` and `/api/...`, not `/apiary`. It must start with `/` and must not end with one. Longer paths win, and an app without a path catches the rest of the subdomain. With `access:`, the Access Application covers only that path.
+
+```yaml
+apps:
+  - target: {port: 3000, hostname: "localhost", protocol: http}
+    expose: {subdomain: "app"}              # app.yourdomain.com/*
+  - target: {port: 8080, hostname: "localhost", protocol: http}
+    expose: {subdomain: "app", path: "/api"} # app.yourdomain.com/api/*
+```
+
 ### Origin request options
 
 `target.origin_request` sets the app's cloudflared [origin parameters](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/configure-tunnels/cloudflared-parameters/origin-parameters/), using cloudflared's key names: `httpHostHeader`, `originServerName`, `caPool`, `noTLSVerify` and `http2Origin` (needed for gRPC). Common ones for local development:

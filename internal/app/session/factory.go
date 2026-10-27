@@ -93,7 +93,12 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 				}
 			case domain.IngressModeSubdomain:
 				inputs = make([]dnsusecase.RecordInput, 0, len(s.ingress.Apps))
+				seen := make(map[string]bool, len(s.ingress.Apps))
 				for _, app := range s.ingress.Apps {
+					if seen[app.Expose.Subdomain] {
+						continue // apps split by path share one record
+					}
+					seen[app.Expose.Subdomain] = true
 					inputs = append(inputs, dnsusecase.RecordInput{
 						Zone:       s.ingress.Zone,
 						Subdomain:  app.Expose.Subdomain,
@@ -157,6 +162,7 @@ func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, 
 					inputs = append(inputs, accessusecase.AppInput{
 						Zone:      s.ingress.Zone,
 						Subdomain: app.Expose.Subdomain,
+						Path:      app.Expose.Path,
 						Access:    *app.Access,
 						PolicyIDs: policyIDs,
 					})

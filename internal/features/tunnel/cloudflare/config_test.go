@@ -14,13 +14,13 @@ func TestBuildIngress(t *testing.T) {
 
 	rules := buildIngress(&domain.Ingress{Zone: "example.com", Apps: []domain.AppConfig{
 		{Target: web, Expose: domain.ExposeConfig{Subdomain: "app"}},
-		{Target: api, Expose: domain.ExposeConfig{Subdomain: "api"}},
+		{Target: api, Expose: domain.ExposeConfig{Subdomain: "app", Path: "/api"}},
 	}})
 
 	want := []ingressRule{
+		{Hostname: "app.example.com", Path: `^/api(/|$)`, Service: "http://localhost:8080"},
 		{Hostname: "app.example.com", Service: "http://localhost:3000",
 			OriginRequest: &originRequest{*web.OriginRequest}},
-		{Hostname: "api.example.com", Service: "http://localhost:8080"},
 		{Service: "http_status:404"},
 	}
 	if !reflect.DeepEqual(rules, want) {
