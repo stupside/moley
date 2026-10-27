@@ -137,7 +137,7 @@ func (s *AccessService) TeamName(ctx context.Context) (string, error) {
 		AccountID: cfgo.F(s.accountID),
 	})
 	if err != nil {
-		return "", fmt.Errorf("failed to get Zero Trust organization: %w", err)
+		return "", fmt.Errorf("failed to read Zero Trust organization (token needs Access: Organizations Read): %w", err)
 	}
 	team, _, _ := strings.Cut(org.AuthDomain, ".")
 	if team == "" {

@@ -32,7 +32,7 @@ ingress:
 
 For every app with an `access:` block, Moley also configures cloudflared to require a valid Access token on each request (`originRequest.access`). Requests that did not pass through Cloudflare Access, for example if the Access Application is deleted while the tunnel runs, are rejected before they reach your app.
 
-Tunnels started with an older Moley version get this check after a `moley tunnel stop` and a fresh start; until then, Moley logs a warning.
+Tunnels started with an older Moley version get this check after a `moley tunnel stop` and a fresh start; until then, Moley logs a warning. The check needs the token to have Access: Organizations Read.
 
 ## Identity Providers
 
