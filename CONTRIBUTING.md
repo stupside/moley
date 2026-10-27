@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- [Go 1.27.2+](https://go.dev/dl/)
+- [Go 1.27.3+](https://go.dev/dl/)
 - [Task](https://taskfile.dev/) (task runner)
 - [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
 

@@ -1,6 +1,6 @@
 module github.com/stupside/moley/v2
 
-go 1.27.2
+go 1.27.3
 
 require (
 	github.com/cloudflare/cloudflare-go/v3 v3.1.0
