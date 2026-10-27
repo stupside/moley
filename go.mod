@@ -3,7 +3,7 @@ module github.com/stupside/moley/v2
 go 1.27.3
 
 require (
-	github.com/cloudflare/cloudflare-go/v3 v3.1.0
+	github.com/cloudflare/cloudflare-go/v6 v6.10.0
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/gofrs/flock v0.13.1

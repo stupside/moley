@@ -10,9 +10,9 @@ import (
 	"os"
 	"path/filepath"
 
-	cfgo "github.com/cloudflare/cloudflare-go/v3"
-	"github.com/cloudflare/cloudflare-go/v3/zero_trust"
-	"github.com/cloudflare/cloudflare-go/v3/zones"
+	cfgo "github.com/cloudflare/cloudflare-go/v6"
+	"github.com/cloudflare/cloudflare-go/v6/zero_trust"
+	"github.com/cloudflare/cloudflare-go/v6/zones"
 
 	"github.com/stupside/moley/v2/internal/domain"
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
@@ -94,7 +94,7 @@ func (c *TunnelService) Run(ctx context.Context, tunnel *domain.Tunnel) (int, er
 func (c *TunnelService) findTunnel(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
 	name := tunnel.GetName()
 
-	pager := c.client.ZeroTrust.Tunnels.ListAutoPaging(ctx, zero_trust.TunnelListParams{
+	pager := c.client.ZeroTrust.Tunnels.Cloudflared.ListAutoPaging(ctx, zero_trust.TunnelCloudflaredListParams{
 		AccountID: cfgo.F(c.accountID),
 		Name:      cfgo.F(name),
 		IsDeleted: cfgo.F(false),
@@ -143,10 +143,10 @@ func (c *TunnelService) Create(ctx context.Context, tunnel *domain.Tunnel) (stri
 	}
 	tunnelSecret := base64.StdEncoding.EncodeToString(secret)
 
-	result, err := c.client.ZeroTrust.Tunnels.New(ctx, zero_trust.TunnelNewParams{
+	result, err := c.client.ZeroTrust.Tunnels.Cloudflared.New(ctx, zero_trust.TunnelCloudflaredNewParams{
 		AccountID:    cfgo.F(c.accountID),
 		Name:         cfgo.F(tunnel.GetName()),
-		ConfigSrc:    cfgo.F(zero_trust.TunnelNewParamsConfigSrcLocal),
+		ConfigSrc:    cfgo.F(zero_trust.TunnelCloudflaredNewParamsConfigSrcLocal),
 		TunnelSecret: cfgo.F(tunnelSecret),
 	})
 	if err != nil {
@@ -233,7 +233,7 @@ func (c *TunnelService) Delete(ctx context.Context, tunnel *domain.Tunnel) error
 	}
 
 	// Clean up connections first (best effort)
-	_, err = c.client.ZeroTrust.Tunnels.Connections.Delete(ctx, tunnelID, zero_trust.TunnelConnectionDeleteParams{
+	_, err = c.client.ZeroTrust.Tunnels.Cloudflared.Connections.Delete(ctx, tunnelID, zero_trust.TunnelCloudflaredConnectionDeleteParams{
 		AccountID: cfgo.F(c.accountID),
 	})
 	if err != nil {
@@ -243,7 +243,7 @@ func (c *TunnelService) Delete(ctx context.Context, tunnel *domain.Tunnel) error
 	}
 
 	// Delete tunnel
-	_, err = c.client.ZeroTrust.Tunnels.Delete(ctx, tunnelID, zero_trust.TunnelDeleteParams{
+	_, err = c.client.ZeroTrust.Tunnels.Cloudflared.Delete(ctx, tunnelID, zero_trust.TunnelCloudflaredDeleteParams{
 		AccountID: cfgo.F(c.accountID),
 	})
 	if err != nil {

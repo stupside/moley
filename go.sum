@@ -1,5 +1,5 @@
-github.com/cloudflare/cloudflare-go/v3 v3.1.0 h1:kVjWgd5tOeDXcO/tMpiINK62HkSAUo41bmZC8GfhK5g=
-github.com/cloudflare/cloudflare-go/v3 v3.1.0/go.mod h1:m3J2vKjPGiRy129/pq0GV4GFLNIx9Y06ASO1sqO8Bks=
+github.com/cloudflare/cloudflare-go/v6 v6.10.0 h1:tm+YwMDAdxxy2eIAlLH9Wu8JWSMg6fE3j3ydZbMG6co=
+github.com/cloudflare/cloudflare-go/v6 v6.10.0/go.mod h1:Lj3MUqjvKctXRpdRhLQxZYRrNZHuRs0XYuH8JtQGyoI=
 github.com/ebitengine/purego v0.11.2 h1:WWiTx8rD8zYdOwSj8O/NiNbsOvSAgJMTlyV1XlbUSeU=
 github.com/ebitengine/purego v0.11.2/go.mod h1:DCHPP08djqhNSoTfImcnHYQRZmd0qhakvrozqaEYhGQ=
 github.com/fatih/structs v1.1.0 h1:Q7juDM0QtcnhCpeyLGQKyg4TOIghuNXrkL32pHAUMxo=

@@ -5,6 +5,9 @@ import (
 	"fmt"
 
 	"github.com/stupside/moley/v2/internal/domain"
+
+	cfgo "github.com/cloudflare/cloudflare-go/v6"
+	"github.com/cloudflare/cloudflare-go/v6/zero_trust"
 )
 
 func (s *AccessService) policiesPath() string {
@@ -30,7 +33,9 @@ func (s *AccessService) DeletePolicy(ctx context.Context, policyID string) error
 	if s.dryRun {
 		return nil
 	}
-	if err := s.client.Delete(ctx, s.policiesPath()+"/"+policyID, nil, nil); err != nil {
+	if _, err := s.client.ZeroTrust.Access.Policies.Delete(ctx, policyID, zero_trust.AccessPolicyDeleteParams{
+		AccountID: cfgo.F(s.accountID),
+	}); err != nil {
 		return fmt.Errorf("failed to delete policy %s: %w", policyID, err)
 	}
 	return nil
@@ -40,19 +45,16 @@ func (s *AccessService) FindPolicy(ctx context.Context, name string) (string, bo
 	if s.dryRun {
 		return "dry-run-policy", true, nil
 	}
-	var env struct {
-		Result []struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
-		} `json:"result"`
-	}
-	if err := s.client.Get(ctx, s.policiesPath(), nil, &env); err != nil {
-		return "", false, fmt.Errorf("failed to list policies: %w", err)
-	}
-	for _, p := range env.Result {
-		if p.Name == name {
+	pager := s.client.ZeroTrust.Access.Policies.ListAutoPaging(ctx, zero_trust.AccessPolicyListParams{
+		AccountID: cfgo.F(s.accountID),
+	})
+	for pager.Next() {
+		if p := pager.Current(); p.Name == name {
 			return p.ID, true, nil
 		}
+	}
+	if err := pager.Err(); err != nil {
+		return "", false, fmt.Errorf("failed to list policies: %w", err)
 	}
 	return "", false, nil
 }

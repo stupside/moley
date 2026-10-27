@@ -11,8 +11,8 @@ import (
 	dnscf "github.com/stupside/moley/v2/internal/features/dns/cloudflare"
 	tunnelcf "github.com/stupside/moley/v2/internal/features/tunnel/cloudflare"
 
-	cfgo "github.com/cloudflare/cloudflare-go/v3"
-	"github.com/cloudflare/cloudflare-go/v3/option"
+	cfgo "github.com/cloudflare/cloudflare-go/v6"
+	"github.com/cloudflare/cloudflare-go/v6/option"
 	"github.com/urfave/cli/v3"
 )
 

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"maps"
 
-	cfgo "github.com/cloudflare/cloudflare-go/v3"
-	"github.com/cloudflare/cloudflare-go/v3/zero_trust"
+	cfgo "github.com/cloudflare/cloudflare-go/v6"
+	"github.com/cloudflare/cloudflare-go/v6/zero_trust"
 
 	accessusecase "github.com/stupside/moley/v2/internal/features/access/usecase"
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
