@@ -6,7 +6,7 @@ type runConfig struct {
 	Tunnel          string        `yaml:"tunnel" validate:"required"`
 	Logfile         string        `yaml:"logfile,omitempty"`
 	Loglevel        string        `yaml:"loglevel,omitempty"`
-	CredentialsFile string        `yaml:"credentials_file" validate:"required"`
+	CredentialsFile string        `yaml:"credentials-file" validate:"required"`
 	Ingress         []ingressRule `yaml:"ingress" validate:"required"`
 }
 
