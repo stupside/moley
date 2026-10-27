@@ -1,7 +1,6 @@
 package cloudflare
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -38,7 +37,7 @@ func TestRouteRecord(t *testing.T) {
 	defer srv.Close()
 
 	client := cfgo.NewClient(option.WithAPIToken("test"), option.WithBaseURL(srv.URL))
-	if err := NewDNSService(client, false).RouteRecord(context.Background(), "uuid", "example.com", "app"); err != nil {
+	if err := NewDNSService(client, false).RouteRecord(t.Context(), "uuid", "example.com", "app"); err != nil {
 		t.Fatal(err)
 	}
 
