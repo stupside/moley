@@ -1,36 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Moley">
-  <!-- Hole rim (dirt) — flat ellipse the mole pokes through -->
-  <ellipse cx="50" cy="82" rx="44" ry="9" fill="#262626"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Moley, a Go gopher in a mole costume, popping out of a hole">
+  <defs>
+    <filter id="wobble" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7"/>
+      <feDisplacementMap in="SourceGraphic" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
 
-  <!-- Mole body / head — rounded teardrop poking up out of the hole -->
-  <path
-    d="M50 12
-       C 28 12, 18 32, 20 56
-       C 22 76, 32 84, 50 84
-       C 68 84, 78 76, 80 56
-       C 82 32, 72 12, 50 12 Z"
-    fill="#f97316"
-  />
+  <g filter="url(#wobble)" stroke="#1f1a17" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Hole -->
+    <ellipse cx="50" cy="84" rx="36" ry="8" fill="#2a1d15"/>
 
-  <!-- Snout — slightly darker tip for depth -->
-  <ellipse cx="50" cy="68" rx="14" ry="11" fill="#fdba74"/>
+    <!-- Costume -->
+    <path d="M50 14 C 30 14, 25 30, 25 50 C 25 66, 24 80, 26 88 L 74 88 C 76 80, 75 66, 75 50 C 75 30, 70 14, 50 14 Z" fill="#4b4a55"/>
+    <ellipse cx="50" cy="77" rx="13" ry="8" fill="#6d6c7a"/>
 
-  <!-- Nose -->
-  <ellipse cx="50" cy="64" rx="4" ry="3" fill="#0a0a0a"/>
+    <!-- Hood snout, beady eyes and whiskers -->
+    <path d="M43 20 L 33 17 M 43 22.5 L 33 23 M 57 20 L 67 17 M 57 22.5 L 67 23" stroke="#c9c8d2" stroke-width="0.9"/>
+    <ellipse cx="50" cy="18" rx="7" ry="5" fill="#f29bb2"/>
+    <circle cx="48" cy="17.5" r="0.9" fill="#1f1a17" stroke="none"/>
+    <circle cx="52" cy="17.5" r="0.9" fill="#1f1a17" stroke="none"/>
+    <circle cx="39" cy="25" r="1.5" fill="#1f1a17" stroke="none"/>
+    <circle cx="61" cy="25" r="1.5" fill="#1f1a17" stroke="none"/>
 
-  <!-- Whiskers — three short strokes each side -->
-  <g stroke="#0a0a0a" stroke-width="1.2" stroke-linecap="round" opacity="0.7">
-    <line x1="40" y1="68" x2="32" y2="66"/>
-    <line x1="40" y1="71" x2="32" y2="71"/>
-    <line x1="40" y1="74" x2="32" y2="76"/>
-    <line x1="60" y1="68" x2="68" y2="66"/>
-    <line x1="60" y1="71" x2="68" y2="71"/>
-    <line x1="60" y1="74" x2="68" y2="76"/>
-  </g>
+    <!-- Gopher face through the hood -->
+    <ellipse cx="50" cy="46" rx="19" ry="16" fill="#7fd3e6"/>
 
-  <!-- Eyes — closed/squinting (moles are nearly blind) -->
-  <g stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" fill="none">
-    <path d="M 36 48 Q 41 44, 46 48"/>
-    <path d="M 54 48 Q 59 44, 64 48"/>
+    <!-- Eyes -->
+    <circle cx="41" cy="41" r="7.5" fill="#ffffff"/>
+    <circle cx="60" cy="41" r="7.5" fill="#ffffff"/>
+    <circle cx="42.5" cy="42" r="2.7" fill="#1f1a17"/>
+    <circle cx="61.5" cy="42" r="2.7" fill="#1f1a17"/>
+
+    <!-- Muzzle, nose, teeth -->
+    <ellipse cx="50" cy="52" rx="6.5" ry="4.5" fill="#f3d3a6"/>
+    <ellipse cx="50" cy="49.5" rx="2.6" ry="1.8" fill="#1f1a17"/>
+    <path d="M47.5 56 h 2.5 v 3.5 h -2.5 Z M 50 56 h 2.5 v 3.5 h -2.5 Z" fill="#ffffff" stroke-width="0.9"/>
+
+    <!-- Dirt mound in front of the hole -->
+    <path d="M6 90 C 8 81, 20 80, 30 85 C 40 89, 60 89, 70 85 C 80 80, 92 81, 94 90 C 95 97, 5 97, 6 90 Z" fill="#8a5a3b"/>
+    <circle cx="16" cy="90" r="1.4" fill="#6b4429" stroke="none"/>
+    <circle cx="47" cy="92" r="1.2" fill="#6b4429" stroke="none"/>
+    <circle cx="84" cy="91" r="1.5" fill="#6b4429" stroke="none"/>
+
+    <!-- Digging claws gripping the rim -->
+    <path d="M20 84 l -2 5 l 3.5 -1.5 Z M 25 85 l -1.5 5.5 l 3.5 -2 Z M 30 85 l -0.5 5.5 l 3 -2.5 Z" fill="#f5efe4" stroke-width="0.9"/>
+    <path d="M80 84 l 2 5 l -3.5 -1.5 Z M 75 85 l 1.5 5.5 l -3.5 -2 Z M 70 85 l 0.5 5.5 l -3 -2.5 Z" fill="#f5efe4" stroke-width="0.9"/>
+    <ellipse cx="26" cy="82" rx="8.5" ry="5" transform="rotate(-12 26 82)" fill="#f29bb2"/>
+    <ellipse cx="74" cy="82" rx="8.5" ry="5" transform="rotate(12 74 82)" fill="#f29bb2"/>
   </g>
 </svg>
