@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.9.0](https://github.com/stupside/moley/compare/v2.8.0...v2.9.0) (2026-10-28)
+
+
+### Features
+
+* dress the Go gopher up as a mole for the logo ([57857ea](https://github.com/stupside/moley/commit/57857eacc483c8f25a52098e26f90233085541f6))
+* theme the docs after the gopher logo ([f2f1d1d](https://github.com/stupside/moley/commit/f2f1d1d2c6aa7d480477c8e562e8038caffbfa32))
+
 ## [2.8.0](https://github.com/stupside/moley/compare/v2.7.1...v2.8.0) (2026-10-27)
 
 
