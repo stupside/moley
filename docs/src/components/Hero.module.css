@@ -10,17 +10,31 @@
   display: block;
 }
 
+/* The gopher pops out of its hole on load. */
+@media (prefers-reduced-motion: no-preference) {
+  .logo {
+    animation: popUp 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+}
+
+@keyframes popUp {
+  from {
+    transform: translateY(24px) scale(0.92);
+    opacity: 0;
+  }
+}
+
 .title {
   font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   line-height: 1.05;
   color: var(--ifm-heading-color);
   margin: 0;
 }
 
 .titleAccent {
-  color: var(--ifm-color-primary);
+  color: var(--moley-pink-text);
 }
 
 .subtitle {

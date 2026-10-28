@@ -1,52 +1,78 @@
+/* Palette lifted from the logo: a gopher in a mole costume, popping out of the dirt. */
 :root {
-  --ifm-color-primary: #f97316;
-  --ifm-color-primary-dark: #ea580c;
-  --ifm-color-primary-darker: #c2410c;
-  --ifm-color-primary-darkest: #9a3412;
-  --ifm-color-primary-light: #fb923c;
-  --ifm-color-primary-lighter: #fdba74;
-  --ifm-color-primary-lightest: #fed7aa;
+  --moley-ink: #1f1a17;
+  --moley-pink: #f29bb2; /* The paws and snout in the logo. */
+  --moley-dirt: #8a5a3b;
+
+  /* Logo colors, deepened for text on white. */
+  --ifm-color-primary: #0f91ae;
+  --ifm-color-primary-dark: #0d839d;
+  --ifm-color-primary-darker: #0d7b94;
+  --ifm-color-primary-darkest: #0a667a;
+  --ifm-color-primary-light: #10a0bf;
+  --ifm-color-primary-lighter: #11a7c8;
+  --ifm-color-primary-lightest: #13bde2;
+  --moley-pink-text: #d94673;
+
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-footer-background-color: #f5f5f5;
+  --ifm-toc-border-color: #e5e5e5;
+  --ifm-color-content-secondary: #525252;
+  --ifm-heading-color: var(--moley-ink);
 
   --ifm-font-family-base: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ifm-heading-font-family: Fredoka, var(--ifm-font-family-base);
   --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --ifm-heading-font-weight: 800;
+  --ifm-heading-font-weight: 700;
 
   --ifm-code-font-size: 90%;
-  --docusaurus-highlighted-code-line-bg: rgba(249, 115, 22, 0.12);
+  --docusaurus-highlighted-code-line-bg: rgba(127, 211, 230, 0.25);
 }
 
-[data-theme='dark'] {
-  --ifm-background-color: #0a0a0a;
-  --ifm-background-surface-color: #171717;
-  --ifm-navbar-background-color: #141417;
-  --ifm-footer-background-color: #141417;
-  --ifm-footer-color: #d4d4d4;
-  --ifm-footer-link-color: #a3a3a3;
+/* Dark mode: neutral dark grey. */
+html[data-theme='dark'] {
+  --ifm-color-primary: #7fd3e6;
+  --ifm-color-primary-dark: #63c9e0;
+  --ifm-color-primary-darker: #55c4dd;
+  --ifm-color-primary-darkest: #2fb0cd;
+  --ifm-color-primary-light: #9bdded;
+  --ifm-color-primary-lighter: #a9e2ef;
+  --ifm-color-primary-lightest: #d0f0f7;
+  --moley-pink-text: #f4a6bb;
+
+  --ifm-background-color: #1e1e22;
+  --ifm-background-surface-color: #27272c;
+  --ifm-navbar-background-color: #1e1e22;
+  --ifm-footer-background-color: #1a1a1d;
+  --ifm-footer-color: #d4d4d8;
+  --ifm-footer-link-color: #a1a1aa;
   --ifm-footer-link-hover-color: var(--ifm-color-primary);
-  --ifm-footer-title-color: #fafafa;
+  --ifm-footer-title-color: #ececef;
 
-  --ifm-color-content: #d4d4d4;
-  --ifm-color-content-secondary: #a3a3a3;
-  --ifm-heading-color: #fafafa;
+  --ifm-color-content: #d4d4d8;
+  --ifm-color-content-secondary: #a1a1aa;
+  --ifm-heading-color: #ececef;
 
-  --ifm-toc-border-color: #262626;
-  --ifm-navbar-shadow: inset 0 -1px 0 #262626;
-  --ifm-navbar-link-color: #e5e5e5;
+  --ifm-toc-border-color: #34343a;
+  --ifm-navbar-shadow: inset 0 -1px 0 #34343a;
+  --ifm-navbar-link-color: #d4d4d8;
   --ifm-navbar-link-hover-color: var(--ifm-color-primary);
 
-  --ifm-code-background: #171717;
-  --ifm-pre-background: #171717;
+  --ifm-code-background: #27272c;
+  --ifm-pre-background: #27272c;
 
-  --docusaurus-highlighted-code-line-bg: rgba(249, 115, 22, 0.18);
+  --docusaurus-highlighted-code-line-bg: rgba(127, 211, 230, 0.14);
 }
 
-[data-theme='dark'] .footer {
-  border-top: 1px solid var(--ifm-toc-border-color);
+.footer {
+  border-top: 2px dashed var(--ifm-toc-border-color);
 }
 
 ::selection {
-  background: rgba(249, 115, 22, 0.25);
-  color: white;
+  background: var(--moley-pink);
+  color: var(--moley-ink);
 }
 
 * {
@@ -55,6 +81,18 @@
 }
 
 .navbar__logo img {
-  height: 28px;
-  width: 28px;
+  height: 32px;
+  width: 32px;
 }
+
+.navbar__title,
+.navbar__link {
+  font-family: var(--ifm-heading-font-family);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.navbar__link {
+  font-weight: 500;
+}
+

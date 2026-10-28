@@ -9,8 +9,9 @@
   width: 2rem;
   height: 2rem;
   border-radius: 9999px;
-  background: var(--ifm-color-primary);
-  color: #ffffff;
+  background: var(--moley-pink);
+  color: var(--moley-ink);
+  font-family: var(--ifm-heading-font-family);
   font-weight: 700;
   font-size: 0.875rem;
   display: flex;
