@@ -31,7 +31,7 @@ WORKDIR /go/src/cloudflared
 RUN make cloudflared
 
 # Final runtime stage
-FROM alpine:3.24.2 AS runtime
+FROM alpine:3.24.3 AS runtime
 
 # Install runtime dependencies
 RUN apk --no-cache add ca-certificates
