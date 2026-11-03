@@ -1,9 +1,9 @@
-access:
-  policies:
-    - name: moley-allow-email
-      decision: allow
-      include:
-        - email: {email: "kilian.houpeurt@gmail.com"}
+# access:
+#   policies:
+#     - name: moley-allow-email
+#       decision: allow
+#       include:
+#         - email: {email: "kilian.houpeurt@gmail.com"}
 
 ingress:
   mode: subdomain
@@ -11,9 +11,9 @@ ingress:
   apps:
     - target: {hostname: localhost, port: 3000, protocol: http}
       expose: {subdomain: test}
-      access:
-        providers: [github, onetimepin]
-        session_duration: "168h"
-      policies: [moley-allow-email]
+      # access:
+      #   providers: [github, onetimepin]
+      #   session_duration: "168h"
+      # policies: [moley-allow-email]
 
 tunnel: {id: "demo", name: "test-tunnel", persistent: false}
