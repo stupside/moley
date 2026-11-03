@@ -64,33 +64,6 @@ func (c *TunnelService) AccountID() string {
 	return c.accountID
 }
 
-func (c *TunnelService) Run(ctx context.Context, tunnel *domain.Tunnel) (int, error) {
-	if c.dryRun {
-		logger.Debug("Dry run: skipping tunnel process start")
-		return 0, nil
-	}
-
-	configPath, err := c.GetConfigurationPath(ctx, tunnel)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get tunnel configuration path: %w", err)
-	}
-
-	// Pass the UUID (not the name) so cloudflared doesn't do a name→UUID
-	// lookup via the Cloudflare control plane, which would require cert.pem
-	// from `cloudflared tunnel login`.
-	tunnelUUID, err := c.GetID(ctx, tunnel)
-	if err != nil {
-		return 0, fmt.Errorf("failed to resolve tunnel UUID: %w", err)
-	}
-
-	cfCommand := newCommand(ctx, "tunnel", "--config", configPath, "run", tunnelUUID)
-	pid, err := cfCommand.execAsync()
-	if err != nil {
-		return 0, fmt.Errorf("failed to run tunnel: %w", err)
-	}
-	return pid, nil
-}
-
 // findTunnel looks up a tunnel by name and returns its UUID, or empty string if not found.
 func (c *TunnelService) findTunnel(ctx context.Context, tunnel *domain.Tunnel) (string, error) {
 	name := tunnel.GetName()

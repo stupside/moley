@@ -2,19 +2,21 @@ package tunnel
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"os"
-	"syscall"
 
 	"github.com/stupside/moley/v2/internal/domain"
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
 	framework "github.com/stupside/moley/v2/internal/platform/orchestration"
-	sys "github.com/stupside/moley/v2/internal/platform/system"
 )
 
+// TunnelRunner is the process lifecycle required by reconciliation.
+// Implementations keep live handles outside the persisted ProcessIdentity.
 type TunnelRunner interface {
-	Run(ctx context.Context, tunnel *domain.Tunnel) (int, error)
+	Run(ctx context.Context, tunnel *domain.Tunnel) (ProcessIdentity, error)
+	// Check reports false with no error only when the process is confirmed absent.
+	Check(ctx context.Context, identity ProcessIdentity) (bool, error)
+	// Stop waits for termination; observation or termination failures remain errors.
+	Stop(ctx context.Context, identity ProcessIdentity) error
 }
 
 const RunHandlerName = "tunnel-run"
@@ -27,24 +29,24 @@ type RunInput struct {
 
 type RunOutput struct {
 	TunnelName string          `json:"tunnel_name"`
-	Process    processIdentity `json:"process"`
+	Process    ProcessIdentity `json:"process"`
 }
 
-// processIdentity tracks a process by both PID and command name to detect PID reuse.
-type processIdentity struct {
+// ProcessIdentity is the serializable identity used to observe and stop a process.
+type ProcessIdentity struct {
 	PID     int    `json:"pid"`
 	Command string `json:"command"`
 }
 
 type runHandler struct {
-	tunnelService TunnelRunner
+	runner TunnelRunner
 }
 
 var _ framework.Lifecycle[RunInput, RunOutput] = (*runHandler)(nil)
 
-func NewRunHandler(tunnelService TunnelRunner) *runHandler {
+func NewRunHandler(runner TunnelRunner) *runHandler {
 	return &runHandler{
-		tunnelService: tunnelService,
+		runner: runner,
 	}
 }
 
@@ -59,63 +61,30 @@ func (h *runHandler) Key(input RunInput) string {
 func (h *runHandler) Create(ctx context.Context, input RunInput) (RunOutput, error) {
 	logger.Debug("Starting tunnel process")
 
-	pid, err := h.tunnelService.Run(ctx, &domain.Tunnel{Name: input.TunnelName})
+	identity, err := h.runner.Run(ctx, &domain.Tunnel{Name: input.TunnelName})
 	if err != nil {
 		return RunOutput{}, fmt.Errorf("failed to start tunnel process: %w", err)
 	}
 
 	output := RunOutput{
 		TunnelName: input.TunnelName,
-		Process: processIdentity{
-			PID:     pid,
-			Command: sys.GetProcessCommand(pid),
-		},
+		Process:    identity,
 	}
 
-	logger.Infof("Tunnel process started", map[string]any{"pid": pid})
+	logger.Infof("Tunnel process started", map[string]any{"pid": identity.PID})
 	return output, nil
 }
 
 func (h *runHandler) Destroy(ctx context.Context, output RunOutput) error {
-	if output.Process.PID == 0 {
-		return nil // dry-run: no real process
-	}
-
-	logger.Debugf("Stopping tunnel process", map[string]any{"pid": output.Process.PID})
-
-	process, err := os.FindProcess(output.Process.PID)
-	if err != nil {
-		logger.Warnf("Failed to find process, may have already exited", map[string]any{
-			"pid":   output.Process.PID,
-			"error": err.Error(),
-		})
-		return nil
-	}
-
-	if err := sys.TerminateProcess(process); err != nil {
-		if errors.Is(err, os.ErrProcessDone) || isProcessNotFoundError(err) {
-			logger.Info("Process has already exited, skipping termination")
-			return nil
-		}
-		return err
-	}
-
-	logger.Infof("Tunnel process stopped", map[string]any{"pid": output.Process.PID})
-	return nil
-}
-
-func isProcessNotFoundError(err error) bool {
-	if errno, ok := errors.AsType[syscall.Errno](err); ok {
-		return errno == syscall.ESRCH
-	}
-	return false
+	return h.runner.Stop(ctx, output.Process)
 }
 
 func (h *runHandler) Check(ctx context.Context, output RunOutput) (framework.Status, error) {
-	if output.Process.PID == 0 {
-		return framework.StatusUp, nil // dry-run: no real process
+	running, err := h.runner.Check(ctx, output.Process)
+	if err != nil {
+		return framework.StatusUnknown, err
 	}
-	if !sys.CheckProcessIdentity(output.Process.PID, output.Process.Command) {
+	if !running {
 		return framework.StatusDown, nil
 	}
 	return framework.StatusUp, nil

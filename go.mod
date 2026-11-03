@@ -17,6 +17,7 @@ require (
 	github.com/shirou/gopsutil/v4 v4.26.9
 	github.com/urfave/cli/v3 v3.14.0
 	go.yaml.in/yaml/v3 v3.0.5
+	golang.org/x/sys v0.49.0
 )
 
 require (
@@ -43,6 +44,5 @@ require (
 	github.com/tklauser/numcpus v0.12.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/crypto v0.58.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 )

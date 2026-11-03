@@ -75,5 +75,6 @@ func buildTunnelService(ctx context.Context, cmd *cli.Command) (*application.Ser
 		cfPolicy = svc
 	}
 
-	return application.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, tunnelConfig.Access, cfDNS, cfTunnel, cfTunnel, cfTunnel, cfAccess, cfPolicy), nil
+	runner := tunnelcf.NewRunner(cfTunnel, dryRun)
+	return application.NewService(tunnelConfig.Tunnel, tunnelConfig.Ingress, tunnelConfig.Access, cfDNS, cfTunnel, cfTunnel, runner, cfAccess, cfPolicy), nil
 }
