@@ -118,23 +118,42 @@ func (r *Reconciler) Stop(ctx context.Context) error {
 	}
 
 	var errs []error
+	// A resource that failed to stop may still use its dependencies. Keep those
+	// dependencies intact while continuing cleanup of independent branches.
+	blocked := make(map[string]bool)
+	var blockDependencies func(node)
+	blockDependencies = func(n node) {
+		for _, dep := range n.dependencies() {
+			if !blocked[dep] {
+				blocked[dep] = true
+				blockDependencies(r.nodeMap[dep])
+			}
+		}
+	}
 
 	// Stop in reverse order
 	for _, n := range slices.Backward(sorted) {
+		if blocked[n.name()] {
+			errs = append(errs, fmt.Errorf("cleanup deferred: %s still has a dependent resource", n.name()))
+			continue
+		}
 		logger.Debugf("Stopping", map[string]any{
 			"resource": n.name(),
 		})
 
 		if err := n.stop(ctx, r.lockFile); err != nil {
-			logger.Warnf("Stop failed, continuing cleanup", map[string]any{
+			logger.Warnf("Stop failed, preserving dependencies", map[string]any{
 				"resource": n.name(),
 				"error":    err.Error(),
 			})
 			errs = append(errs, fmt.Errorf("stop failed: %s: %w", n.name(), err))
+			blockDependencies(n)
 		}
 	}
 
-	logger.Info("Resources stopped")
+	if len(errs) == 0 {
+		logger.Info("Resources stopped")
+	}
 	return errors.Join(errs...)
 }
 
