@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/cloudflare/cloudflare-go/v6 v6.10.0
-	github.com/go-playground/validator/v10 v10.30.5
+	github.com/go-playground/validator/v10 v10.30.6
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/gofrs/flock v0.13.1
 	github.com/google/uuid v1.6.0
@@ -15,9 +15,9 @@ require (
 	github.com/knadh/koanf/v2 v2.4.1
 	github.com/looplab/fsm v1.0.4
 	github.com/rs/zerolog v1.35.1
-	github.com/shirou/gopsutil/v4 v4.26.9
+	github.com/shirou/gopsutil/v4 v4.26.10
 	github.com/urfave/cli/v3 v3.14.0
-	go.yaml.in/yaml/v3 v3.0.5
+	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/sys v0.49.0
 )
 
