@@ -18,8 +18,8 @@ type Reconciler struct {
 }
 
 // NewReconciler creates a new reconciler backed by the lock file registry.
-func NewReconciler() (*Reconciler, error) {
-	lf, err := LoadLockFile()
+func NewReconciler(ctx context.Context) (*Reconciler, error) {
+	lf, err := LoadLockFile(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load registry: %w", err)
 	}

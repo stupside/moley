@@ -12,8 +12,8 @@ import (
 	framework "github.com/stupside/moley/v2/internal/platform/orchestration"
 )
 
-func (s *Service) createOrchestrator(_ context.Context) (*framework.Reconciler, error) {
-	orchestrator, err := framework.NewReconciler()
+func (s *Service) createOrchestrator(ctx context.Context) (*framework.Reconciler, error) {
+	orchestrator, err := framework.NewReconciler(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource orchestrator: %w", err)
 	}

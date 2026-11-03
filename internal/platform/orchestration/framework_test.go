@@ -110,7 +110,7 @@ func TestHashChangesOnDifferentInput(t *testing.T) {
 func TestLockFileSaveAndLoad(t *testing.T) {
 	chdir(t)
 
-	lf, err := framework.LoadLockFile()
+	lf, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func TestLockFileSaveAndLoad(t *testing.T) {
 	_ = lf.Close()
 
 	// Reload
-	lf2, err := framework.LoadLockFile()
+	lf2, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,7 +149,7 @@ func TestLockFileCorruptRecovery(t *testing.T) {
 	chdir(t)
 	_ = os.WriteFile("moley.lock", []byte("not json{{{"), 0644)
 
-	lf, err := framework.LoadLockFile()
+	lf, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatalf("corrupt lock file should not error: %v", err)
 	}
@@ -164,7 +164,7 @@ func TestLockFileEmptyRecovery(t *testing.T) {
 	chdir(t)
 	_ = os.WriteFile("moley.lock", []byte(""), 0644)
 
-	lf, err := framework.LoadLockFile()
+	lf, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatalf("empty lock file should not error: %v", err)
 	}
@@ -178,7 +178,7 @@ func TestLockFileEmptyRecovery(t *testing.T) {
 func TestLockFileMissingIsEmpty(t *testing.T) {
 	chdir(t)
 
-	lf, err := framework.LoadLockFile()
+	lf, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +192,7 @@ func TestLockFileMissingIsEmpty(t *testing.T) {
 func TestLockFilePurgeOrphans(t *testing.T) {
 	chdir(t)
 
-	lf, err := framework.LoadLockFile()
+	lf, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -221,14 +221,14 @@ func TestLockFilePurgeOrphans(t *testing.T) {
 func TestLockFileSequentialLocking(t *testing.T) {
 	chdir(t)
 
-	lf1, err := framework.LoadLockFile()
+	lf1, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
 	_ = lf1.Close()
 
 	// Second lock after release should succeed
-	lf2, err := framework.LoadLockFile()
+	lf2, err := framework.LoadLockFile(context.Background())
 	if err != nil {
 		t.Fatalf("second lock after release should succeed: %v", err)
 	}
@@ -277,7 +277,7 @@ func TestTopoSortLinearChain(t *testing.T) {
 	h2 := &orderTracker{name: "step-2", order: &order}
 	h3 := &orderTracker{name: "step-3", order: &order}
 
-	r, _ := framework.NewReconciler()
+	r, _ := framework.NewReconciler(context.Background())
 	framework.Register(r, h1, staticResolver("a"))
 	framework.Register(r, h2, staticResolver("a"), "step-1")
 	framework.Register(r, h3, staticResolver("a"), "step-2")
@@ -298,7 +298,7 @@ func TestTopoSortDiamond(t *testing.T) {
 	chdir(t)
 
 	var order []string
-	r, _ := framework.NewReconciler()
+	r, _ := framework.NewReconciler(context.Background())
 	framework.Register(r, &orderTracker{name: "root", order: &order}, staticResolver("a"))
 	framework.Register(r, &orderTracker{name: "left", order: &order}, staticResolver("a"), "root")
 	framework.Register(r, &orderTracker{name: "right", order: &order}, staticResolver("a"), "root")
@@ -319,7 +319,7 @@ func TestTopoSortDiamond(t *testing.T) {
 func TestTopoSortCircularDependency(t *testing.T) {
 	chdir(t)
 
-	r, _ := framework.NewReconciler()
+	r, _ := framework.NewReconciler(context.Background())
 	framework.Register(r, &orderTracker{name: "a", order: new([]string)}, staticResolver("x"), "b")
 	framework.Register(r, &orderTracker{name: "b", order: new([]string)}, staticResolver("x"), "a")
 
@@ -332,7 +332,7 @@ func TestTopoSortCircularDependency(t *testing.T) {
 func TestTopoSortUnknownDependency(t *testing.T) {
 	chdir(t)
 
-	r, _ := framework.NewReconciler()
+	r, _ := framework.NewReconciler(context.Background())
 	framework.Register(r, &orderTracker{name: "a", order: new([]string)}, staticResolver("x"), "nonexistent")
 
 	err := r.Start(context.Background())
@@ -351,7 +351,7 @@ func TestStopReverseOrder(t *testing.T) {
 	h2 := &orderTracker{name: "second", order: &startOrder, destroyOrder: &stopOrder}
 	h3 := &orderTracker{name: "third", order: &startOrder, destroyOrder: &stopOrder}
 
-	r, _ := framework.NewReconciler()
+	r, _ := framework.NewReconciler(context.Background())
 	framework.Register(r, h1, staticResolver("a"))
 	framework.Register(r, h2, staticResolver("a"), "first")
 	framework.Register(r, h3, staticResolver("a"), "second")
@@ -361,7 +361,7 @@ func TestStopReverseOrder(t *testing.T) {
 	}
 
 	// New reconciler for stop (matches real usage)
-	r2, _ := framework.NewReconciler()
+	r2, _ := framework.NewReconciler(context.Background())
 	framework.Register(r2, h1, staticResolver("a"))
 	framework.Register(r2, h2, staticResolver("a"), "first")
 	framework.Register(r2, h3, staticResolver("a"), "second")
@@ -387,7 +387,7 @@ func TestOutputFlowsBetweenNodes(t *testing.T) {
 
 	upstream := newTestHandler("upstream")
 
-	r, _ := framework.NewReconciler()
+	r, _ := framework.NewReconciler(context.Background())
 	framework.Register(r, upstream,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "item", Value: 42}}, nil
@@ -422,7 +422,7 @@ func TestHashChangeTriggersUpdate(t *testing.T) {
 	h := newTestHandler("handler")
 
 	// First run
-	r1, _ := framework.NewReconciler()
+	r1, _ := framework.NewReconciler(context.Background())
 	framework.Register(r1, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "item", Value: 1}}, nil
@@ -437,7 +437,7 @@ func TestHashChangeTriggersUpdate(t *testing.T) {
 	h.destroyed = make(map[string]bool)
 
 	// Second run — different value → hash change → destroy + create
-	r2, _ := framework.NewReconciler()
+	r2, _ := framework.NewReconciler(context.Background())
 	framework.Register(r2, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "item", Value: 2}}, nil
@@ -461,7 +461,7 @@ func TestNoHashChangeIsNoop(t *testing.T) {
 	h := newTestHandler("handler")
 
 	// First run
-	r1, _ := framework.NewReconciler()
+	r1, _ := framework.NewReconciler(context.Background())
 	framework.Register(r1, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "item", Value: 1}}, nil
@@ -475,7 +475,7 @@ func TestNoHashChangeIsNoop(t *testing.T) {
 	h.destroyed = make(map[string]bool)
 
 	// Second run — same input → no-op
-	r2, _ := framework.NewReconciler()
+	r2, _ := framework.NewReconciler(context.Background())
 	framework.Register(r2, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "item", Value: 1}}, nil
@@ -496,7 +496,7 @@ func TestResourceRemoved(t *testing.T) {
 	h := newTestHandler("handler")
 
 	// First run — two resources
-	r1, _ := framework.NewReconciler()
+	r1, _ := framework.NewReconciler(context.Background())
 	framework.Register(r1, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "a"}, {Name: "b"}}, nil
@@ -510,7 +510,7 @@ func TestResourceRemoved(t *testing.T) {
 	h.destroyed = make(map[string]bool)
 
 	// Second run — only one resource → "b" should be removed
-	r2, _ := framework.NewReconciler()
+	r2, _ := framework.NewReconciler(context.Background())
 	framework.Register(r2, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "a"}}, nil
@@ -534,7 +534,7 @@ func TestResourceAdded(t *testing.T) {
 	h := newTestHandler("handler")
 
 	// First run — one resource
-	r1, _ := framework.NewReconciler()
+	r1, _ := framework.NewReconciler(context.Background())
 	framework.Register(r1, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "a"}}, nil
@@ -547,7 +547,7 @@ func TestResourceAdded(t *testing.T) {
 	h.created = make(map[string]testOutput)
 
 	// Second run — add another
-	r2, _ := framework.NewReconciler()
+	r2, _ := framework.NewReconciler(context.Background())
 	framework.Register(r2, h,
 		func(_ *framework.OutputRegistry) ([]testInput, error) {
 			return []testInput{{Name: "a"}, {Name: "b"}}, nil

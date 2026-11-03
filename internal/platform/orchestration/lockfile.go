@@ -1,11 +1,13 @@
 package orchestration
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"runtime"
 	"slices"
+	"time"
 
 	"github.com/gofrs/flock"
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
@@ -31,7 +33,8 @@ type LockFile struct {
 
 // LoadLockFile loads moley.lock from disk and acquires an exclusive file lock.
 // Returns an empty LockFile if the file is missing or corrupt.
-func LoadLockFile() (*LockFile, error) {
+// Acquisition waits until the lock is available or ctx is canceled.
+func LoadLockFile(ctx context.Context) (*LockFile, error) {
 	guardPath := lockFilePath
 	if runtime.GOOS == "windows" {
 		// Windows locks are mandatory: locking the data file prevents ReadFile
@@ -41,8 +44,10 @@ func LoadLockFile() (*LockFile, error) {
 	}
 	fl := flock.New(guardPath)
 
-	if err := fl.Lock(); err != nil {
+	if locked, err := fl.TryLockContext(ctx, 50*time.Millisecond); err != nil {
 		return nil, fmt.Errorf("failed to acquire file lock: %w", err)
+	} else if !locked {
+		return nil, fmt.Errorf("failed to acquire file lock: %w", ctx.Err())
 	}
 
 	data, err := os.ReadFile(lockFilePath)
