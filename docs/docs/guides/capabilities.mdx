@@ -17,8 +17,19 @@ One command provisions the tunnel, routes DNS, creates Access apps, and starts c
 | --- | --- |
 | `moley tunnel init` | Generates a starter `moley.yml` in the current directory |
 | `moley tunnel run` | Creates the tunnel, sets up DNS and Access, then starts cloudflared in the foreground |
-| `moley tunnel run --detach` | Same, but detaches — moley stays running under your shell |
+| `moley tunnel run --detach` | Provisions resources and exits, leaving cloudflared running in the background |
 | `moley tunnel stop` | Cleans up every resource moley created for this config |
+
+In foreground mode, Moley watches cloudflared and cleans up if the child exits,
+returning an error for an unexpected exit. Ctrl-C cancels startup or begins
+shutdown; cleanup waits for startup to finish before removing resources. On Unix,
+shutdown allows cloudflared five seconds to exit before forcing termination,
+within a 30-second cleanup deadline. Resources needed by a resource that fails to
+stop are retained for a later cleanup attempt. If a process identity cannot be
+verified, Moley reports an error instead of assuming that the process has exited.
+
+Detached mode supervises startup only. Use `moley tunnel stop` to stop the child
+and clean up resources later; no Moley supervisor remains after the command exits.
 
 By default, tunnels and DNS records are deleted when you stop. Set `tunnel.persistent: true` to keep them (useful if you want a stable URL across runs).
 

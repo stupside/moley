@@ -228,3 +228,6 @@ func (r *Reconciler) loadOutputs(handlerName string) {
 		}
 	}
 }
+
+// Outputs returns the outputs published by the completed reconciliation.
+func (r *Reconciler) Outputs() *OutputRegistry { return r.outputs }

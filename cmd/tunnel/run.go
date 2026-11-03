@@ -43,7 +43,7 @@ func execRun(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	if detach {
-		if err := tunnelService.Start(ctx); err != nil {
+		if err := shared.StartDetached(ctx, tunnelService); err != nil {
 			return fmt.Errorf("failed to run tunnel service: %w", err)
 		}
 	} else {

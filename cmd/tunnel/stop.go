@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	logger "github.com/stupside/moley/v2/internal/platform/logging"
+	shared "github.com/stupside/moley/v2/internal/platform/runtime"
 
 	"github.com/urfave/cli/v3"
 )
@@ -26,7 +27,7 @@ func execStop(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to build tunnel service: %w", err)
 	}
 
-	if err := tunnelService.Stop(ctx); err != nil {
+	if err := shared.StopManaged(ctx, tunnelService); err != nil {
 		return fmt.Errorf("failed to stop tunnel service: %w", err)
 	}
 
