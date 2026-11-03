@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.9.0](https://github.com/stupside/moley/compare/v2.8.0...v2.9.0) (2026-11-03)
+
+
+### Features
+
+* dress the Go gopher up as a mole for the logo ([57857ea](https://github.com/stupside/moley/commit/57857eacc483c8f25a52098e26f90233085541f6))
+* theme the docs after the gopher logo ([f2f1d1d](https://github.com/stupside/moley/commit/f2f1d1d2c6aa7d480477c8e562e8038caffbfa32))
+* watch cloudflared in the foreground and clean up when it exits ([cecc516](https://github.com/stupside/moley/commit/cecc51692955db68b77553377b7f4ea2f4be7424))
+
+
+### Bug Fixes
+
+* keep dependencies of a resource that failed to stop ([230a31b](https://github.com/stupside/moley/commit/230a31bca002ea9f71dd674049c8600f7d1f36fd))
+* stop waiting for the lock file once the context is canceled ([ada4942](https://github.com/stupside/moley/commit/ada4942d186cbeaefe07a936b7180cda68b013c7))
+
+
+### Refactors
+
+* supervise cloudflared and verify its identity before signaling ([cf27b4a](https://github.com/stupside/moley/commit/cf27b4ab12e68ec48e82e035f0d60af5b2c74760))
+
 ## [2.8.0](https://github.com/stupside/moley/compare/v2.7.1...v2.8.0) (2026-10-27)
 
 
